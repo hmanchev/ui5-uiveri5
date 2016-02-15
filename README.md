@@ -1,7 +1,7 @@
-# visualtestjs ( will become ui5test )
+# visualtestjs
 
 ## Introduction
-Visualtesjs is a visual and application testing framework for UI5-base applications. It is using
+Visualtesjs is a visual and application testing framework for UI5-based applications. It is using
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
 application as a real user would. Visualtestjs is heavily inspired and based on [Protractor](http://www.protractortest.org/)
 and brings most of its benefits to UI5 applications.
@@ -68,35 +68,15 @@ it('should view the TrackPurchase Order screen', function () {
 });
 ````
 
-### Application testing further development
-* Component selectors (__not available yet__). 
-In the application testing approach outlined above, we use hierarchical class selectors composed of UI5 component main
-(marker) class names. This hierarchical composition is important to guarantee the stability of selectors,
-check [here](docs/applicationtesting.md) for further details. But the usage of component classes is somehow problematic
-as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed to be
-backward-compatible so an approach to mitigate this issue is to use component selectors.
-Component selector is a css-like selector that works on the UI5 component tree and not on the DOM tree.
-This selector is handled by ToolsAPI inside recent UI5 versions (>1.34) and integrates nicely with
-(UI5 Inspector)[https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo]
-````
-masterSection = {
-  filterIcon: element(by.comp('sap.m.PageFooter sap.m.Button[label="filter"]')
-}
-masterSection.filterIcon.click();
-````
-
 ## Usage
 
 ### Visual testing
 
 ### Run visual tests for openui5
-* Pull grunt support and sample tests from this draft commit:
+* Please follow the procedure [install globally](docs/installation.md).
+* Pull grunt support from this draft commit:
 ```
-$ git pull ssh://<user>@git.wdf.sap.corp:29418/openui5 refs/changes/45/826745/16
-```
-* Update dependencies so latest visualtestjs is used:
-```
-$ npm update visualtestjs
+$ git pull ssh://<user>@git.wdf.sap.corp:29418/openui5 refs/changes/45/826745/24
 ```
 * Run all available tests:
 ```
@@ -116,12 +96,12 @@ exports.config = {
   profile: 'visual'
 };
 ```
-To store the reference images outside the source tree, check [visualtesting.md](docs/visualtesting.md)
 * Start your server
 * Run all available tests:
 ```
 $ visualtest
 ```
+
 ### Integration testing
 * Please follow the procedure [install globally](docs/installation.md).
 * Create a folder for your integration tests, place them inside and create a conf.js file:
@@ -145,7 +125,7 @@ All of the defaults could be modified either in conf.js or by providing command-
 ```
 --browsers=firefox
 ```
-* Run tests on Chrome, Firefox and InternetExplorer in parallel __not implemented__
+* Run tests on Chrome, Firefox and InternetExplorer in parallel __not implemented yet__
 ```
 --browsers=chrome,firefox,ie
 ```
@@ -162,16 +142,12 @@ All of the defaults could be modified either in conf.js or by providing command-
 --browsers="ie:9:windows:8"
 --browsers="chrome:*:windows"
 ```
-* Run tests over remote connection (sauselabs, browserstack, ..) __not implemented__
+* Run tests over remote connection (browserstack, sauselabs, ..) __not implemented__
 ```
---browsers="chrome:*:android:4.4" --connection="sauselabs:<user>:<token>:<url>:<further params>"
+--browsers="chrome:*:android:4.4" --connection="browserstack:<user>:<token>"
 ```
 ## Development
 ### Run unit tests from visualtestjs project
 ```
 $ npm run test
-```
-### Run unit tests for grunt integration from openui5 project
-```
-$jasmine-node grunt/spec/selenium_visualtest.spec.js
 ```

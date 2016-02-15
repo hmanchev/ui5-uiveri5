@@ -6,21 +6,17 @@ visualtesjs requires nodejs >=0.12 and java>=1.6
 #### Install globally
 * Install latest version of visualtest globally:
 ```
-$ npm install git://github.wdf.sap.corp/I035254/visualtestjs.git#<version> -g --no-optional
+$ npm install git://github.wdf.sap.corp/ui5delivery/visualtestjs.git#<version> -g --no-optional
 ```
-Please use the latest version from here: [releases](https://github.wdf.sap.corp/I035254/visualtestjs/releases), e.g. v1.6.0
-The --no-optional flag is necessary to avoid the installation of some optional dependencies (buffer-utils) that
-require native build that itself requires PYTHON and VC++.
-* Download selenium jar and browser drivers:
-```
-$ visualtest-webdriver update
-```
+Please use the latest version from here: [releases](https://github.wdf.sap.corp/ui5delivery/visualtestjs/releases)
+or leave version for HEAD. The --no-optional flag is necessary to avoid the installation of some optional dependencies
+(buffer-utils) that require native build that itself requires PYTHON and VC++.
 
 ### Issues
 
-#### npm show errors mentioning node-gy and PYTHON
+#### npm show errors mentioning node-gyp and PYTHON
 ##### Short:
-If overal installation status is success, you could safely ignore them.
+If overall installation status is success, you could safely ignore them.
 ##### Long:
 visualtestjs depends on some modules that themselves depend on native code like bufferutils.
 During installation npm calls node-gyp that tries to build the native code to executable. But this usually

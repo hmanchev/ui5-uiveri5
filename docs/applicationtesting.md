@@ -1,4 +1,21 @@
 
+# Application testing Ideas
+## Component selectors (__not available yet__).
+In the application testing approach we use hierarchical class selectors composed of UI5 component main
+(marker) class names. This hierarchical composition is important to guarantee the stability of selectors,
+check [here](docs/applicationtesting.md) for further details. But the usage of component classes is somehow
+problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed
+to be backward-compatible so an approach to mitigate this issue is to use component selectors.
+Component selector is a css-like selector that works on the UI5 component tree and not on the DOM tree.
+This selector is handled by ToolsAPI inside recent UI5 versions (>1.34) and integrates nicely with
+(UI5 Inspector)[https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo]
+````
+masterSection = {
+  filterIcon: element(by.comp('sap.m.PageFooter sap.m.Button[label="filter"]')
+}
+masterSection.filterIcon.click();
+````
+
 # Application testing
 
 ## Test organization
