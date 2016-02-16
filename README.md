@@ -76,7 +76,7 @@ it('should view the TrackPurchase Order screen', function () {
 * Please follow the procedure [install globally](docs/installation.md).
 * Pull grunt support from this draft commit:
 ```
-$ git pull ssh://<user>@git.wdf.sap.corp:29418/openui5 refs/changes/45/826745/24
+$ git pull ssh://<user>@git.wdf.sap.corp:29418/openui5 refs/changes/49/1458949/2
 ```
 * Run all available tests:
 ```
