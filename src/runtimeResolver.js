@@ -107,7 +107,9 @@ RuntimeResolver.prototype.resolveRuntimes = function(){
     // TODO validate runtime-platform combinations ?
 
     // handler platformResolution
-    runtime.platformResolution = defaultPlatformResolutionPerPlatformName[runtime.platformName];
+    if(!runtime.platformResolution || runtime.platformResolution === '*') {
+      runtime.platformResolution = defaultPlatformResolutionPerPlatformName[runtime.platformName];
+    }
     // TODO validate platform-resolution combinations ?
 
     // handle versions

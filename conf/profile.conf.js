@@ -37,6 +37,23 @@ exports.config = {
     'browser,chrome': {
       'android': {
         deviceName: 'android'
+        /*
+        remoteWebDriverOptions: {
+          contextSwitch: true, // {native: 'NATIVE_APP', webView: 'WEBVIEW_1'}
+          crops: {
+            position: {
+              y: 116
+            },
+            size: {
+              height: 684
+            }
+          },
+          scaling: {
+            x: 1.5,
+            y: 1.5
+          }
+        }
+        */
       }
     },
     'chrome,chromium': {

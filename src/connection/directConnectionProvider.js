@@ -330,7 +330,17 @@ DirectDriverProvider.prototype.getNewDriver = function() {
     var client = new that.deps.http.HttpClient(that.seleniumConfig.address, null,that.seleniumConfig.addressProxy);
     var executor =  new that.deps.http.Executor(client);
     driver = that.deps.webdriver.WebDriver.createSession(executor,capabilities);
-    //TODO augment with appium support
+
+    //augment with appium support
+    that.deps.webdriver.CommandName.SWITCH_CONTEXT = 'context';
+    executor.defineCommand(that.deps.webdriver.CommandName.SWITCH_CONTEXT, 'POST', '/session/:sessionId/context');
+
+    driver.switchContext = function (name) {
+      that.logger.debug('Switch context to: ' + name);
+      return driver.schedule(new that.deps.webdriver.Command(that.deps.webdriver.CommandName.SWITCH_CONTEXT).
+        setParameter('name', name),
+        'WebDriver.switchContext()');
+    };
   } else {
     // start local driver
     if (that.seleniumConfig.useSeleniumJarFlag) {
