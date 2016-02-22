@@ -1,6 +1,5 @@
 
 var fs = require('fs');
-global.protractorModule = module;
 var LocalStorageProvider = require('../src/image/localStorageProvider.js');
 var LocalComparisonProvider = require('../src/image/localComparisonProvider.js');
 

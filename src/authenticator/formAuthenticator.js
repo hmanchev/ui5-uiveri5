@@ -1,4 +1,6 @@
 
+var webdriver = require('selenium-webdriver');
+
 /**
  * Handle page authentication
  * @constructor

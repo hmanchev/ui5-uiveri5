@@ -8,20 +8,19 @@ var DEFAULT_CONNECTION_NAME = 'direct';
 /**
  * @typedef Config
  * @type {Object}
- * @property {String} specResolver - spec resolver to use, defaults to: localSpecResolver for profile integration
- *  and localUI5SpecResolver for profile visual
+ * @property {String} specResolver - spec resolver to use, defaults to: localSpecResolver for profile
+ *  integration and localUI5SpecResolver for profile visual
  * @property {String} conf - config file to use, defaults to: '../conf/default.conf.js'
  *  that contains only: profile: 'visual'
  * @property {String} profile - used to resolve profile config file with pattern: '../conf/<profile>.conf.js,
  *  no profile resolved if undefined, defaults to: visual if default.conf.js loaded
  * @property {number} verbose - verbose level, 0 shows only info, 1 shows debug,
  *  2 shows waitForUI5 executions,3 shows also waitForUI5 script content, defaults t: 0
- * @property {<BrowserCapability|String}>[]} browsers - list of browsers to drive. single word is assumed to
- *  be browserName else is parsed as json, defaults to: 'chrome'
+ * @property {<BrowserCapability|String}>[]} browsers - list of browsers to drive. Single word is assumed to
+ *  be browserName, supports column delimited and json formats, defaults to: 'chrome'
  * @property {Object} params - params object to be passed to the tests
  * @property {boolean} ignoreSync - disables waitForUI5 synchronization, defaults to: false
  * @property {String} clientsidescripts - client side scripts file, defaults to: ./clientsidescripts
- * TODO params
  */
 
 /**
