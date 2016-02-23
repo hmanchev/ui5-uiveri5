@@ -19,6 +19,10 @@ function DefaultLocators(config,instanceConfig,logger){
 DefaultLocators.prototype.register = function(by) {
   this.logger.debug('Registering default locators');
   // http://angular.github.io/protractor/#/api?view=ProtractorBy.prototype.addLocator
+
+  by.addLocator('jq', function(query,opt_parentElement) {
+    return $(opt_parentElement ? opt_parentElement + ' ' + query : query).toArray();
+  });
 };
 
 module.exports = function(config,instanceConfig,logger){

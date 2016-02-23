@@ -1,21 +1,4 @@
 
-# Application testing Ideas
-## Component selectors (__not available yet__).
-In the application testing approach we use hierarchical class selectors composed of UI5 component main
-(marker) class names. This hierarchical composition is important to guarantee the stability of selectors,
-check [here](docs/applicationtesting.md) for further details. But the usage of component classes is somehow
-problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed
-to be backward-compatible so an approach to mitigate this issue is to use component selectors.
-Component selector is a css-like selector that works on the UI5 component tree and not on the DOM tree.
-This selector is handled by ToolsAPI inside recent UI5 versions (>1.34) and integrates nicely with
-(UI5 Inspector)[https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo]
-````
-masterSection = {
-  filterIcon: element(by.comp('sap.m.PageFooter sap.m.Button[label="filter"]')
-}
-masterSection.filterIcon.click();
-````
-
 # Application testing
 
 ## Test organization
@@ -48,11 +31,35 @@ execute only part of the whole scenario by using disabled or focused specs and s
 4. Generated IDs are totally not self-documenting and this makes the test harder to understand and maintain.
 
 ### Avoid non-visible attributes
-Think from the point of view of the users. Users do not see DOM nodes and their attributes but see them rendered.
+Think from the point of view of the users. Users do not see DOM nodes and their attributes but see rendered DOM.
 So write selectors that include only "visible" attributes.
 This also makes the test much self-documenting and simplifies maintenance.
 
 ### Minimize use of attribute selectors
+
+### JQuery
+SAPUI5 runtime include and heavily use jquery so we bridge the power of jquery to application tests.
+All [jquery selectors](https://api.jquery.com/category/selectors/) are available,including the powerful pseudo-selectors.
+Select an element by jquery expression:
+```
+element(by.jq('<jguery expression>'));
+```
+#### Select and element that contain specific child
+Sometimes it is useful to have a backward selectors e.g. select the parent of an element with specific properties.
+This is easily achieved with jquery [:has()](https://api.jquery.com/has-selector/) pseudo-selector.
+Select a tile from Fiori Launchpad:
+```javascript
+element(by.jq('.sapUshellTile:has(\'.sapMText:contains(\"Track Purchase Order\")\')'))
+```
+
+#### Select an element from list
+Protractor ElementArrayFinder that is returned from element.all() has a .get(<index>) method that will return
+an element by its index. But chaining several levels of .get() could slowdown the test execution as every
+interaction requires a browser roundtrip. Additionally whole expression becomes cumbersome and hard to read.
+Much simpler is to use the jquery [:eq()](https://api.jquery.com/eq-selector/) pseudo-selector.
+```javascript
+element(by.jq('.sapMList > ul > li:eq(1)')),
+```
 
 ## Test code
 
@@ -99,3 +106,23 @@ if('compare two values',function(){
 ## Debugging
 
 ### use browser.pause()
+
+
+
+# Advanced Ideas
+
+## Component selectors (__not available yet__).
+In the application testing approach we use hierarchical class selectors composed of UI5 component main
+(marker) class names. This hierarchical composition is important to guarantee the stability of selectors,
+check [here](docs/applicationtesting.md) for further details. But the usage of component classes is somehow
+problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed
+to be backward-compatible so an approach to mitigate this issue is to use component selectors.
+Component selector is a css-like selector that works on the UI5 component tree and not on the DOM tree.
+This selector is handled by ToolsAPI inside recent UI5 versions (>1.34) and integrates nicely with
+(UI5 Inspector)[https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo]
+````
+masterSection = {
+  filterIcon: element(by.comp('sap.m.PageFooter sap.m.Button[label="filter"]')
+}
+masterSection.filterIcon.click();
+````
