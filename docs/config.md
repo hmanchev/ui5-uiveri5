@@ -189,6 +189,10 @@ timeouts: {
   defaultTimeoutInterval: '30000'
 }
 ```
+Override timeouts from command-line:
+```
+--timeouts.defaultTmeoutInterval=50000
+```
 Please check [protractor timeouts](https://github.com/angular/protractor/blob/master/docs/timeouts.md)
 for their meaning.
 
