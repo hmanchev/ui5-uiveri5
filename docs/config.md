@@ -9,6 +9,11 @@ profile overwrites build-in defaults.
 If config file is not provided on command line, a file with name 'conf.js' is looked up in the current working directory.
 If found, it is used. If not found, the default conf/default.conf.js file is used.
 
+#### Boolean argumens
+Use the 'no-' syntax for specifying values of boolean parameters
+```
+$ visualtest --no-useSeleniumJar
+```
 ### Browser runtimes
 
 Browser runtime is an object of type: 'src/runtimeResolver.js/{Runtime}' that specifies the browser and platform
@@ -245,7 +250,7 @@ Execute the visual test
 $ grunt visualtest --browsers=browser:*:android --seleniumAddress=http://127.0.0.1:4723/wd/hub --baseUrl=http://10.0.2.2:8080
 ```
 ___Limitation___ Currently screenshots are not supported on default browser on android emulator so disable
-them with --take=false
+them with --no-take
 
 ### Load page and login from test
 Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.to() with required URL. You could override
