@@ -48,6 +48,14 @@ describe("cliParser", function() {
         browserName:'safari',browserVersion:'*',platformName:'ios',platformVersion:'9.1',platformResolution:'*',
         deviceName:'iPad Air 2',ui5:{theme:'bluecrystal',direction:'ltr',mode:'cozy'}}]);
     });
+
+    it('Should parse JSON-formatted arguments in browsers key', function () {
+      var argvStub = new ArgvStub();
+      argvStub.browsers = '{"browserName":"ie"}';
+      var config = cliParser.parse(argvStub);
+
+      expect(config.browsers).toEqual([{browserName:'ie'}]);
+    });
   });
 
   describe("Should parse generic configs from command-line", function() {

@@ -72,20 +72,20 @@ CliParser.prototype.parse = function(argv){
 
 function _parseBrowsersString(browsersString){
   var confBrowsers = [];
+  var confBrowser;
 
-  var browsers = browsersString.split(/,(?=[^\}]*(?:\{|$))/);
-  browsers.forEach(function(browser){
-    var confBrowser;
-    /*
-     if (browser.indexOf('{') !== -1 && browser.indexOf('}') !== -1){
-     // JSON formatting found => parse it
-     confBrowser = JSON.parse(browser);
-     } else
-     */
-    if (browser.indexOf(':') !== -1) {
-      // : separator found => split on them
+  if (browsersString.indexOf('{') !== -1 && browsersString.indexOf('}') !== -1) {
+    confBrowser = {};
+    confBrowser = JSON.parse('[' + browsersString + ']');
+    confBrowser.forEach(function(browser) {
+      confBrowsers.push(browser);
+    });
+  } else {
+    var browsers = browsersString.split(',');
+    browsers.forEach(function(browser) {
       var browserParams = browser.split(':');
       confBrowser = {};
+
       if (browserParams[0]) {
         confBrowser.browserName = browserParams[0];
       }
@@ -116,15 +116,10 @@ function _parseBrowsersString(browsersString){
           confBrowser.ui5.mode = browserParams[8];
         }
       }
-      // capabilities could not be given in this notation
-    } else {
-      // no formatting found => only browser name
-      confBrowser = {
-        browserName: browser
-      };
-    }
-    confBrowsers.push(confBrowser);
-  });
+
+      confBrowsers.push(confBrowser);
+    });
+  }
 
   return confBrowsers;
 }
