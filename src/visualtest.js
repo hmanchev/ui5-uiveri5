@@ -168,7 +168,7 @@ function run(config) {
         var currentRuntime = runtimeResolver.resolveRuntimeFromCapabilities(currentCapabilities);
 
         // register screenshot provider
-        var screenshotProvider = moduleLoader.loadModuleIfAvailable('screenshotProvider');
+        var screenshotProvider = moduleLoader.loadModuleIfAvailable('screenshotProvider',[currentCapabilities]);
         if(screenshotProvider){
           screenshotProvider.register();
         }
