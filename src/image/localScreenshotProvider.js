@@ -3,6 +3,7 @@ var DEFAULT_TAKE = true;
 var webdriver = protractorModule.require('selenium-webdriver');
 var pngCrop = require('png-crop');
 var _ = require('lodash');
+var PNG = require('pngjs').PNG;
 
 /**
  * @typedef LocalScreenshotProviderConfig
@@ -164,15 +165,16 @@ LocalScreenshotProvider.prototype._getBrowserScreenshot = function(fullScreensho
  */
 LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, element) {
   var that = this;
+  var deferCropScreenshot = webdriver.promise.defer();
 
   if(element) {
     var originalImageBuffer = new Buffer(browserScreenshot, 'base64');
     var cropConfig = {};
     // find element dimensions and location
-    return element.getSize().then(function (elementSize) {
+    element.getSize().then(function (elementSize) {
       cropConfig.width = elementSize.width;
       cropConfig.height = elementSize.height;
-      return element.getLocation().then(function (elementLocation) {
+      element.getLocation().then(function (elementLocation) {
         cropConfig.top = elementLocation.y;
         cropConfig.left = elementLocation.x;
         var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
@@ -186,14 +188,30 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
             cropConfig.top = Math.round(cropConfig.top * remoteOptions.scaling.y);
           }
         }
-        return that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
-          return webdriver.promise.fulfilled(croppedElement);
+        var png = new PNG();
+        png.parse(originalImageBuffer, function (err, data) {
+          if(err) {
+            deferCropScreenshot.reject(new Error('Cannot crop the screenshot: ' + err));
+          } else {
+            if (cropConfig.left > data.width || cropConfig.top > data.height) {
+              deferCropScreenshot.reject(new Error('Cannot crop element because is outside of the view port. ' +
+                'View port: width=' + data.width + ', height=' + data.height + '. Element properties: width=' +
+                cropConfig.width + ', height=' + cropConfig.height + ', left=' + cropConfig.left + ', top=' +
+                cropConfig.top));
+            } else {
+              that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
+                deferCropScreenshot.fulfill(croppedElement);
+              });
+            }
+          }
         });
       });
     });
   } else {
-    return webdriver.promise.fulfilled(browserScreenshot);
+    deferCropScreenshot.fulfill(browserScreenshot);
   }
+
+  return deferCropScreenshot.promise;
 };
 
 /**
@@ -209,6 +227,7 @@ LocalScreenshotProvider.prototype._crop = function(originalImageBuffer, cropConf
 
   that.logger.debug('Cropping the screenshot with parameters: width=' + cropConfig.width +
     ', height=' + cropConfig.height + ', top=' + cropConfig.top + ', left=' + cropConfig.left);
+
   pngCrop.cropToStream(originalImageBuffer, cropConfig, function (err, outputStream) {
     if (err) {
       deferCrop.reject(new Error('Cannot crop the screenshot: ' + err));
@@ -226,6 +245,7 @@ LocalScreenshotProvider.prototype._crop = function(originalImageBuffer, cropConf
       });
     }
   });
+
   return deferCrop.promise;
 };
 
