@@ -169,23 +169,23 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
 
   if(element) {
     var originalImageBuffer = new Buffer(browserScreenshot, 'base64');
-    var cropConfig = {};
+    var elementDimensions = {};
     // find element dimensions and location
     element.getSize().then(function (elementSize) {
-      cropConfig.width = elementSize.width;
-      cropConfig.height = elementSize.height;
+      elementDimensions.width = elementSize.width;
+      elementDimensions.height = elementSize.height;
       element.getLocation().then(function (elementLocation) {
-        cropConfig.top = elementLocation.y;
-        cropConfig.left = elementLocation.x;
+        elementDimensions.top = elementLocation.y;
+        elementDimensions.left = elementLocation.x;
         var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
         if (remoteOptions && remoteOptions.scaling) {
           if (remoteOptions.scaling.x && remoteOptions.scaling.x > 0 && remoteOptions.scaling.x !== 1) {
-            cropConfig.width = Math.round(cropConfig.width * remoteOptions.scaling.x);
-            cropConfig.left = Math.round(cropConfig.left * remoteOptions.scaling.x);
+            elementDimensions.width = Math.round(elementDimensions.width * remoteOptions.scaling.x);
+            elementDimensions.left = Math.round(elementDimensions.left * remoteOptions.scaling.x);
           }
           if (remoteOptions.scaling.y && remoteOptions.scaling.y > 0 && remoteOptions.scaling.y !== 1) {
-            cropConfig.height = Math.round(cropConfig.height * remoteOptions.scaling.y);
-            cropConfig.top = Math.round(cropConfig.top * remoteOptions.scaling.y);
+            elementDimensions.height = Math.round(elementDimensions.height * remoteOptions.scaling.y);
+            elementDimensions.top = Math.round(elementDimensions.top * remoteOptions.scaling.y);
           }
         }
         var png = new PNG();
@@ -193,12 +193,36 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
           if(err) {
             deferCropScreenshot.reject(new Error('Cannot crop the screenshot: ' + err));
           } else {
-            if (cropConfig.left > data.width || cropConfig.top > data.height) {
+            // check if the element is completely outside the view port
+            if (elementDimensions.left > data.width || elementDimensions.top > data.height ||
+              ((elementDimensions.width + elementDimensions.left) < 0) ||
+              ((elementDimensions.height + elementDimensions.top) < 0)) {
               deferCropScreenshot.reject(new Error('Cannot crop element because is outside of the view port. ' +
                 'View port: width=' + data.width + ', height=' + data.height + '. Element properties: width=' +
-                cropConfig.width + ', height=' + cropConfig.height + ', left=' + cropConfig.left + ', top=' +
-                cropConfig.top));
+                elementDimensions.width + ', height=' + elementDimensions.height + ', left=' + elementDimensions.left +
+                ', top=' + elementDimensions.top));
             } else {
+              // element is partially or completely in the view port
+              var cropConfig = {};
+
+              if(elementDimensions.left < 0) {
+                cropConfig.left = 0;
+                cropConfig.width = Math.min((elementDimensions.width + elementDimensions.left), data.width);
+              } else {
+                cropConfig.left = elementDimensions.left;
+                cropConfig.width = (elementDimensions.width + elementDimensions.left) < data.width ?
+                  elementDimensions.width : (data.width - elementDimensions.left);
+              }
+
+              if(elementDimensions.top < 0) {
+                cropConfig.top = 0;
+                cropConfig.height = Math.min((elementDimensions.height + elementDimensions.top), data.height);
+              } else {
+                cropConfig.top = elementDimensions.top;
+                cropConfig.height = (elementDimensions.height + elementDimensions.top) < data.height ?
+                  elementDimensions.height : (data.height - elementDimensions.top);
+              }
+
               that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
                 deferCropScreenshot.fulfill(croppedElement);
               });
