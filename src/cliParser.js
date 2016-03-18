@@ -71,19 +71,43 @@ CliParser.prototype.parse = function(argv){
 };
 
 function _parseBrowsersString(browsersString){
+  var browsers = [];
+  var browser = '';
+  var openBracketCount = 0;
+
+  for (var i = 0; i < browsersString.length; i++) {
+    if(browsersString[i] === '{') {
+      openBracketCount++;
+      browser += browsersString[i];
+    } else if (browsersString[i] === '}') {
+      openBracketCount--;
+      browser += browsersString[i];
+      if(openBracketCount === 0 && i === (browsersString.length-1)) {
+        browsers.push(browser);
+      }
+    } else if (browsersString[i] === ',') {
+      if(openBracketCount === 0) {
+        browsers.push(browser);
+        browser = '';
+      } else {
+        browser += browsersString[i];
+      }
+    } else {
+      browser += browsersString[i];
+      if(i === (browsersString.length-1)) {
+        browsers.push(browser);
+      }
+    }
+  }
+
   var confBrowsers = [];
   var confBrowser;
 
-  if (browsersString.indexOf('{') !== -1 && browsersString.indexOf('}') !== -1) {
-    confBrowser = {};
-    confBrowser = JSON.parse('[' + browsersString + ']');
-    confBrowser.forEach(function(browser) {
-      confBrowsers.push(browser);
-    });
-  } else {
-    var browsers = browsersString.split(',');
-    browsers.forEach(function(browser) {
-      var browserParams = browser.split(':');
+  browsers.forEach(function(browserString) {
+    if (browserString.indexOf('{') !== -1 && browserString.indexOf('}') !== -1) {
+      confBrowsers.push(JSON.parse(browserString));
+    } else {
+      var browserParams = browserString.split(':');
       confBrowser = {};
 
       if (browserParams[0]) {
@@ -118,8 +142,8 @@ function _parseBrowsersString(browsersString){
       }
 
       confBrowsers.push(confBrowser);
-    });
-  }
+    }
+  });
 
   return confBrowsers;
 }
