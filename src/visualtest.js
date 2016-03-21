@@ -295,7 +295,8 @@ function run(config) {
                   specUrl += '&';
                 }
                 specUrl += value;
-              })
+              });
+              specUrl = _.template(specUrl)(browser.testrunner.runtime.ui5);
             }
 
             // open test page
