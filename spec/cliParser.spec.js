@@ -56,6 +56,16 @@ describe("cliParser", function() {
 
       expect(config.browsers).toEqual([{browserName:'ie'}]);
     });
+
+    it('Should parse mixed formatted arguments in browsers key', function () {
+      var argvStub = new ArgvStub();
+      argvStub.browsers = '{"browserName":"ie","ui5":{"theme":"bluecrystal"}},chrome,firefox:*:windows:*:*:*:bluecrystal:ltr:cozy';
+      var config = cliParser.parse(argvStub);
+
+      expect(config.browsers).toEqual([{browserName:'ie',ui5:{theme:'bluecrystal'}},{browserName:'chrome'},{
+        browserName:'firefox',browserVersion:'*',platformName:'windows',platformVersion:'*',platformResolution:'*',
+        deviceName:'*',ui5:{theme:'bluecrystal',direction:'ltr',mode:'cozy'}}]);
+    });
   });
 
   describe("Should parse generic configs from command-line", function() {
