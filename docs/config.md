@@ -249,8 +249,6 @@ Execute the visual test
 ```
 $ grunt visualtest --browsers=browser:*:android --seleniumAddress=http://127.0.0.1:4723/wd/hub --baseUrl=http://10.0.2.2:8080
 ```
-___Limitation___ Currently screenshots are not supported on default browser on android emulator so disable
-them with --no-take
 
 ### Load page and login from test
 Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.to() with required URL. You could override
