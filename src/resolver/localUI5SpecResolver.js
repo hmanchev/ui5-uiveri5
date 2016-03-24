@@ -110,6 +110,12 @@ LocalUI5SpecResolver.prototype.resolve = function(){
         } else {
           that.logger.debug('Suites found: ' + suitePaths.length);
 
+          // resolve spec filter
+          var specFilters = that.specFilter !== '*' ? that.specFilter.split(',') : [];
+
+          //resolve lib filter
+          var libFilters = that.libFilter !== '*' ? that.libFilter.split(',') : [];
+
           // resolve specs from each suite
           suitePaths.forEach(function (suitePath) {
 
@@ -129,7 +135,7 @@ LocalUI5SpecResolver.prototype.resolve = function(){
             var libName = suitePathMatch[2].slice(0, -1).replace(/\//g, '.');  // remove trailing '/' for consistency
 
             // filter out this lib if necessary
-            if (that.libFilter !== '*' && that.libFilter.toLowerCase().indexOf(libName.toLowerCase()) == -1) {
+            if (libFilters.length > 0 && !that._isInArray(libFilters, libName)) {
               that.logger.debug('Drop lib: ' + libName + ' that does not match lib filter: ' + that.libFilter);
               return;
             }
@@ -156,7 +162,7 @@ LocalUI5SpecResolver.prototype.resolve = function(){
               var specName = specFileNameMatch[1];
 
               // apply spec filter
-              if (that.specFilter !== '*' && that.specFilter.toLowerCase().indexOf(specName.toLowerCase()) == -1) {
+              if (specFilters.length > 0 && !that._isInArray(specFilters, specName)) {
                 that.logger.debug('Drop spec: ' + specName + ' that does not match spec filter: ' + that.specFilter);
                 return;
               }
@@ -182,6 +188,12 @@ LocalUI5SpecResolver.prototype.resolve = function(){
         }
       });
     });
+  });
+};
+
+LocalUI5SpecResolver.prototype._isInArray = function(filterArray, searchFor) {
+  return filterArray.some(function(item) {
+    return item.toLowerCase() === searchFor.toLowerCase();
   });
 };
 

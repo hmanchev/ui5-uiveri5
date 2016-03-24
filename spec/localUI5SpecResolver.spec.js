@@ -30,4 +30,40 @@ describe("LocalUI5SpecResolver", function () {
       done();
     });
   });
+
+  it("Should filter out unnecessary specs", function(done) {
+    var specResolver = new LocalUI5SpecResolver(
+      {branch: 'overwrite',specFilter: 'Comp11,Comp2'},{suiteRootPath: __dirname + '/localUI5SpecResolver/openui5'},logger);
+    specResolver.resolve().then(function(specs){
+      expect(specs.length).toEqual(2);
+      done();
+    }).catch(function(error){
+      fail(error);
+      done();
+    });
+  });
+
+  it("Should filter specs only with spec filter", function(done) {
+    var specResolver = new LocalUI5SpecResolver(
+      {branch: 'overwrite',specFilter: 'Comp1'},{suiteRootPath: __dirname + '/localUI5SpecResolver'},logger);
+    specResolver.resolve().then(function(specs){
+      expect(specs.length).toEqual(2);
+      done();
+    }).catch(function(error){
+      fail(error);
+      done();
+    });
+  });
+
+  it("Should filter specs only with lib filter", function(done) {
+    var specResolver = new LocalUI5SpecResolver(
+      {branch: 'overwrite',libFilter: 'sap.m,sap.gantt'},{suiteRootPath: __dirname + '/localUI5SpecResolver'},logger);
+    specResolver.resolve().then(function(specs){
+      expect(specs.length).toEqual(4);
+      done();
+    }).catch(function(error){
+      fail(error);
+      done();
+    });
+  });
 });
