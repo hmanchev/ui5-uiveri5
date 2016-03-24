@@ -9,6 +9,7 @@ var DEFAULT_COMPARE = true;
 var DEFAULT_UPDATE = false;
 var DEFAULT_THRESHOLD_PERCENTAGE = 0.1;
 var DEFAULT_THRESHOLD_PIXELS = 200;
+var DEFAULT_IMAGE_NAME_REGEX = /^[\w\-]{3,40}$/;
 
 /**
  * @typedef LocalComparisonProviderConfig
@@ -44,6 +45,7 @@ function LocalComparisonProvider(config,instanceConfig,logger,storageProvider) {
   this.storageProvider = storageProvider;
   this.thresholdPercentage = config.thresholdPercentage || DEFAULT_THRESHOLD_PERCENTAGE;
   this.thresholdPixels = config.thresholdPixels || DEFAULT_THRESHOLD_PIXELS;
+  this.imgNameRegEx = config.imgNameRegEx || DEFAULT_IMAGE_NAME_REGEX;
 
   this.take = typeof config.take !== 'undefined' ? config.take : DEFAULT_COMPARE;
   this.compare = typeof config.compare !== 'undefined' ? config.compare : DEFAULT_COMPARE;
@@ -68,7 +70,19 @@ LocalComparisonProvider.prototype.register = function (matchers) {
           pass: defer
         };
 
-        if(that.take && that.compare) {
+        if(!expectedImageName.match(that.imgNameRegEx)) {
+          result.message = 'The image name is not correct! Image name: ' + expectedImageName + ' ; length: '
+            + expectedImageName.length + '. ';
+
+          that.logger.debug(result.message + 'RegExp: ' + that.imgNameRegEx);
+
+          if (that.imgNameRegEx === DEFAULT_IMAGE_NAME_REGEX) {
+            result.message += 'Image name should be between 3 and 40 characters and contain only: A-Za-z0-9_-';
+          } else {
+            result.message += 'Image name regExp: ' + that.imgNameRegEx;
+          }
+          defer.fulfill(false);
+        } else if(that.take && that.compare) {
           var actualImageBuffer = new Buffer(actEncodedImage, 'base64');
 
           // get the reference image from storage provider
