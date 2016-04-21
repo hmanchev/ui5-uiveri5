@@ -1,6 +1,7 @@
 
 var _ = require('lodash');
 var proxyquire =  require('proxyquire');
+var url = require('url');
 
 var DEFAULT_CLIENTSIDESCRIPTS = './clientsidescripts';
 var DEFAULT_CONNECTION_NAME = 'direct';
@@ -287,20 +288,19 @@ function run(config) {
             // so no need to synchronize manually with callbacks/promises
 
             // add request params
-            var specUrl = spec.contentUrl;
             if (config.baseUrlQuery && config.baseUrlQuery.length >0){
-              specUrl += '?';
+              var parsedSpecUrl = url.parse(spec.contentUrl);
               config.baseUrlQuery.forEach(function(value,index){
                 if (index > 0){
-                  specUrl += '&';
+                  parsedSpecUrl.search += '&';
                 }
-                specUrl += value;
+                parsedSpecUrl.search += value;
               });
-              specUrl = _.template(specUrl)(browser.testrunner.runtime.ui5);
+              spec.contentUrl = _.template(url.format(parsedSpecUrl))(browser.testrunner.runtime.ui5);
             }
 
             // open test page
-            browser.testrunner.navigation.to(specUrl,'auth').then(function () {
+            browser.testrunner.navigation.to(spec.contentUrl,'auth').then(function () {
               // call storage provider beforeEach hook
               if (storageProvider && storageProvider.onBeforeEachSpec) {
                 storageProvider.onBeforeEachSpec(spec);
