@@ -90,22 +90,26 @@ LocalComparisonProvider.prototype.register = function (matchers) {
             function (refImageResult) {
               // check if reference image was found
               if (refImageResult == null){
+                var msg = 'Image comparison enabled but no reference image found: '
+                  + expectedImageName;
+
                 if(that.update) {
+                  msg += ' ,update enabled so storing current as reference';
                   // reference image was not found => either update or throw error
-                  that.logger.debug('Image comparison enabled but no reference image found: ' + expectedImageName +
-                  ' ,update enabled so storing current as reference' );
+                  that.logger.debug(msg);
                   var res = {
-                    message: 'Image comparison enabled but no reference image found: ' + expectedImageName +
-                    ' ,update enabled so storing current as reference'
+                    message: msg
                   };
 
                   that.storageProvider.storeRefImage(expectedImageName,actualImageBuffer)
                     .then(function(refImageUrl){
                       // update details and store message
-                      res.details = {refImageUrl:refImageUrl};
+                      res.details = {
+                        refImageUrl:refImageUrl
+                      };
                       result.message = JSON.stringify(res);
-                      //pass
-                      defer.fulfill({message: result.message});
+                      // fail
+                      defer.fulfill(false);
                     })
                     .catch(function(error){
                       result.message = error.stack;
@@ -113,10 +117,11 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                       defer.fulfill(false);
                     });
                 } else {
-                  that.logger.debug('Image comparison enabled but no reference image found: ' + expectedImageName +
-                  ' ,update disabled');
-                  result.message = 'Image comparison enabled but no reference image found: ' + expectedImageName +
-                  ' ,update disabled';
+                  msg += ' ,update disabled';
+                  that.logger.debug(msg);
+                  result.message = msg;
+
+                  // fail
                   defer.fulfill(false);
                 }
               } else {
@@ -152,15 +157,13 @@ LocalComparisonProvider.prototype.register = function (matchers) {
 
                     // check the mismatch percentage and the mismatch pixel count
                     if (mismatchPixelsCount > -1 && mismatchPixelsCount < resolvedPixelThreshold) {
-                      that.logger.debug('Image comparison passed, reference image: ' + expectedImageName +
-                      ', difference in percentages: ' + mismatchPercentage + '% (threshold: ' + that.thresholdPercentage
-                      + '%), difference in pixels: ' + mismatchPixelsCount + ' (threshold: ' + resolvedPixelThreshold
-                      + ')');
-                      result.message = JSON.stringify({
-                        message: 'Image comparison passed, reference image: ' + expectedImageName +
+                      var msg = 'Image comparison passed, reference image: ' + expectedImageName +
                         ', difference in percentages: ' + mismatchPercentage + '% (threshold: ' + that.thresholdPercentage
                         + '%), difference in pixels: ' + mismatchPixelsCount + ' (threshold: ' + resolvedPixelThreshold
-                        + ')',
+                        + ')';
+                      that.logger.debug(msg);
+                      result.message = JSON.stringify({
+                        message: msg,
                         details: {
                           refImageUrl: refImageResult.refImageUrl
                         }
@@ -168,102 +171,81 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                       // pass
                       defer.fulfill({message: result.message});
                     } else {
-                      // handle image updates - no need to show error
-                      if (that.update) {
-                        that.logger.debug('Image comparison failed, updating reference image: ' + expectedImageName +
-                        ' with the current screenshot');
-                        var res = {
-                          message: 'Image comparison failed, updating reference image: ' + expectedImageName +
-                          ' with the current screenshot'
-                        };
-
-                        that.storageProvider.storeRefImage(expectedImageName, actualImageBuffer)
-                          .then(function (refImageUrl) {
-                            // update details and store message
-                            res.details = {
-                              refImageUrl: refImageUrl
-                            };
-                            result.message = JSON.stringify(res);
-                            // pass
-                            defer.fulfill({message: result.message});
-                          })
-                          .catch(function (error) {
-                            result.message = error.stack;
-                            //fail
-                            defer.fulfill(false);
-                          });
-                      } else {
-                        var resMessage;
-                        if (mismatchPixelsCount == -1) {
-                          that.logger.debug('Image comparison failed, reference image: ' + expectedImageName +
-                          ', difference in image size with: W=' + comparisonResult.dimensionDifference.width +
-                          'px, H=' + comparisonResult.dimensionDifference.height + 'px');
-                          resMessage = 'Image comparison failed, reference image: ' + expectedImageName +
+                      var msg;
+                      if (mismatchPixelsCount == -1) {
+                        msg = 'Image comparison failed, reference image: ' + expectedImageName +
                           ', difference in image size with: W=' + comparisonResult.dimensionDifference.width +
                           'px, H=' + comparisonResult.dimensionDifference.height + 'px';
-                        } else {
-                          that.logger.debug('Image comparison failed, reference image: ' + expectedImageName +
-                          ', difference in percentages: ' + mismatchPercentage + '% (threshold: ' + that.thresholdPercentage
-                          + '%), difference in pixels: ' + mismatchPixelsCount + ' (threshold: ' + resolvedPixelThreshold
-                          + ')');
-                          resMessage = 'Image comparison failed, reference image: ' + expectedImageName +
+                      } else {
+                        msg = 'Image comparison failed, reference image: ' + expectedImageName +
                           ', difference in percentages: ' + mismatchPercentage + '% (threshold: '
                           + that.thresholdPercentage + '%), difference in pixels: ' + mismatchPixelsCount
                           + ' (threshold: ' + resolvedPixelThreshold + ')';
-                        }
-
-                        var res = {
-                          message: resMessage,
-                          details: {
-                            refImageUrl: refImageResult.refImageUrl
-                          }
-                        };
-
-                        // store actual image
-                        var storeActPromise =
-                          that.storageProvider.storeActImage(expectedImageName, actualImageBuffer)
-                            .then(function (actImageUrl) {
-                              res.details.actImageUrl = actImageUrl;
-                            });
-
-                        // store diff image
-                        var storeDiffPromise = Q.Promise(function (resolveFn, rejectFn) {
-                          var diffImageChunks = [];
-                          var diffImageReadStream = comparisonResult.getDiffImage().pack();
-                          diffImageReadStream.on('data', function (chunk) {
-                            diffImageChunks.push(chunk);
-                          });
-                          diffImageReadStream.on('error', function (error) {
-                            rejectFn(error);
-                          });
-                          diffImageReadStream.on('end', function () {
-                            var diffImageBuffer = Buffer.concat(diffImageChunks);
-                            that.storageProvider.storeDiffImage(expectedImageName, diffImageBuffer)
-                              .then(function (diffImageUrl) {
-                                res.details.diffImageUrl = diffImageUrl;
-                                resolveFn();
-                              })
-                              .catch(function (error) {
-                                rejectFn(error);
-                              });
-                          });
-
-                        });
-
-                        // wait for both promises and finish the match
-                        Q.all([storeActPromise, storeDiffPromise])
-                          .then(function () {
-                            // add details
-                            result.message = JSON.stringify(res);
-                            // fail
-                            defer.fulfill(false);
-                          })
-                          .catch(function (error) {
-                            result.message = error.stack;
-                            // fail
-                            defer.fulfill(false);
-                          });
                       }
+
+                      // handle image updates
+                      if (that.update) {
+                        msg += ' ,update enabled so storing current as reference';
+                      } else {
+                        msg += ' ,update disabled';
+                      }
+                      that.logger.debug(msg);
+                      var res = {
+                        message: msg,
+                        details: {
+                          refImageUrl: refImageResult.refImageUrl
+                        }
+                      };
+
+                      // store ref image
+                      var storeRefPromise;
+                      if (that.update) {
+                        storeRefPromise =
+                          that.storageProvider.storeRefImage(expectedImageName, actualImageBuffer);
+                      }
+
+                      // store actual image
+                      var storeActPromise =
+                        that.storageProvider.storeActImage(expectedImageName, actualImageBuffer)
+                          .then(function (actImageUrl) {
+                            res.details.actImageUrl = actImageUrl;
+                          });
+
+                      // store diff image
+                      var storeDiffPromise = Q.Promise(function (resolveFn, rejectFn) {
+                        var diffImageChunks = [];
+                        var diffImageReadStream = comparisonResult.getDiffImage().pack();
+                        diffImageReadStream.on('data', function (chunk) {
+                          diffImageChunks.push(chunk);
+                        });
+                        diffImageReadStream.on('error', function (error) {
+                          rejectFn(error);
+                        });
+                        diffImageReadStream.on('end', function () {
+                          var diffImageBuffer = Buffer.concat(diffImageChunks);
+                          that.storageProvider.storeDiffImage(expectedImageName, diffImageBuffer)
+                            .then(function (diffImageUrl) {
+                              res.details.diffImageUrl = diffImageUrl;
+                              resolveFn();
+                            })
+                            .catch(function (error) {
+                              rejectFn(error);
+                            });
+                        });
+                      });
+
+                      // wait for both promises and finish the match
+                      Q.all([storeRefPromise,storeActPromise, storeDiffPromise])
+                        .then(function () {
+                          result.message = JSON.stringify(res);
+                          // fail
+                          defer.fulfill(false);
+                        })
+                        .catch(function (error) {
+                          result.message = error.stack;
+                          // fail
+                          defer.fulfill(false);
+                        });
                     }
                   }
                 );
@@ -274,8 +256,9 @@ LocalComparisonProvider.prototype.register = function (matchers) {
               defer.fulfill(false);
             });
         } else {
-          that.logger.debug('Comparison or screenshot taking disabled so skipping comparison');
-          result.message = 'Comparison or screenshot taking disabled so skipping comparison';
+          var msg = 'Comparison or screenshot taking disabled so skipping comparison';
+          that.logger.debug(msg);
+          result.message = msg;
 
           // pass
           defer.fulfill({message: result.message});

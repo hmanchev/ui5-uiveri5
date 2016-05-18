@@ -93,8 +93,6 @@ RemoteStorageProvider.prototype.readRefImage = function(refImageName){
                       refImageUrl: refImageUrl
                     });
                   }
-
-
                 }
               }
             );
