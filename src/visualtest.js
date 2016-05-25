@@ -290,6 +290,9 @@ function run(config) {
             // add request params
             if (config.baseUrlQuery && config.baseUrlQuery.length >0){
               var parsedSpecUrl = url.parse(spec.contentUrl);
+              if (parsedSpecUrl.search == null) {
+                parsedSpecUrl.search = "";
+              }
               config.baseUrlQuery.forEach(function(value,index){
                 if (index > 0){
                   parsedSpecUrl.search += '&';
