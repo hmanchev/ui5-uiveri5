@@ -119,7 +119,7 @@ StatisticCollector.prototype.specStarted = function(jasmineSpec){
   };
 };
 
-StatisticCollector.prototype.specDone = function(jasmineSpec) {
+StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
   // compute duration
   this.currentSpec.statistic.duration = new Date() - this.currentSpec.statistic.duration;
 
@@ -191,10 +191,15 @@ StatisticCollector.prototype.specDone = function(jasmineSpec) {
     passed: jasmineSpec.passedExpectations.length
   };
 
+  if (specMeta && specMeta.controlName) {
+    this.currentSpec.meta = {};
+    this.currentSpec.meta.controlName = specMeta.controlName;
+  }
+
   this.currentSuite.specs.push(this.currentSpec);
 };
 
-StatisticCollector.prototype.suiteDone = function(){
+StatisticCollector.prototype.suiteDone = function(jasmineSuite, suiteMeta){
   // compute duration
   this.currentSuite.statistic.duration = new Date() - this.currentSuite.statistic.duration;
 
@@ -244,6 +249,11 @@ StatisticCollector.prototype.suiteDone = function(){
     },
     passed: passedExpectationsCount
   };
+
+  if (suiteMeta && suiteMeta.controlName) {
+    this.currentSuite.meta = {};
+    this.currentSuite.meta.controlName = suiteMeta.controlName;
+  }
 
   this.overview.suites.push(this.currentSuite);
 };

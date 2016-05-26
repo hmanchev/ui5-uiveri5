@@ -160,6 +160,10 @@ function run(config) {
       // publish visualtest configs on protractor's browser object
       browser.testrunner = {};
       browser.testrunner.config = config;
+      browser.testrunner.currentSuite = {};
+      browser.testrunner.currentSuite.meta = {};
+      browser.testrunner.currentSpec = {};
+      browser.testrunner.currentSpec.meta = {};
 
       var matchers = {};
       var storageProvider;
@@ -386,10 +390,12 @@ function run(config) {
           statisticCollector.specStarted(jasmineSpec);
         },
         specDone: function(jasmineSpec){
-          statisticCollector.specDone(jasmineSpec);
+          statisticCollector.specDone(jasmineSpec, browser.testrunner.currentSpec.meta);
+          browser.testrunner.currentSpec.meta = {};
         },
         suiteDone: function(jasmineSuite){
-          statisticCollector.suiteDone(jasmineSuite);
+          statisticCollector.suiteDone(jasmineSuite, browser.testrunner.currentSuite.meta);
+          browser.testrunner.currentSuite.meta = {};
         },
         jasmineDone: function(){
           statisticCollector.jasmineDone();
@@ -444,6 +450,20 @@ function run(config) {
 
         return resultPromise;
       }};
+
+      // set meta data
+      browser.testrunner.meta = {
+        setSuiteControlName: function (suiteControlName) {
+          browser.controlFlow().execute(function () {
+            browser.testrunner.currentSuite.meta.controlName = suiteControlName;
+          });
+        },
+        setSpecControlName: function(specControlName) {
+          browser.controlFlow().execute(function () {
+            browser.testrunner.currentSpec.meta.controlName = specControlName;
+          });
+        }
+      };
 
       // register reporters
       var jasmineEnv = jasmine.getEnv();
