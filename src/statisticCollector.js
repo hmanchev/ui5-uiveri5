@@ -119,7 +119,7 @@ StatisticCollector.prototype.specStarted = function(jasmineSpec){
   };
 };
 
-StatisticCollector.prototype.specDone = function(jasmineSpec) {
+StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
   // compute duration
   this.currentSpec.statistic.duration = new Date() - this.currentSpec.statistic.duration;
 
@@ -180,6 +180,10 @@ StatisticCollector.prototype.specDone = function(jasmineSpec) {
     this.currentSpec.expectations.push(expectation);
   },this);
 
+  if (specMeta) {
+    this.currentSpec.meta = specMeta;
+  }
+
   // compute expectations statistic
   this.currentSpec.statistic.expectations = {
     total: jasmineSpec.failedExpectations.length + jasmineSpec.passedExpectations.length,
@@ -194,7 +198,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec) {
   this.currentSuite.specs.push(this.currentSpec);
 };
 
-StatisticCollector.prototype.suiteDone = function(){
+StatisticCollector.prototype.suiteDone = function(jasmineSuite, suiteMeta){
   // compute duration
   this.currentSuite.statistic.duration = new Date() - this.currentSuite.statistic.duration;
 
@@ -223,6 +227,10 @@ StatisticCollector.prototype.suiteDone = function(){
     this.currentSuite.status = 'failed';
   } else {
     this.currentSuite.status = 'passed';
+  }
+
+  if (suiteMeta) {
+    this.currentSuite.meta = suiteMeta;
   }
 
   // prepare specs statistic

@@ -290,6 +290,9 @@ function run(config) {
             // add request params
             if (config.baseUrlQuery && config.baseUrlQuery.length >0){
               var parsedSpecUrl = url.parse(spec.contentUrl);
+              if (parsedSpecUrl.search == null) {
+                parsedSpecUrl.search = "";
+              }
               config.baseUrlQuery.forEach(function(value,index){
                 if (index > 0){
                   parsedSpecUrl.search += '&';
@@ -383,10 +386,12 @@ function run(config) {
           statisticCollector.specStarted(jasmineSpec);
         },
         specDone: function(jasmineSpec){
-          statisticCollector.specDone(jasmineSpec);
+          statisticCollector.specDone(jasmineSpec, browser.testrunner.currentSpec._meta);
+          delete browser.testrunner.currentSpec._meta;
         },
         suiteDone: function(jasmineSuite){
-          statisticCollector.suiteDone(jasmineSuite);
+          statisticCollector.suiteDone(jasmineSuite, browser.testrunner.currentSuite._meta);
+          delete browser.testrunner.currentSuite._meta;
         },
         jasmineDone: function(){
           statisticCollector.jasmineDone();
@@ -441,6 +446,32 @@ function run(config) {
 
         return resultPromise;
       }};
+
+      // set meta data
+      browser.testrunner.currentSuite = {
+        set meta(value) {
+          browser.controlFlow().execute(function () {
+            browser.testrunner.currentSuite._meta = value;
+          });
+        },
+        get meta() {
+         return  {
+           set controlName(value){
+             browser.testrunner.currentSuite.meta = {controlName: value};
+           }
+         };
+        }
+      };
+      browser.testrunner.currentSpec = {
+        set meta(value) {
+          browser.controlFlow().execute(function () {
+            browser.testrunner.currentSpec._meta = value;
+          });
+        },
+        get meta() {
+          return  browser.testrunner.currentSpec._meta;
+        }
+      };
 
       // register reporters
       var jasmineEnv = jasmine.getEnv();
