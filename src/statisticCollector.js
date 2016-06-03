@@ -4,6 +4,8 @@
  * @type {Object}
  * @property {[Suite]} suites
  * @property {(passed|failed)} status - failed if at least one suite failed
+ * @property {Object} mata - execution metadata
+ * @property {Runtime} meta.runtime - runtime
  * @property {Object} statistic
  * @property {number} statistic.duration - duration in ms
  * @property {SuitesStatistic} statistic.suites
@@ -17,6 +19,8 @@
  * @property {string} name
  * @property {(passed|failed)} status - failed if at least one spec failed
  * @property {[Specs]} specs
+ * @property {Object} meta - suite metadata
+ * @property {string} meta.controlName - override control name
  * @property {Object} statistic
  * @property {number} statistic.duration - duration in ms
  * @property {SpecsStatistic} statistic.specs
@@ -29,6 +33,7 @@
  * @property {string} name
  * @property {(passed|failed|pending|disabled)} status
  * @property {[Expectation]} expectations
+ * @property {Object} meta - spec metadata
  * @property {Object} statistic
  * @property {number} statistic.duration - duration in ms
  * @property {ExpectationsStatistic} statistic.expectations
@@ -256,7 +261,7 @@ StatisticCollector.prototype.suiteDone = function(jasmineSuite, suiteMeta){
   this.overview.suites.push(this.currentSuite);
 };
 
-StatisticCollector.prototype.jasmineDone = function(){
+StatisticCollector.prototype.jasmineDone = function(runMeta){
   // compute duration
   this.overview.statistic.duration = new Date() - this.overview.statistic.duration;
 
@@ -288,6 +293,10 @@ StatisticCollector.prototype.jasmineDone = function(){
     this.overview.status = 'failed';
   } else {
     this.overview.status = 'passed';
+  }
+
+  if (runMeta) {
+    this.overview.meta = runMeta;
   }
 
   // prepare suites statistic

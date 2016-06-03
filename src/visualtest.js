@@ -394,7 +394,7 @@ function run(config) {
           delete browser.testrunner.currentSuite._meta;
         },
         jasmineDone: function(){
-          statisticCollector.jasmineDone();
+          statisticCollector.jasmineDone({runtime:browser.testrunner.runtime});
         }
       });
 
