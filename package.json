@@ -9,6 +9,7 @@
     "png-crop": "^0.0.1",
     "pngjs": "^2.2.0",
     "protractor": "~2.1.0",
+    "selenium-webdriver": "2.45.1",
     "proxyquire": "~1.4.0",
     "q": "^1.4.1",
     "request": "^2.67.0",
@@ -20,8 +21,7 @@
     "jasmine": "^2.2.1",
     "jasminewd2": "0.0.6",
     "multer": "^1.1.0",
-    "portfinder": "^0.4.0",
-    "selenium-webdriver": "2.45.1"
+    "portfinder": "^0.4.0"
   },
   "repository": {
     "type": "git",

@@ -450,8 +450,10 @@ function run(config) {
       // set meta data
       browser.testrunner.currentSuite = {
         set meta(value) {
-          browser.controlFlow().execute(function () {
-            browser.testrunner.currentSuite._meta = value;
+          beforeAll(function(){
+            browser.controlFlow().execute(function () {
+              browser.testrunner.currentSuite._meta = value;
+            });
           });
         },
         get meta() {
