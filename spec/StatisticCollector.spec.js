@@ -84,7 +84,9 @@ describe("StatisticCollector", function() {
           message: 'message',
           details:{
             key:'value'
-          }}),
+          },
+          imageName: 'expectedImageName'
+        }),
         matcherName: 'toLookAs',
         stack: 'stack'
       }]
@@ -97,6 +99,7 @@ describe("StatisticCollector", function() {
     var failedExpectation = overview.suites[0].specs[0].expectations[0];
     expect(failedExpectation.message).toBe('message');
     expect(failedExpectation.details.key).toBe('value');
+    expect(failedExpectation.imageName).toBe('expectedImageName');
   });
 
   it("Should handle passed expectation details", function() {
@@ -109,7 +112,7 @@ describe("StatisticCollector", function() {
         status: 'passed',
         matcherName: 'toBe',
         passed: {
-          message: JSON.stringify({message: 'fine',details: 'url'})
+          message: JSON.stringify({message: 'fine',details: 'url', imageName: 'expectedImageName'})
         }
       }],
       failedExpectations:[]
@@ -122,5 +125,6 @@ describe("StatisticCollector", function() {
     var passedExpectation = overview.suites[0].specs[0].expectations[0];
     expect(passedExpectation.message).toBe('fine');
     expect(passedExpectation.details).toBe('url');
+    expect(passedExpectation.imageName).toBe('expectedImageName');
   })
 });
