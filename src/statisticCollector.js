@@ -46,6 +46,7 @@
  * @property {string} matcher - matcher name like toLookAs,toBe
  * @property {ExpectationDetails} details
  * @property {string} message
+ * @property {string} imageName
  * @property {string} stack
  */
 
@@ -150,6 +151,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
       var messageJSON = JSON.parse(message);
       expectation.message = messageJSON.message;
       expectation.details = messageJSON.details;
+      expectation.imageName = messageJSON.imageName;
     } else {
       expectation.message = message;
     }
@@ -177,6 +179,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
         var messageJSON = JSON.parse(message);
         expectation.message = messageJSON.message;
         expectation.details = messageJSON.details;
+        expectation.imageName = messageJSON.imageName;
       } else {
         expectation.message = message;
       }

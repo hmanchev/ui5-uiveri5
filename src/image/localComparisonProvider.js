@@ -81,6 +81,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
           } else {
             result.message += 'Image name regExp: ' + that.imgNameRegEx;
           }
+          result.imageName = expectedImageName;
+
           defer.fulfill(false);
         } else if(that.take && that.compare) {
           var actualImageBuffer = new Buffer(actEncodedImage, 'base64');
@@ -98,7 +100,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                   // reference image was not found => either update or throw error
                   that.logger.debug(msg);
                   var res = {
-                    message: msg
+                    message: msg,
+                    imageName: expectedImageName
                   };
 
                   that.storageProvider.storeRefImage(expectedImageName,actualImageBuffer)
@@ -166,7 +169,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         message: msg,
                         details: {
                           refImageUrl: refImageResult.refImageUrl
-                        }
+                        },
+                        imageName: expectedImageName
                       });
                       // pass
                       defer.fulfill({message: result.message});
@@ -194,7 +198,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         message: msg,
                         details: {
                           refImageUrl: refImageResult.refImageUrl
-                        }
+                        },
+                        imageName: expectedImageName
                       };
 
                       // store ref image
