@@ -18,8 +18,13 @@ function PlainAuthenticator(config,instanceConfig,logger) {
  * @returns {webdriver.promise<undefined|Error>} - resolved when the page is full loaded
  */
 PlainAuthenticator.prototype.get = function(url){
+  var that = this;
+
   // get the url
-  return browser.driver.get(url);
+  return browser.driver.get(that.authUrl ? that.authUrl : url);
+
+  // ensure possible redirect due to SSO client-auth is completed
+  return browser.testrunner.navigation.waitForRedirect(url);
 };
 
 module.exports = function(config,logger){

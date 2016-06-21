@@ -250,9 +250,11 @@ Execute the visual test
 $ grunt visualtest --browsers=browser:*:android --seleniumAddress=http://127.0.0.1:4723/wd/hub --baseUrl=http://10.0.2.2:8080
 ```
 
-### Load page and login from test
-Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.to() with required URL. You could override
-the default auth settings by providing an auth object with the same syntax as in conf.js
+### Programatic authentication
+Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.to() with required URL.
+You could override the default auth settings by providing an options object with the same syntax as in conf.js
+If the login performs redirects, the authenticated application url should be supplied as first parameter
+of navigate.to() and the login url should be given as authUrl in the options object.
 ```
 browser.testrunner.navigation.to(
   '<url>',{

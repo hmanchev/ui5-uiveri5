@@ -15,6 +15,7 @@ function FormAuthenticator(config,instanceConfig,logger){
 
   this.user = instanceConfig.user;
   this.pass = instanceConfig.pass;
+  this.frameSelector = instanceConfig.frameSelector;
   this.userFieldSelector = instanceConfig.userFieldSelector;
   this.passFieldSelector = instanceConfig.passFieldSelector;
   this.logonButtonSelector = instanceConfig.logonButtonSelector;
@@ -36,17 +37,31 @@ FormAuthenticator.prototype.get = function(url){
   // webdriver statements are synchronized by webdriver flow so no need to join the promises
 
   // open the page
-  browser.driver.get(url);
+  browser.driver.get(that.authUrl ? that.authUrl : url);
 
   // wait till page is fully rendered
+  var switchedToFrame = false;
   browser.driver.wait(function(){
+    // if auth is in frame => switch inside
+    if (that.frameSelector) {
+      browser.driver.isElementPresent(by.css(that.frameSelector)).then(function (isInFrame) {
+        if (isInFrame && !switchedToFrame) {
+          browser.driver.switchTo().frame(browser.driver.findElement(by.css(that.frameSelector))).then(function () {
+            switchedToFrame = true;
+          });
+        }
+      });
+    }
     return browser.driver.isElementPresent(by.css(that.userFieldSelector));
-  },3000);
+  },browser.getPageTimeout,'Waiting for auth page to fully load');
 
   // enter user and pass in the respective fields
   browser.driver.findElement(by.css(this.userFieldSelector)).sendKeys(this.user);
   browser.driver.findElement(by.css(this.passFieldSelector)).sendKeys(this.pass);
   return browser.driver.findElement(by.css(this.logonButtonSelector)).click();
+
+  // ensure redirect is completed
+  return browser.testrunner.navigation.waitForRedirect(url);
 };
 
 module.exports = function(config,logger){

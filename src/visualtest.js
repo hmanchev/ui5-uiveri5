@@ -399,53 +399,77 @@ function run(config) {
       });
 
       // expose navigation helpers to tests
-      browser.testrunner.navigation = { to: function(url,auth){
-        var resultPromise;
-        var authenticator =  moduleLoader.loadNamedModule(auth);
+      browser.testrunner.navigation = {
+        to: function(url,auth){
+          var resultPromise;
+          var authenticator =  moduleLoader.loadNamedModule(auth);
 
-        // open page and login
-        logger.info('Opening: ' + url);
-        authenticator.get(url);
-
-        // ensure page is fully loaded - wait for window.url to become the same as requested
-        var plainContentUrl = url.match(/([^\?\#]+)/)[1];
-        browser.driver.wait(function () {
-          return browser.driver.executeScript(function () {
-            return window.location.href;
-          }).then(function (url) {
-            // match only host/port/path as app could manipulate request args and fragment
-            var urlMathes = url.match(/([^\?\#]+)/);
-            return urlMathes !== null && urlMathes[1] === plainContentUrl;
-            //return url === spec.contentUrl;
+          // open page and login
+          browser.controlFlow().execute(function () {
+            logger.info('Opening: ' + url);
           });
-        }, browser.getPageTimeout, 'waiting for page to fully load');
+          authenticator.get(url);
 
-        // ensure ui5 is loaded - execute waitForUI5() internally
-        resultPromise = browser.waitForAngular();
+          /*
+          // ensure page is fully loaded - wait for window.url to become the same as requested
+          var plainContentUrl = url.match(/([^\?\#]+)/)[1];
+          browser.driver.wait(function () {
+            return browser.driver.executeScript(function () {
+              return window.location.href;
+            }).then(function (url) {
+              // match only host/port/path as app could manipulate request args and fragment
+              var urlMathes = url.match(/([^\?\#]+)/);
+              return urlMathes !== null && urlMathes[1] === plainContentUrl;
+              //return url === spec.contentUrl;
+            });
+          }, browser.getPageTimeout, 'waiting for page to fully load');
+          */
 
-        // handle pageLoading options
-        if (config.pageLoading) {
+          // handle pageLoading options
+          if (config.pageLoading) {
 
-          // reload the page immediately if required
-          if (config.pageLoading.initialReload) {
-            logger.debug('Initial page reload requested');
-            resultPromise = browser.driver.navigate().refresh();
-          }
-
-          // wait some time after page is loaded
-          if (config.pageLoading.wait) {
-            var wait = config.pageLoading.wait;
-            if (_.isString(wait)) {
-              wait = parseInt(wait, 10);
+            // reload the page immediately if required
+            if (config.pageLoading.initialReload) {
+              browser.controlFlow().execute(function () {
+                llogger.debug('Initial page reload requested');
+              });
+              resultPromise = browser.driver.navigate().refresh();
             }
 
-            logger.debug('Initial page load wait: ' + wait + 'ms');
-            resultPromise = browser.sleep(wait);
-          }
-        }
+            // wait some time after page is loaded
+            if (config.pageLoading.wait) {
+              var wait = config.pageLoading.wait;
+              if (_.isString(wait)) {
+                wait = parseInt(wait, 10);
+              }
 
-        return resultPromise;
-      }};
+              browser.controlFlow().execute(function () {
+                logger.debug('Initial page load wait: ' + wait + 'ms');
+              });
+              resultPromise = browser.sleep(wait);
+            }
+          }
+
+          // ensure ui5 is loaded - execute waitForUI5() internally
+          resultPromise = browser.waitForAngular();
+
+          return resultPromise;
+        },
+
+        waitForRedirect: function(url){
+          // ensure page is fully loaded - wait for window.url to become the same as requested
+          var plainContentUrl = url.match(/([^\?\#]+)/)[1];
+          return browser.driver.wait(function () {
+            return browser.driver.executeScript(function () {
+              return window.location.href;
+            }).then(function (url) {
+              // match only host/port/path as app could manipulate request args and fragment
+              var urlMathes = url.match(/([^\?\#]+)/);
+              return urlMathes !== null && urlMathes[1] === plainContentUrl;
+            });
+          }, browser.getPageTimeout, 'Waiting for redirection to complete');
+        }
+      };
 
       // set meta data
       browser.testrunner.currentSuite = {
