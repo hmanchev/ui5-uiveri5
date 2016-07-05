@@ -152,6 +152,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
       expectation.message = messageJSON.message;
       expectation.details = messageJSON.details;
       expectation.imageName = messageJSON.imageName;
+      expectation.failureType = messageJSON.failureType;
     } else {
       expectation.message = message;
     }

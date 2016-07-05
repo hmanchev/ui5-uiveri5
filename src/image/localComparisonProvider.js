@@ -81,7 +81,6 @@ LocalComparisonProvider.prototype.register = function (matchers) {
           } else {
             result.message += 'Image name regExp: ' + that.imgNameRegEx;
           }
-          result.imageName = expectedImageName;
 
           defer.fulfill(false);
         } else if(that.take && that.compare) {
@@ -199,6 +198,7 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         details: {
                           refImageUrl: refImageResult.refImageUrl
                         },
+                        failureType: 'COMPARISON',
                         imageName: expectedImageName
                       };
 
