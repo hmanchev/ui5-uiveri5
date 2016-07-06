@@ -85,7 +85,8 @@ describe("StatisticCollector", function() {
           details:{
             key:'value'
           },
-          imageName: 'expectedImageName'
+          imageName: 'expectedImageName',
+          failureType: 'COMPARISON'
         }),
         matcherName: 'toLookAs',
         stack: 'stack'
@@ -100,6 +101,7 @@ describe("StatisticCollector", function() {
     expect(failedExpectation.message).toBe('message');
     expect(failedExpectation.details.key).toBe('value');
     expect(failedExpectation.imageName).toBe('expectedImageName');
+    expect(failedExpectation.failureType).toBe('COMPARISON');
   });
 
   it("Should handle passed expectation details", function() {
