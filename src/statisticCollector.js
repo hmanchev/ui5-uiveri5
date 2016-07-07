@@ -160,7 +160,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
     this.currentSpec.expectations.push(expectation);
 
     // count image comparison failures
-    if(jasmineExpectation.matcherName === 'toLookAs'){
+    if(expectation.failureType === 'COMPARISON'){
       failedWithImageCount++;
     }
   },this);
