@@ -198,7 +198,6 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         details: {
                           refImageUrl: refImageResult.refImageUrl
                         },
-                        failureType: 'COMPARISON',
                         imageName: expectedImageName
                       };
 
@@ -242,6 +241,7 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                       // wait for both promises and finish the match
                       Q.all([storeRefPromise,storeActPromise, storeDiffPromise])
                         .then(function () {
+                          res.failureType = 'COMPARISON';
                           result.message = JSON.stringify(res);
                           // fail
                           defer.fulfill(false);
