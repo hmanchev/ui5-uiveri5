@@ -100,7 +100,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                   that.logger.debug(msg);
                   var res = {
                     message: msg,
-                    imageName: expectedImageName
+                    imageName: expectedImageName,
+                    failureType: 'COMPARISON'
                   };
 
                   that.storageProvider.storeRefImage(expectedImageName,actualImageBuffer)
