@@ -147,7 +147,14 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
 
     // unpack details if any
     var message = jasmineExpectation.message;
-    if (message.indexOf('{') === 0 && message.lastIndexOf('}')+1 === message.length) {
+    var timeoutMsg = 'Timeout waiting to synchronize with UI5';
+    if (new RegExp(timeoutMsg).test(message)) {
+      // for INFO logs show only the message
+      expectation.message = timeoutMsg;
+      // for DEBUG logs show formatted details
+      var timeoutDetailsRegExp = new RegExp(timeoutMsg + '.+?(?=")');
+      expectation.stack = JSON.parse('\"' + timeoutDetailsRegExp.exec(message)[0] + '\"');
+    } else if (message.indexOf('{') === 0 && message.lastIndexOf('}')+1 === message.length) {
       var messageJSON = JSON.parse(message);
       expectation.message = messageJSON.message;
       expectation.details = messageJSON.details;

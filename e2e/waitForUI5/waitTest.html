@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>Wait Test</title>
+		
+		<script id="sap-ui-bootstrap"
+				src="../../../resources/sap-ui-core.js"
+				data-sap-ui-libs="sap.m"
+				data-sap-ui-theme="sap_bluecrystal">
+		</script>
+		<script>
+			var oTimeout;
+			var btn = new sap.m.Button({
+				id: 'button',
+				text: 'Click me',
+				press: function(oEvent) {
+					if(oTimeout) {
+						window.clearTimeout(oTimeout);
+					}
+					oTimeout = window.setTimeout(function() {
+						console.log('+++++++ CLICKED!');
+						window.setTimeout(function() {
+							new sap.m.MessageToast.show("Pressed");
+						}, 4000);
+					}, 4000);
+				}
+			});
+			btn.placeAt('body');
+		</script>
+	</head>
+	<body id="body" class="sapUiBody"></body>
+</html>

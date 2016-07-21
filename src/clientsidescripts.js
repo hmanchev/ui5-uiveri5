@@ -1,7 +1,34 @@
+/**
+* @typedef PendingTimeouts
+* @type {Object[]}
+* @property {number} id
+* @property {string} errStack
+*/
+
+/**
+ * @typedef PendingXhrs
+ * @type {Object[]}
+ * @property {number} id
+ * @property {string} errStack
+ */
+
+/**
+ * @typedef FunctionInfo
+ * @type {Object}
+ * @property {number} delay
+ * @property {number} callCount
+ * @property {number} callTime
+ * @property {string} errStack
+ */
+
+/**
+ * @typedef TimeoutInfo
+ * @type {Object.<function, FunctionInfo>}
+ */
 
 var functions = {};
 
-functions.waitForAngular = function(rootSelector, callback) {
+functions.waitForAngular = function(config, callback) {
   var MAX_RETRY_ATTEMPTS = 10;
 
   try {
@@ -22,132 +49,313 @@ functions.waitForAngular = function(rootSelector, callback) {
             constructor : function(oCore) {
 
               this._bSameTick = false;
-              this.iPendingXHRs = 0;
-              this.iPendingTimeouts = 0;
-              this.oPendingTimeoutIDs = {};
+              /** @type {PendingTimeouts} */
+              this.aPendingTimeouts = [];
+              /** @type {PendingXhrs} */
+              this.aPendingXhrs = [];
+              this.iXhrSeq = 0;
+              /** @type {TimeoutInfo} */
               this.oTimeoutInfo = {};
-              this.aDoNotTrack = [];
-              this.aPendingCallbacks = [];
+              this.fnPendingCallback = null;
               this.oCore = oCore;
+              this.fnOriginalSetTimeout = null;
+              this.fnOriginalClearTimeout = null;
+              this.fnOriginalXhrSend = null;
+              this.iGuardingTimeoutId = null;
 
               this._wrapSetTimeout();
               this._wrapClearTimeout();
               this._wrapXHR();
 
-              this.oCore.attachUIUpdated(this._tryToExecuteCallbacks);
+              this.debug = /sap-ui-testcooperation-debug=true/.test(window.location.search);
+
+              var configJson = JSON.parse(config);
+              this.waitForUI5Timeout = configJson.waitForUI5Timeout || 0;
             }
           });
 
           // Constants for TestCooperation class
-          TestCooperation.EXECUTE_CALLBACKS_REG_EXP = /_tryToExecuteCallbacks/;
+          TestCooperation.EXECUTE_CALLBACKS_REG_EXP = /_scheduleCallbackExecution/;
           TestCooperation.MAX_TIMEOUT_DELAY = 5000;
           TestCooperation.MAX_INTERVAL_STEP = 2000;
+          TestCooperation.TIMEOUT_CALL_COUNT_THRESHOLD = 5;
 
+          /**
+           * Mark the callback as pending if something is still in progress.
+           * Execute the callback immediately if:
+           * - no pending timeouts
+           * - no pending XHRs
+           * - no pending callback
+           */
           TestCooperation.prototype.notifyWhenStable = function(fnCallback) {
-
-            if (this.iPendingTimeouts === 0 && this.iPendingXHRs === 0 && !this.oCore.getUIDirty() && this.aPendingCallbacks.length === 0) {
+            var that = this;
+            if (this.aPendingTimeouts.length === 0 && this.aPendingXhrs.length === 0 && !this.oCore.getUIDirty()
+              && !this.fnPendingCallback) {
               fnCallback();
             } else {
-              this.aPendingCallbacks.push(fnCallback);
+              that.fnPendingCallback = fnCallback;
+
+              if (that.waitForUI5Timeout > 0) {
+                that.iGuardingTimeoutId = that.fnOriginalSetTimeout.call(window, function() {
+                  var msg = 'Timeout waiting to synchronize with UI5 after ' + that.waitForUI5Timeout + ' ms.\n'
+                    + that._getPendingCallbacksInfo('Pending timeouts: ' + that.aPendingTimeouts.length, that.aPendingTimeouts)
+                    + that._getPendingCallbacksInfo('\nPending XHRs: ' + that.aPendingXhrs.length, that.aPendingXhrs);
+
+                  that._logDebugMessage(msg);
+                  that.fnPendingCallback(msg);
+                  that.fnPendingCallback = null;
+                  that.iGuardingTimeoutId = null;
+                }, that.waitForUI5Timeout);
+              }
             }
           };
 
+          /**
+           * Handle new timeout.
+           * @see _handleTimeoutFinished
+           * @see _handleTimeoutScheduled
+           * @see _resolveCurrentStackTrace
+           * @return {number} timeout id
+           */
           TestCooperation.prototype._wrapSetTimeout = function() {
-            var that = this,
-              fnOriginalTimeout = window.setTimeout;
+            var that = this;
+            that.fnOriginalSetTimeout = window.setTimeout;
             window.setTimeout = function(func, delay) {
               var id;
               function wrapper() {
                 func.apply();
                 that._handleTimeoutFinished(id);
               }
-              id = fnOriginalTimeout.call(this, wrapper, delay);
-              that._handleTimeoutScheduled(id, func, delay);
+              id = that.fnOriginalSetTimeout.call(window, wrapper, delay);
+              that._handleTimeoutScheduled(id, func, delay, that._resolveCurrentStackTrace());
               return id;
             };
           };
 
+          /**
+           * If timeout is canceled handle it like finished.
+           * @see _handleTimeoutFinished
+           */
           TestCooperation.prototype._wrapClearTimeout = function() {
-            var that = this,
-              fnOriginalTimeout = window.clearTimeout;
+            var that = this;
+            that.fnOriginalClearTimeout = window.clearTimeout;
             window.clearTimeout = function(id) {
-              fnOriginalTimeout.call(this, id);
+              that.fnOriginalClearTimeout.call(window, id);
               that._handleTimeoutFinished(id);
             };
           };
 
+          /**
+           * Manage XHR requests.
+           * @see _resolveCurrentStackTrace
+           * @see _logDebugMessage
+           * @see _removeItemFromTracking
+           * @see _tryToExecuteCallback
+           */
           TestCooperation.prototype._wrapXHR = function() {
-            var that = this,
-              fnOriginalSend = window.XMLHttpRequest.prototype.send;
+            var that = this;
+            that.fnOriginalXhrSend = window.XMLHttpRequest.prototype.send;
             window.XMLHttpRequest.prototype.send = function() {
+              var errStack = that._resolveCurrentStackTrace();
+              var xhrId = that.iXhrSeq++;
               this.addEventListener('readystatechange', function() {
-                if (this.readyState == 4 && this.isTracked) {
-                  that.iPendingXHRs--;
-                  that._tryToExecuteCallbacks();
+                if (this.readyState == 4) {
+                  var isXhrDeleted = that._removeItemFromTracking(xhrId, that.aPendingXhrs);
+                  if (isXhrDeleted) {
+                    that._logDebugMessage('XHR finished. ID: ' + xhrId + ' Pending XHRs: ' + that.aPendingXhrs.length);
+                    that._tryToExecuteCallback();
+                  }
                 }
               });
-              this.isTracked = true;
-              that.iPendingXHRs++;
-              fnOriginalSend.apply(this, arguments);
+              that.aPendingXhrs.push({'id': xhrId, 'errStack': errStack});
+              that._logDebugMessage('XHR started. Pending XHRs: ' + that.aPendingXhrs.length);
+              that.fnOriginalXhrSend.apply(this, arguments);
             };
           };
 
-          TestCooperation.prototype._handleTimeoutScheduled = function(id, func, delay) {
-            if (this._isTimeoutTracked(id, func, delay)) {
-              this.oPendingTimeoutIDs[id] = 1;
-              this.iPendingTimeouts++;
+          /**
+           * When new timeout is scheduled and if it's tracked: add it to the pending timeouts.
+           * @param {number} id
+           * @param {function} func
+           * @param {number} delay
+           * @param {string} errStack
+           * @see _isTimeoutTrackable
+           * @see _logDebugMessage
+           */
+          TestCooperation.prototype._handleTimeoutScheduled = function(id, func, delay, errStack) {
+            delay = typeof delay == 'number' ? delay : 0;
+
+            if (this._isTimeoutTrackable(id, func, delay, errStack)) {
+              this.aPendingTimeouts.push({'id': id, 'errStack': errStack});
+              this._logDebugMessage('Timeout scheduled. Timer ID: ' + id + ' Delay: ' + delay + '. Pending timeouts: '
+                + this.aPendingTimeouts.length);
             }
           };
 
+          /**
+           * When timeout is finished and if it's tracked: delete it.
+           * @param {number} id
+           * @see _removeItemFromTracking
+           * @see _logDebugMessage
+           * @see _tryToExecuteCallback
+           */
           TestCooperation.prototype._handleTimeoutFinished = function(id) {
-            if (this.aDoNotTrack.indexOf(id) == -1) {
-              if (this.oPendingTimeoutIDs.hasOwnProperty(id)) {
-                delete this.oPendingTimeoutIDs[id];
-                this.iPendingTimeouts--;
-                this._tryToExecuteCallbacks();
-              }
+            var isTimeoutDeleted = this._removeItemFromTracking(id, this.aPendingTimeouts);
+            if (isTimeoutDeleted) {
+              this._logDebugMessage('Timeout with ID ' + id + ' finished. Pending timeouts: '
+                + this.aPendingTimeouts.length);
+              this._tryToExecuteCallback();
             }
           };
 
-          TestCooperation.prototype._isTimeoutTracked = function(id, func, delay) {
-            if (delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(func.name)) {
-              this.aDoNotTrack.push(id);
-              return false;
-            }
-
-            if (delay > TestCooperation.MAX_TIMEOUT_DELAY) {
-              this.aDoNotTrack.push(id);
+          /**
+           * Check if the timeout should be tracked.
+           * Don't track the timeout, if:
+           * - it's come from the _tryToExecuteCallback with no delay
+           * - the delay is bigger than the MAX_TIMEOUT_DELAY
+           * - the call count is bigger that the TIMEOUT_CALL_COUNT_THRESHOLD
+           * Track the timeout if isn't already tracked and the interval isn't exceeded the MAX_INTERVAL_STEP
+           * @param {number} id
+           * @param {function} func
+           * @param {number} delay
+           * @param {string} errStack
+           * @see _getFunctionName
+           * @see _removeItemFromTracking
+           * @see _logDebugMessage
+           * @return {boolean} if the timeout is tracked
+           */
+          TestCooperation.prototype._isTimeoutTrackable = function(id, func, delay, errStack) {
+            // the pending timeout from _tryToExecuteCallback should not be tracked
+            if ((delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(this._getFunctionName(func)))
+              || delay > TestCooperation.MAX_TIMEOUT_DELAY) {
+              this._removeItemFromTracking(id, this.aPendingTimeouts);
+              this._logDebugMessage('Timeout skipped from tracking. Timer ID: ' + id + ' Delay: ' + delay + ' Details: '
+                + errStack);
               return false;
             } else {
-              var bAddNewEntry = !this.oTimeoutInfo.hasOwnProperty(func) || this.oTimeoutInfo[func].delay != delay ||
+              var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(func) || this.oTimeoutInfo[func].delay != delay ||
                 Date.now() - this.oTimeoutInfo[func].callTime > TestCooperation.MAX_INTERVAL_STEP;
-              if (bAddNewEntry) {
-                this.oTimeoutInfo[func] = {'delay': delay, 'callCount': 1, 'callTime': Date.now()};
+              if (isNewTimeout) {
+                this.oTimeoutInfo[func] = {'delay': delay, 'callCount': 1, 'callTime': Date.now(), 'errStack': errStack};
                 return true;
               } else {
-                if (++this.oTimeoutInfo[func].callCount <= 5) {
+                if (++this.oTimeoutInfo[func].callCount <= TestCooperation.TIMEOUT_CALL_COUNT_THRESHOLD) {
                   return true;
                 } else {
-                  this.aDoNotTrack.push(id);
+                  this._removeItemFromTracking(id, this.aPendingTimeouts);
+                  this._logDebugMessage('Timeout skipped from tracking because exceed it the maximum call count. '
+                    + 'Timer ID: ' + id + ' Delay: ' + delay + ' Details: ' + errStack);
                   return false;
                 }
               }
             }
           };
 
-          TestCooperation.prototype._tryToExecuteCallbacks = function() {
+          /**
+           * Execute pending callback if it's in different ticks.
+           * The tick should be different because the timeout can be canceled.
+           */
+          TestCooperation.prototype._tryToExecuteCallback = function() {
             if (!this._bSameTick) {
               var that = this;
               this._bSameTick = true;
-              window.setTimeout(function() {
-                if (that.iPendingTimeouts === 0 && that.iPendingXHRs === 0 && !that.oCore.getUIDirty() && that.aPendingCallbacks.length > 0) {
-                  do {
-                    var fnCallback = that.aPendingCallbacks.shift();
-                    fnCallback();
-                  } while (that.iPendingTimeouts === 0 && that.iPendingXHRs === 0 && !that.oCore.getUIDirty() && that.aPendingCallbacks.length > 0)
+              window.setTimeout(function _scheduleCallbackExecution() {
+                if (that.aPendingTimeouts.length === 0 && that.aPendingXhrs.length === 0 && !that.oCore.getUIDirty()
+                  && that.fnPendingCallback) {
+                  that.fnPendingCallback();
+                  that.fnPendingCallback = null;
+                  if (that.waitForUI5Timeout > 0) {
+                    that.fnOriginalClearTimeout.call(window, that.iGuardingTimeoutId);
+                    that.iGuardingTimeoutId = null;
+                  }
                 }
                 that._bSameTick = false;
               }, 0);
+            }
+          };
+
+          /**
+           * Log debug messages when debug mode is on.
+           * @param {string} message
+           */
+          TestCooperation.prototype._logDebugMessage = function(message) {
+            if (this.debug === true) {
+              console.debug(message);
+            }
+          };
+
+          /**
+           * Return message with all pending callbacks info.
+           * @param {string} message
+           * @param {Object[]} pendingExecutions
+           * @return {string} message
+           */
+          TestCooperation.prototype._getPendingCallbacksInfo = function(message, pendingExecutions) {
+            if (pendingExecutions && pendingExecutions.length > 0) {
+              message += '. Pending callbacks:';
+              pendingExecutions.forEach(function (pendingExecution) {
+                message += '\n\tID ' + pendingExecution.id + ':' + pendingExecution.errStack;
+              });
+            }
+
+            return message;
+          };
+
+          /**
+           * Get function name.
+           * @param {function} func
+           * @return {string} function name
+           */
+          TestCooperation.prototype._getFunctionName = function(func) {
+            var functionName;
+            if (func.name && typeof func.name == 'string') {
+              functionName = func.name;
+            } else {
+              functionName = func.toString();
+              functionName = functionName.substring('function'.length, functionName.indexOf('('));
+            }
+            return functionName.trim();
+          };
+
+          /**
+           * Get timeout by timer id.
+           * @param {Object[]} searchArray
+           * @param {number} searchForId
+           * @return {Object{}} the matched timeout in an array
+           */
+          TestCooperation.prototype._getPendingExecutionById = function(searchArray, searchForId) {
+            return searchArray.filter(function(item) {
+              return item.id === searchForId;
+            });
+          };
+
+          /**
+           * Remove timeout from pending timeout list.
+           * @param {number} id
+           * @param {Object[]} aTrackedList
+           * @return {boolean} if item is deleted
+           */
+          TestCooperation.prototype._removeItemFromTracking = function(id, aTrackedList) {
+            var isItemDeleted = false;
+            var currentItemArr = this._getPendingExecutionById(aTrackedList, id);
+            if (currentItemArr.length > 0) {
+              aTrackedList.splice(aTrackedList.indexOf(currentItemArr[0]), 1);
+              isItemDeleted = true;
+            }
+            return isItemDeleted;
+          };
+
+          /**
+           * Get stacktrace. Error().stack doesn't work for IE!
+           * For IE the stack property is set to undefined when the error is constructed, and gets the trace information
+           * when the error is raised.
+           * @return {string} stack trace
+           */
+          TestCooperation.prototype._resolveCurrentStackTrace = function() {
+            try {
+              throw new Error();
+            } catch (err) {
+              return err.stack;
             }
           };
 
