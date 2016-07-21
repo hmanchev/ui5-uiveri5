@@ -431,7 +431,7 @@ function run(config) {
             // reload the page immediately if required
             if (config.pageLoading.initialReload) {
               browser.controlFlow().execute(function () {
-                llogger.debug('Initial page reload requested');
+                logger.debug('Initial page reload requested');
               });
               resultPromise = browser.driver.navigate().refresh();
             }
