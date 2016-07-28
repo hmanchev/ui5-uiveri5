@@ -1,29 +1,29 @@
 /**
-* @typedef PendingTimeouts
-* @type {Object[]}
+* @typedef PendingTimeout
+* @type {Object}
 * @property {number} id
-* @property {string} errStack
+* @property {string} errStack - caller fn stack
 */
 
 /**
- * @typedef PendingXhrs
- * @type {Object[]}
+ * @typedef PendingXhr
+ * @type {Object}
  * @property {number} id
- * @property {string} errStack
+ * @property {string} errStack - caller fn stack
  */
 
 /**
  * @typedef FunctionInfo
  * @type {Object}
- * @property {number} delay
- * @property {number} callCount
- * @property {number} callTime
- * @property {string} errStack
+ * @property {number} delay - requested timeout delay
+ * @property {number} callCount - how many times same timeout was requested
+ * @property {number} callTime - time when called fn first requested such timeout
+ * @property {string} errStack - caller fn stack
  */
 
 /**
  * @typedef TimeoutInfo
- * @type {Object.<function, FunctionInfo>}
+ * @type {Object.<function: caller fn, FunctionInfo>}
  */
 
 var functions = {};
@@ -49,9 +49,9 @@ functions.waitForAngular = function(config, callback) {
             constructor : function(oCore) {
 
               this._bSameTick = false;
-              /** @type {PendingTimeouts} */
+              /** @type {PendingTimeout[]} */
               this.aPendingTimeouts = [];
-              /** @type {PendingXhrs} */
+              /** @type {PendingXhr[]} */
               this.aPendingXhrs = [];
               this.iXhrSeq = 0;
               /** @type {TimeoutInfo} */
@@ -225,16 +225,16 @@ functions.waitForAngular = function(config, callback) {
            * @return {boolean} if the timeout is tracked
            */
           TestCooperation.prototype._isTimeoutTrackable = function(id, func, delay, errStack) {
-            // the pending timeout from _tryToExecuteCallback should not be tracked
-            if ((delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(this._getFunctionName(func)))
-              || delay > TestCooperation.MAX_TIMEOUT_DELAY) {
+            if ((delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(this._getFunctionName(func)))  // the pending timeout from _tryToExecuteCallback should not be tracked
+              || delay > TestCooperation.MAX_TIMEOUT_DELAY) { // do not track request longer than 5 sec
               this._removeItemFromTracking(id, this.aPendingTimeouts);
               this._logDebugMessage('Timeout skipped from tracking. Timer ID: ' + id + ' Delay: ' + delay + ' Details: '
                 + errStack);
               return false;
             } else {
-              var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(func) || this.oTimeoutInfo[func].delay != delay ||
-                Date.now() - this.oTimeoutInfo[func].callTime > TestCooperation.MAX_INTERVAL_STEP;
+              var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(func) // first timeout request by this function
+                || this.oTimeoutInfo[func].delay != delay // same function request timeout with other duration
+                || Date.now() - this.oTimeoutInfo[func].callTime > TestCooperation.MAX_INTERVAL_STEP; // overall call time took more than 2000
               if (isNewTimeout) {
                 this.oTimeoutInfo[func] = {'delay': delay, 'callCount': 1, 'callTime': Date.now(), 'errStack': errStack};
                 return true;
