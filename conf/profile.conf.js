@@ -36,7 +36,7 @@ exports.config = {
   browserCapabilities: {
     'browser,chrome': {
       'android': {
-        deviceName: 'android'
+        deviceName: 'android',
         /*
         remoteWebDriverOptions: {
           contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
@@ -66,6 +66,9 @@ exports.config = {
           'enableVerboseLogging': [],
           'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
         }
+        */
+        /*
+        enableClickWithActions: true,
         */
       }
     },
