@@ -224,6 +224,20 @@ function run(config) {
             browser.driver.manage().window().setPosition(x,y);
           }
         }
+
+        // add WebDriver overrides
+        if ( currentCapabilities.enableClickWithActions ) {
+          logger.debug('Activating WebElement.click() override with actions');
+          protractorModule.parent.exports.WebElement.prototype.click = function () {
+            logger.debug('Taking over WebElement.click()');
+
+            var bodyElement = element(by.css("body"));
+            //var bodyElement = this.driver_.findElement(by.css('body'));
+            // replace once we upgrade beyond protractor 2.3.0
+            // https://github.com/angular/protractor/issues/2036
+            return this.driver_.actions().mouseMove(this).click().mouseMove(bodyElement,{x:0,y:0}).perform();
+          };
+        }
       });
 
       // log script executions
@@ -317,46 +331,6 @@ function run(config) {
                 storageProvider.onBeforeEachSpec(spec);
               }
             });
-
-            /*
-            // ensure page is fully loaded - wait for window.url to become the same as requested
-            var plainContentUrl = spec.contentUrl.match(/([^\?\#]+)/)[1];
-            browser.driver.wait(function () {
-              return browser.driver.executeScript(function () {
-                return window.location.href;
-              }).then(function (url) {
-                // match only host/port/path as app could manipulate request args and fragment
-                var urlMathes = url.match(/([^\?\#]+)/);
-                return urlMathes !== null && urlMathes[1] === plainContentUrl;
-                //return url === spec.contentUrl;
-              });
-            }, browser.getPageTimeout, 'waiting for page to fully load');
-
-            // ensure ui5 is loaded - execute waitForUI5() internally
-            browser.waitForAngular();
-
-            // handle pageLoading options
-            if (config.pageLoading) {
-
-              // reload the page immediately if required
-              if (config.pageLoading.initialReload) {
-                logger.debug('Initial page reload requested');
-                browser.driver.navigate().refresh();
-              }
-
-              // wait some time after page is loaded
-              if (config.pageLoading.wait) {
-                var wait = config.pageLoading.wait;
-                if (_.isString(wait)) {
-                  wait = parseInt(wait, 10);
-                }
-
-                logger.debug('Initial page load wait: ' + wait + 'ms');
-                browser.sleep(wait);
-              }
-            }
-            */
-
           }).then(null,function(error){
             // TODO display only once -> https://github.com/jasmine/jasmine/issues/778
             fail(error);
