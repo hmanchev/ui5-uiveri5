@@ -248,7 +248,8 @@ function run(config) {
         logger.trace('Execute async script: ${name}, code:\n ${JSON.stringify(code)}',
           {name:  arguments[1], code: arguments[0]});
 
-        var ui5SyncDelta = config.timeouts ? (config.timeouts.waitForUI5Delta ? config.timeouts.waitForUI5Delta : null) : null;
+        var ui5SyncDelta = config.timeouts ?
+          (config.timeouts.waitForUI5Delta ? config.timeouts.waitForUI5Delta : null) : null;
         var waitForUI5Timeout  = ui5SyncDelta > 0 ? (config.timeouts.allScriptsTimeout - ui5SyncDelta) : 0;
 
         // override configuration
