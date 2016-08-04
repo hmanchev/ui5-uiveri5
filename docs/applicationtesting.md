@@ -6,26 +6,89 @@
 ### Test Data
 Extract all test content constants in a single test data object.
 
-### Page Objects
-Define all selectors in a hierarchical page objects.
+### Page Objects (PO)
+Frequently there is advantage in gathering selectors in a semantical objects that describe the structure of the
+page to be tested. This approach have many benefits, like simplifying the understanding of the test, simplifying
+potential modifications. Object literal notation in JavaScript gives allowys simple and expressive syntax for PO
+declaration and usage.
+
+Declare POs:
+```javascript
+var shell = {
+  header: {
+    userName: element(by.css('.sapUshellShell .sapUShellShellHeader .sapUShellShellHeadUsrItmName'));
+  },
+  tiles: {
+    trackPurchaseOrder:
+      element.all(by.css('.sapUshellShell .sapUshellTile .sapUshellTileInner')).get(0)
+  }
+};
+```
+Use PO:
+```javascript
+it('should load the Start Screen', function () {
+  expect(browser.getTitle()).toBe('Home');
+  expect(shell.header.userName.getText()).toBe('BLACKM');
+
+  // click on the "Track Purchase Order" tile
+  shell.tiles.trackPurchaseOrder.click();
+});
+```
+
+#### POs in common file
+If several test scripts interact with a single page, it would be nice to extract the POs to separate files.
+They could be referenced from every test script that needs them. Test scripts are effectively
+[node modules](https://nodejs.org/api/modules.html) and could use arbitrary [nodejs](https://nodejs.org/en/about/)
+functinality.
+
+Declare PO:
+```javascript
+// pages/shell.view.js:
+module.exports = {
+  header: {
+    userName: element(by.css('.sapUshellShell .sapUShellShellHeader .sapUShellShellHeadUsrItmName'));
+  },
+  tiles: {
+    trackPurchaseOrder:
+      element.all(by.css('.sapUshellShell .sapUshellTile .sapUshellTileInner')).get(0)
+  }
+}
+```
+Import PO in test script:
+```javascript
+// purchaseOrder.spec.js
+var shellView = require('./pages/shell.view');
+
+describe('Fiori_MM', function () {
+  it('should load the Start Screen', function () {
+    expect(browser.getTitle()).toBe('Home');
+    expect(shellView.header.userName.getText()).toBe('BLACKM');
+
+    // click on the "Track Purchase Order" tile
+    shellView.tiles.trackPurchaseOrder.click();
+  });
+});
+```
 
 ## Selectors
+Use manually assigned IDs and prefer id selectors in such apps
 Prefer hierarchical class selectors. Try to compose them the way you would explain to a human where to click.
 
-### Avoid ID selectors
+### Avoid ID selectors ( using generated IDs )
 Selection a DOM element by ID is the simplest and widely used approach in classical web site testing.
 The classical web page is composed manually and so the important elements are manually assigned nice
 and meaningful IDs. So it is easy to identify those elements in automatic tests.
 But in highly-dynamic JS frameworks like SAPUI5 the DOM is generated out of the views. The views could
-also be generated from the content meta-information. Usually the ID of UI5 control contain the control
-name and a suffix that is the sequential number of this type of control in this app. So the root element
-of a view could have id like "__xmlview1".
+also be generated from the content meta-information. Very often, IDs are not assigned by a developer during application
+creation. In such cases, the ID ir generated in runtime from the control name and a suffix that is the sequential number
+of this control in this app. The generated ID could also could contain prefix of the enclosing view, like "__xmlview1".
+In this scheme, the leading "__" mean "internal and generated, not to be relied on"
 There are several problems with using such generated IDs in application tests.
-1. IDs are static between application runs but are generated and will definitely change when the application is modified.
+1. IDs are stable between application runs but are generated and will definitely change when the application is modified.
 Even minor unrelated change like adding one more button in some common area like header could cause a change of
 all IDs. This will require changes in all selectors used in all tests for this application.
 2. IDs are execution-unique and are generated on the runtime. So repetitive ID's require repetitive navigation path
-in the application. This makes it especially hard for a human to develop and support the test. It is also impossble to
+in the application. This makes it especially hard for a human to develop and support the test. It is also impossible to
 execute only part of the whole scenario by using disabled or focused specs and suites.
 3. There are cases when the generated IDs will be different depending on the environment the application is running.
 4. Generated IDs are totally not self-documenting and this makes the test harder to understand and maintain.
@@ -41,9 +104,10 @@ This also makes the test much self-documenting and simplifies maintenance.
 SAPUI5 runtime include and heavily use jquery so we bridge the power of jquery to application tests.
 All [jquery selectors](https://api.jquery.com/category/selectors/) are available,including the powerful pseudo-selectors.
 Select an element by jquery expression:
-```
+```javascript
 element(by.jq('<jguery expression>'));
 ```
+
 #### Select and element that contain specific child
 Sometimes it is useful to have a backward selectors e.g. select the parent of an element with specific properties.
 This is easily achieved with jquery [:has()](https://api.jquery.com/has-selector/) pseudo-selector.
