@@ -3,6 +3,8 @@
 * @type {Object}
 * @property {number} id
 * @property {string} errStack - caller fn stack
+* @property {number} delay - requested timeout delay
+* @property {function} func - caller fn
 */
 
 /**
@@ -15,15 +17,15 @@
 /**
  * @typedef FunctionInfo
  * @type {Object}
+ * @property {function} func - caller fn
  * @property {number} delay - requested timeout delay
  * @property {number} callCount - how many times same timeout was requested
- * @property {number} callTime - time when called fn first requested such timeout
  * @property {string} errStack - caller fn stack
  */
 
 /**
  * @typedef TimeoutInfo
- * @type {Object.<function: caller fn, FunctionInfo>}
+ * @type {Object.<number: hashed errStack and delay, FunctionInfo>}
  */
 
 var functions = {};
@@ -77,7 +79,6 @@ functions.waitForAngular = function(config, callback) {
           // Constants for TestCooperation class
           TestCooperation.EXECUTE_CALLBACKS_REG_EXP = /_scheduleCallbackExecution/;
           TestCooperation.MAX_TIMEOUT_DELAY = 5000;
-          TestCooperation.MAX_INTERVAL_STEP = 2000;
           TestCooperation.TIMEOUT_CALL_COUNT_THRESHOLD = 5;
 
           /**
@@ -92,6 +93,7 @@ functions.waitForAngular = function(config, callback) {
             if (this.aPendingTimeouts.length === 0 && this.aPendingXhrs.length === 0 && !this.oCore.getUIDirty()
               && !this.fnPendingCallback) {
               fnCallback();
+              this.oTimeoutInfo = {}; // Clear all recorded timeouts in order to can synchronise again (call count reset)
             } else {
               that.fnPendingCallback = fnCallback;
 
@@ -150,6 +152,7 @@ functions.waitForAngular = function(config, callback) {
            * @see _resolveCurrentStackTrace
            * @see _logDebugMessage
            * @see _removeItemFromTracking
+           * @see _addItemForTracking
            * @see _tryToExecuteCallback
            */
           TestCooperation.prototype._wrapXHR = function() {
@@ -167,7 +170,7 @@ functions.waitForAngular = function(config, callback) {
                   }
                 }
               });
-              that.aPendingXhrs.push({'id': xhrId, 'errStack': errStack});
+              that._addItemForTracking({'id': xhrId, 'errStack': errStack}, that.aPendingXhrs);
               that._logDebugMessage('XHR started. Pending XHRs: ' + that.aPendingXhrs.length);
               that.fnOriginalXhrSend.apply(this, arguments);
             };
@@ -180,13 +183,16 @@ functions.waitForAngular = function(config, callback) {
            * @param {number} delay
            * @param {string} errStack
            * @see _isTimeoutTrackable
+           * @see _addItemForTracking
            * @see _logDebugMessage
            */
           TestCooperation.prototype._handleTimeoutScheduled = function(id, func, delay, errStack) {
             delay = typeof delay == 'number' ? delay : 0;
+            var that = this;
 
             if (this._isTimeoutTrackable(id, func, delay, errStack)) {
-              this.aPendingTimeouts.push({'id': id, 'errStack': errStack});
+              this._addItemForTracking({'id': id, 'errStack': errStack, 'delay': delay,
+                'func': func.toString().replace(/\"/g, '\'')}, that.aPendingTimeouts);
               this._logDebugMessage('Timeout scheduled. Timer ID: ' + id + ' Delay: ' + delay + '. Pending timeouts: '
                 + this.aPendingTimeouts.length);
             }
@@ -214,7 +220,7 @@ functions.waitForAngular = function(config, callback) {
            * - it's come from the _tryToExecuteCallback with no delay
            * - the delay is bigger than the MAX_TIMEOUT_DELAY
            * - the call count is bigger that the TIMEOUT_CALL_COUNT_THRESHOLD
-           * Track the timeout if isn't already tracked and the interval isn't exceeded the MAX_INTERVAL_STEP
+           * Track the timeout if isn't already tracked
            * @param {number} id
            * @param {function} func
            * @param {number} delay
@@ -222,29 +228,32 @@ functions.waitForAngular = function(config, callback) {
            * @see _getFunctionName
            * @see _removeItemFromTracking
            * @see _logDebugMessage
+           * @see _hashTimeout
            * @return {boolean} if the timeout is tracked
            */
           TestCooperation.prototype._isTimeoutTrackable = function(id, func, delay, errStack) {
-            if ((delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(this._getFunctionName(func)))  // the pending timeout from _tryToExecuteCallback should not be tracked
+            if ((delay === 0 && TestCooperation.EXECUTE_CALLBACKS_REG_EXP.test(this._getFunctionName(func))) // the pending timeout from _tryToExecuteCallback should not be tracked
               || delay > TestCooperation.MAX_TIMEOUT_DELAY) { // do not track request longer than 5 sec
               this._removeItemFromTracking(id, this.aPendingTimeouts);
               this._logDebugMessage('Timeout skipped from tracking. Timer ID: ' + id + ' Delay: ' + delay + ' Details: '
                 + errStack);
               return false;
             } else {
-              var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(func) // first timeout request by this function
-                || this.oTimeoutInfo[func].delay != delay // same function request timeout with other duration
-                || Date.now() - this.oTimeoutInfo[func].callTime > TestCooperation.MAX_INTERVAL_STEP; // overall call time took more than 2000
+              var currentTimeoutHash = this._hashTimeout(errStack, delay).toString();
+              var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(currentTimeoutHash);
               if (isNewTimeout) {
-                this.oTimeoutInfo[func] = {'delay': delay, 'callCount': 1, 'callTime': Date.now(), 'errStack': errStack};
+                this.oTimeoutInfo[currentTimeoutHash] = {'func': func.toString().replace(/\"/g, '\''), 'delay': delay,
+                  'callCount': 1, 'errStack': errStack};
                 return true;
               } else {
-                if (++this.oTimeoutInfo[func].callCount <= TestCooperation.TIMEOUT_CALL_COUNT_THRESHOLD) {
+                if (++this.oTimeoutInfo[currentTimeoutHash].callCount <= TestCooperation.TIMEOUT_CALL_COUNT_THRESHOLD) {
+                  this._logDebugMessage('Increased call count Timer ID: ' + id + ' Delay: ' + delay + ' Call count: '
+                    + this.oTimeoutInfo[currentTimeoutHash].callCount);
                   return true;
                 } else {
                   this._removeItemFromTracking(id, this.aPendingTimeouts);
                   this._logDebugMessage('Timeout skipped from tracking because exceed it the maximum call count. '
-                    + 'Timer ID: ' + id + ' Delay: ' + delay + ' Details: ' + errStack);
+                    + 'Timer ID: ' + id + ' Delay: ' + delay + ' Stack: ' + errStack);
                   return false;
                 }
               }
@@ -268,6 +277,7 @@ functions.waitForAngular = function(config, callback) {
                     that.fnOriginalClearTimeout.call(window, that.iGuardingTimeoutId);
                     that.iGuardingTimeoutId = null;
                   }
+                  that.oTimeoutInfo = {}; // Clear all recorded timeouts in order to can synchronise again (call count reset)
                 }
                 that._bSameTick = false;
               }, 0);
@@ -294,10 +304,28 @@ functions.waitForAngular = function(config, callback) {
             if (pendingExecutions && pendingExecutions.length > 0) {
               message += '. Pending callbacks:';
               pendingExecutions.forEach(function (pendingExecution) {
-                message += '\n\tID ' + pendingExecution.id + ':' + pendingExecution.errStack;
+                message += '\n\t.....ID: ' + pendingExecution.id;
+                if (pendingExecution.func) {
+                  message += '\n\tFunc: ' + pendingExecution.func;
+                }
+                if (pendingExecution.delay) {
+                  message += '\n\tDelay: ' + pendingExecution.delay;
+                }
+                message += '\n\tStack: ' + pendingExecution.errStack;
               });
-            }
 
+              // show all tracked timeouts
+              message += '\n\t-----All tracked timeouts after the last successful synchronisation: ';
+              for (var property in this.oTimeoutInfo) {
+                if (this.oTimeoutInfo.hasOwnProperty(property)) {
+                  message += '\n\t+++++Hash: ' + property;
+                  message += '\n\tFunc: ' + this.oTimeoutInfo[property].func;
+                  message += '\n\tDelay: ' + this.oTimeoutInfo[property].delay;
+                  message += '\n\tCall count: ' + this.oTimeoutInfo[property].callCount;
+                  message += '\n\tStack: ' + this.oTimeoutInfo[property].errStack;
+                }
+              }
+            }
             return message;
           };
 
@@ -346,6 +374,15 @@ functions.waitForAngular = function(config, callback) {
           };
 
           /**
+           * Add timeout to pending timeout list.
+           * @param {Object} oPendingItem
+           * @param {Object[]} aTrackedList
+           */
+          TestCooperation.prototype._addItemForTracking = function(oPendingItem, aTrackedList) {
+            aTrackedList.push(oPendingItem);
+          };
+
+          /**
            * Get stacktrace. Error().stack doesn't work for IE!
            * For IE the stack property is set to undefined when the error is constructed, and gets the trace information
            * when the error is raised.
@@ -357,6 +394,26 @@ functions.waitForAngular = function(config, callback) {
             } catch (err) {
               return err.stack;
             }
+          };
+
+          /**
+           * Hash the timeout (call stack & delay are unique)
+           * @param {string} errStack
+           * @param {number} delay
+           * @return {number} hashed timeout
+           */
+          TestCooperation.prototype._hashTimeout = function(errStack, delay) {
+            var hash = 0;
+
+            for (var i = 0; i < errStack.length; i++) {
+              var currentChar = errStack.charCodeAt(i);
+              hash = ((hash << 5) - hash) + currentChar;
+              hash = hash & hash; // Convert to 32bit integer
+            }
+
+            hash += delay;
+
+            return hash;
           };
 
           return TestCooperation;
