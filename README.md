@@ -142,8 +142,3 @@ All of the defaults could be modified either in conf.js or by providing command-
 ```
 --browsers="chrome:*:android:4.4" --connection="browserstack:<user>:<token>"
 ```
-## Development
-### Run unit tests from visualtestjs project
-```
-$ npm run test
-```
