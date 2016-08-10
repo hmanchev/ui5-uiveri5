@@ -30,7 +30,11 @@ describe("StatisticCollector", function() {
         stack: 'stack'
       },{
         status: 'failed',
-        message: 'image diff',
+        message: JSON.stringify({
+          message: 'image diff',
+          imageName: 'expectedImageName',
+          failureType: 'COMPARISON'
+        }),
         matcherName: 'toLookAs',
         stack: 'stack'
       }]

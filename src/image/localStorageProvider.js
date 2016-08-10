@@ -4,7 +4,7 @@ var path = require('path');
 var mkdirp = require('mkdirp');
 var Q = require('q');
 
-var IMAGE_PATH_PREFIX = 'images'; // TODO consider if this level is really necessary
+var IMAGE_PATH_PREFIX = 'images';
 var DEFAULT_ACT_IMAGES_ROOT = 'target';
 var DEFAULT_REF_IMAGE_EXT = '.ref.png';
 var DEFAULT_ACT_IMAGE_EXT = '.act.png';
@@ -57,6 +57,8 @@ function LocalStorageProvider(config,instanceConfig,logger,runtime) {
  * @return {q.promise<{refImageBuffer:Buffer,refImageUrl:string},{Error}>} - promise that resolves with data and image url
  */
 LocalStorageProvider.prototype.readRefImage = function(refImageName){
+  this.logger.info('Reading ref image: ' + refImageName);
+
   var refImageUri = [
     IMAGE_PATH_PREFIX,
     this._getRuntimePathSegment(),
@@ -66,7 +68,7 @@ LocalStorageProvider.prototype.readRefImage = function(refImageName){
     (this.refImagesRoot || this.currentSpecTestBasePath) + '/' + refImageUri).replace(/\\/g,'/');
   var refImageShowPath = this.refImagesShowRoot ?
     this.refImagesShowRoot + '/' + refImageUri : refImagePath;
-  this.logger.debug('Reading reference image: ' + refImagePath);
+  this.logger.debug('Reading ref image file: ' + refImagePath);
 
   return Q.Promise(function(resolveFn,rejectFn){
     fs.stat(refImagePath, function(err, stats) {
@@ -94,82 +96,77 @@ LocalStorageProvider.prototype.readRefImage = function(refImageName){
 };
 
 /**
- * Store new ref image
- * @param {string} refImageName  - reference image name
- * @param {Buffer} refImageBuffer - reference image buffer
- * @return {q.promise<{refImageUrl:Buffer},{Error}>} - promise that resolves with ref image url
+ * Store new reference image
+ * @param {string} imageName  - image name
+ * @param {Buffer} refImageBuffer - actual image buffer, also stored as new reference image
+ * @return {q.promise<{refImageUrl},{Error}>} - promise that resolves with image url
  */
-LocalStorageProvider.prototype.storeRefImage = function(refImageName,refImageBuffer){
-  var refImageUri = [
-    IMAGE_PATH_PREFIX,
-    this._getRuntimePathSegment(),
-    (refImageName + DEFAULT_REF_IMAGE_EXT)
-  ].join('/');
-  var refImagePath = path.resolve(
-    (this.refImagesRoot || this.currentSpecTestBasePath) + '/' + refImageUri).replace(/\\/g,'/');
-  mkdirp.sync(refImagePath.substring(0,refImagePath.lastIndexOf('/')));
-  var refImageShowPath = this.refImagesShowRoot ?
-    this.refImagesShowRoot + '/' + refImageUri : refImagePath;
-  this.logger.debug('Storing reference image: ' + refImagePath);
+LocalStorageProvider.prototype.storeRefImage = function(imageName,refImageBuffer) {
+  var that = this;
+  this.logger.info('Storing ref image: ' + imageName);
 
-  var refImageWriteStream = fs.createWriteStream(refImagePath);
-  return Q.ninvoke(refImageWriteStream,'write',refImageBuffer)
-    .then(function(){
-      return refImageShowPath;
+  return that._storeImage('REF',imageName,refImageBuffer)
+    .then(function(url){
+      return {
+        refImageUrl: url
+      }
     });
 };
 
 /**
- * Store new act image
- * @param {string} actImageName  - act image name
- * @param {Buffer} actImageBuffer - actual image buffer
- * @return {q.promise<{actImageUrl},{Error}>} - promise that resolves with act image url
- */
-LocalStorageProvider.prototype.storeActImage = function(actImageName,actImageBuffer){
-  var actImageUri = [
-    IMAGE_PATH_PREFIX,
-    this._getRuntimePathSegment(),
-    (actImageName + DEFAULT_ACT_IMAGE_EXT)
-  ].join('/');
-  var actImagePath = path.resolve(
-    this.actImagesRoot + '/' + actImageUri).replace(/\\/g,'/');
-  mkdirp.sync(actImagePath.substring(0,actImagePath.lastIndexOf('/')));
-  var actImageShowPath = this.actImagesShowRoot ?
-    this.actImagesShowRoot + '/' + actImageUri : actImagePath;
-  this.logger.debug('Storing actual image: ' + actImagePath);
-
-  //return fs.createWriteStream(actImagePath);
-  var actImageWriteStream = fs.createWriteStream(actImagePath);
-  return Q.ninvoke(actImageWriteStream,'write',actImageBuffer)
-    .then(function(){
-      return actImageShowPath;
-    });
-};
-
-/**
- * Store new diff image
- * @param {string} diffImageName  - diff image name
+ * Store new reference, actual and difference images
+ * @param {string} imageName  - image name
+ * @param {Buffer} actImageBuffer - actual image buffer, also stored as new reference image
  * @param {Buffer} diffImageBuffer - diff image buffer
- * @return {q.promise<{diffImageUrl},{Error}>} - promise that resolves with diff image url
+ * @param {boolean} updateRefFlag - whether to update ref image
+ * @return {q.promise<{refImageUrl,actImageUrl,diffImageUrl},{Error}>} - promise that resolves with images urls
  */
-LocalStorageProvider.prototype.storeDiffImage = function(diffImageName,diffImageBuffer){
-  var diffImageUri = [
+LocalStorageProvider.prototype.storeRefActDiffImage = function(imageName,actImageBuffer,diffImageBuffer,updateRefFlag) {
+  var that = this;
+  this.logger.debug('Storing ref,act and diff images: ' + imageName);
+
+  return Q.all([
+    updateRefFlag ? that._storeImage('REF',imageName,actImageBuffer) : Q(),
+    that._storeImage('ACT',imageName,actImageBuffer),
+    that._storeImage('DIFF',imageName,diffImageBuffer)
+  ]).then(function(results){
+    return {
+      refImageUrl: results[0],
+      actImageUrl: results[1],
+      diffImageUrl: results[2]
+    }
+  });
+};
+
+LocalStorageProvider.prototype._storeImage = function(type,imageName,imageBuffer){
+  var ext;
+  if (type == 'REF') {
+    ext = DEFAULT_REF_IMAGE_EXT;
+  } else if (type == 'ACT') {
+    ext = DEFAULT_ACT_IMAGE_EXT;
+  } else if (type == 'DIFF') {
+    ext = DEFAULT_DIFF_IMAGE_EXT;
+  }
+
+  var imageUri = [
     IMAGE_PATH_PREFIX,
     this._getRuntimePathSegment(),
-    (diffImageName + DEFAULT_DIFF_IMAGE_EXT)
+    (imageName + ext)
   ].join('/');
-  var diffImagePath = path.resolve(
-    this.actImagesRoot + '/' + diffImageUri).replace(/\\/g,'/');
-  mkdirp.sync(diffImagePath.substring(0,diffImagePath.lastIndexOf('/')));
-  var diffImageShowPath = this.actImagesShowRoot ?
-    this.actImagesShowRoot + '/' + diffImageUri : diffImagePath;
-  this.logger.debug('Storing diff image: ' + diffImagePath);
+  var imagePath = path.resolve((
+    (type == 'REF' ? this.refImagesRoot : this.actImagesRoot )
+    || this.currentSpecTestBasePath) + '/' + imageUri).replace(/\\/g,'/');
+  mkdirp.sync(imagePath.substring(0,imagePath.lastIndexOf('/')));
+  this.logger.debug('Storing image file: ' + imagePath);
 
-  //return fs.createWriteStream(diffImagePath);
-  var diffImageWriteStream = fs.createWriteStream(diffImagePath);
-  return Q.ninvoke(diffImageWriteStream,'write',diffImageBuffer)
+  var imagesShowRoot = type == 'REF' ? this.refImagesShowRoot : this.actImagesShowRoot;
+  var imageShowPath = imagesShowRoot ?
+    imagesShowRoot + '/' + imageUri : imagePath;
+
+  var imageWriteStream = fs.createWriteStream(imagePath);
+  return Q.ninvoke(imageWriteStream,'write',imageBuffer)
     .then(function(){
-      return diffImageShowPath;
+      return imageShowPath;
     });
 };
 

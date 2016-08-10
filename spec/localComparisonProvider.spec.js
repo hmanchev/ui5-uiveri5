@@ -9,7 +9,9 @@ describe("LocalComparisonProvider", function () {
   var imagePath = '/localComparisonProvider/images/testSpec/platform/resolution/browser/theme/direction/mode';
 
   function takeScreenshotMock(name){
-    return fs.readFileSync(__dirname + '/localComparisonProvider/' + name + '.png');
+    var file = __dirname + '/localComparisonProvider/' + name + '.png';
+    logger.debug('takeScreenshotMock: read: ' + file);
+    return fs.readFileSync(file);
   }
 
   var spec = {
@@ -51,7 +53,8 @@ describe("LocalComparisonProvider", function () {
   });
 
   it('Should pass with similar images', function (done) {
-    var comparisonProvider = new LocalComparisonProvider(comparisonConfig,comparisonInstanceConfig,logger,storageProvider);
+    var comparisonProvider = new LocalComparisonProvider(
+      comparisonConfig,comparisonInstanceConfig,logger,storageProvider);
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('arrow_left'),'arrow_left');
@@ -64,7 +67,8 @@ describe("LocalComparisonProvider", function () {
   });
 
   it('Should fail with different images', function(done) {
-    var comparisonProvider = new LocalComparisonProvider(comparisonConfig,comparisonInstanceConfig,logger,storageProvider);
+    var comparisonProvider = new LocalComparisonProvider(
+      comparisonConfig,comparisonInstanceConfig,logger,storageProvider);
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('arrow_left_hover'),'arrow_left');
