@@ -235,7 +235,8 @@ function run(config) {
             //var bodyElement = this.driver_.findElement(by.css('body'));
             // replace once we upgrade beyond protractor 2.3.0
             // https://github.com/angular/protractor/issues/2036
-            return this.driver_.actions().mouseMove(this).click().mouseMove(bodyElement,{x:0,y:0}).perform();
+            return this.driver_.actions().mouseMove(this)
+              .click().mouseMove(bodyElement,{x:-1,y:-1}).perform();
           };
         }
       });
