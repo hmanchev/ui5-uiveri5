@@ -10,9 +10,7 @@ var mkdirp = require('mkdirp');
 var DEFAULT_IMAGE_STORAGE_URI = 'images';
 
 var DEFAULT_REF_LNK_EXT = '.ref.lnk';
-var DEFAULT_REF_IMAGE_EXT = '.ref.png';
-var DEFAULT_ACT_IMAGE_EXT = '.act.png';
-var DEFAULT_DIFF_IMAGE_EXT = '.diff.png';
+var DEFAULT_IMAGE_EXT = '.png';
 var DEFAULT_FILE_PATH_LENGTH = 250;
 
 /**
@@ -26,7 +24,6 @@ var DEFAULT_FILE_PATH_LENGTH = 250;
  * @type {Object}
  * @property {string} refImagesRoot - reference images root, defaults to spec.testBasePath
  * @property {string} imageStorageUrl - image store url
- * @property {string} imageStorageUri - image store uri
  * @property {string} username - username for authentication in image storage application
  * @property {string} password - password for the username
  */
@@ -58,16 +55,16 @@ function RemoteStorageProvider(config,instanceConfig,logger,runtime) {
 
 /**
  * Read ref image
- * @param {string} refImageName - reference image name
+ * @param {string} imageName - reference image name
  * @return {q.promise<{refImageBuffer:Buffer,refImageUrl:string},{Error}>} - promise that resolves with data and image url,
  *  return null of image is not found
  */
-RemoteStorageProvider.prototype.readRefImage = function(refImageName){
+RemoteStorageProvider.prototype.readRefImage = function(imageName){
   var that = this;
-  var refImagePath = this._getRefPath(DEFAULT_REF_LNK_EXT, refImageName);
+  this.logger.debug('Reading reference image: ' + imageName);
 
-  this.logger.debug('Reading reference image: ' + refImageName);
   return Q.Promise(function(resolveFn,rejectFn) {
+    var refImagePath = that._getLnkFilePath(DEFAULT_REF_LNK_EXT, imageName);
     fs.stat(refImagePath, function(err, stats) {
       if (err) {
         // no such file => return no ref image
@@ -107,122 +104,67 @@ RemoteStorageProvider.prototype.readRefImage = function(refImageName){
  * Store new ref image
  * @param {string} refImageName  - reference image name
  * @param {Buffer} refImageBuffer - reference image buffer
- * @return {q.promise<{refImageUrl:Buffer},{Error}>} - promise that resolves with ref image url
+ * @return {q.promise<{refImageUrl},{Error}>} - promise that resolves with ref image url
  */
-RemoteStorageProvider.prototype.storeRefImage = function(refImageName,refImageBuffer){
+RemoteStorageProvider.prototype.storeRefImage = function(imageName,refImageBuffer){
   var that = this;
-  this.meta._meta.type = 'REF';
-  this.logger.debug('Storing reference image: ' + refImageName);
+  this.logger.debug('Storing ref image: ' + imageName);
 
-  var formData = {
-    "image": {
-      value: refImageBuffer,
-      options: {
-        filename: refImageName + DEFAULT_REF_IMAGE_EXT
-      }
-    },
-    "json" :  new Buffer(JSON.stringify(this.meta))
-  };
-
-  return Q.Promise(function(resolveFn,rejectFn) {
-    request.post({url: that.imageStorageUrl, formData: formData,auth: that.auth},
-      function (error,response,body) {
-        if (error) {
-          rejectFn(new Error('Error while POST to: ' + that.imageStorageUrl + ' ,details: '  + error));
-        } else {
-          var responseBody = '';
-          try {
-            responseBody = JSON.parse(body);
-          } catch (error) {
-            that.logger.trace('Response body: ' + body);
-            rejectFn(new Error('Cannot parse response body: ' + error + ", response: " + JSON.stringify(response)));
-          }
-
-          var refImageUrl = that.imageStorageUrl + '/' + responseBody.uuid;
-
-          if(response.statusCode === 201 || response.statusCode === 422) {
-            that._storeLnkFile(DEFAULT_REF_LNK_EXT, refImageName, responseBody.uuid).then(
-              function() {
-                resolveFn(refImageUrl);
-              },
-              function(error) {
-                rejectFn(new Error('Error while storing lnk file ,details: '  + error));
-              });
-          } else {
-            rejectFn(new Error('Server responded with status code: ' + response.statusCode));
-          }
-        }
-      });
+  var actUuid;
+  return this._uploadImage(imageName,refImageBuffer).then(function(resp) {
+    actUuid = resp.uuid;
+    return that._storeLnkFile(DEFAULT_REF_LNK_EXT, imageName, actUuid);
+  }).then(function(){
+    // return result object
+    return {
+      refImageUrl: that.imageStorageUrl + '/' + actUuid
+    }
   });
 };
 
 /**
- * Store new act image
- * @param {string} actImageName  - act image name
- * @param {Buffer} actImageBuffer - actual image buffer
- * @return {q.promise<{actImageUrl},{Error}>} - promise that resolves with act image url
- */
-RemoteStorageProvider.prototype.storeActImage = function(actImageName,actImageBuffer){
-  var that = this;
-  this.meta._meta.type = 'ACT';
-  this.logger.debug('Storing actual image: ' + actImageName);
-
-  var metaJson = JSON.stringify(this.meta);
-
-  var formData = {
-    "image": {
-      value: actImageBuffer,
-      options: {
-        filename: actImageName + DEFAULT_ACT_IMAGE_EXT
-      }
-    },
-    "json" : new Buffer(metaJson)
-  };
-
-  return Q.Promise(function(resolveFn,rejectFn) {
-    request.post({url: that.imageStorageUrl, formData: formData,auth: that.auth},
-      function (error, response, body) {
-        if (error) {
-          rejectFn(new Error('Error while POST to: ' + that.imageStorageUrl + ' ,details: '  + error));
-        } else {
-          var responseBody = '';
-          try {
-            responseBody = JSON.parse(body);
-          } catch (error) {
-            that.logger.trace('Response body: ' + body);
-            rejectFn(new Error('Cannot parse response body: ' + error + ", response: " + JSON.stringify(response)));
-          }
-
-          var actImageUrl = that.imageStorageUrl + '/' + responseBody.uuid;
-
-          if(response.statusCode === 201 || response.statusCode === 422) {
-            resolveFn(actImageUrl);
-          } else {
-            rejectFn(new Error('Server responded with status code: ' + response.statusCode));
-          }
-        }
-      });
-  });
-};
-
-/**
- * Store new diff image
- * @param {string} diffImageName  - diff image name
+ * Store new reference, actual and difference images
+ * @param {string} imageName  - image name
+ * @param {Buffer} actImageBuffer - actual image buffer, also stored as new reference image
  * @param {Buffer} diffImageBuffer - diff image buffer
- * @return {q.promise<{diffImageUrl},{Error}>} - promise that resolves with diff image url
+ * @param {boolean} updateRefFlag - whether to update ref image
+ * @return {q.promise<{refImageUrl,actImageUrl,diffImageUrl},{Error}>} - promise that resolves with images urls
  */
-RemoteStorageProvider.prototype.storeDiffImage = function(diffImageName,diffImageBuffer){
-  this.logger.debug('Storing difference image: ' + diffImageName);
-  this.meta._meta.type = 'DIFF';
-
+RemoteStorageProvider.prototype.storeRefActDiffImage = function(imageName,actImageBuffer,diffImageBuffer,updateRefFlag){
   var that = this;
-  var metaJson = JSON.stringify(this.meta);
+  this.logger.debug('Storing ref,act and diff images for: ' + imageName);
 
+  var actUuid;
+  // start with storing the actImage buffer
+  return this._uploadImage(imageName,actImageBuffer).then(function(resp) {
+    actUuid = resp.uuid;
+    // save ref lnk file
+    if (updateRefFlag) {
+      return that._storeLnkFile(DEFAULT_REF_LNK_EXT, imageName, actUuid);
+    }
+  }).then(function(){
+    // store diff image
+    return that._uploadImage(imageName,diffImageBuffer);
+  }).then(function(resp){
+    var diffUuid = resp.uuid;
+    // return result object
+    return {
+      refImageUrl: that.imageStorageUrl + '/' + actUuid,
+      actImageUrl: that.imageStorageUrl + '/' + actUuid,
+      diffImageUrl: that.imageStorageUrl + '/' + diffUuid
+    }
+  });
+};
+
+RemoteStorageProvider.prototype._uploadImage = function(imageName,imageBuffer) {
+  var that = this;
+
+  var metaJson = JSON.stringify(this.meta);
   var formData = {
     "image": {
-      value: diffImageBuffer,
+      value: imageBuffer,
       options: {
-        filename: diffImageName + DEFAULT_DIFF_IMAGE_EXT
+        filename: imageName + DEFAULT_IMAGE_EXT
       }
     },
     "json" : new Buffer(metaJson)
@@ -240,24 +182,25 @@ RemoteStorageProvider.prototype.storeDiffImage = function(diffImageName,diffImag
             responseBody = JSON.parse(body);
           } catch (error) {
             that.logger.trace('Response body: ' + body);
-            rejectFn(new Error('Cannot parse response body: ' + error + ", response: " + JSON.stringify(response)));
+            rejectFn(new Error('Cannot parse response body due to: ' + error +
+              ", response: " + JSON.stringify(response)));
           }
 
-          var diffImageUrl = that.imageStorageUrl + '/' + responseBody.uuid;
-
           if(response.statusCode === 201 || response.statusCode === 422) {
-            resolveFn(diffImageUrl);
+            resolveFn({uuid:responseBody.uuid});
           } else {
-            rejectFn(new Error('Server responded with status code: ' + response.statusCode));
+            rejectFn(new Error('Server responded with status code: ' + response.statusCode +
+              ", response: " + JSON.stringify(response)));
           }
         }
       });
   });
+
 };
 
 RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
   var that = this;
-  var refFilePath = that._getRefPath(ext,imageName);
+  var refFilePath = that._getLnkFilePath(ext,imageName);
 
   return Q.Promise(function(resolveFn,rejectFn) {
     if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH) {
@@ -280,12 +223,12 @@ RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
   });
 };
 
-RemoteStorageProvider.prototype._getRefPath = function(extension, refFileName) {
+RemoteStorageProvider.prototype._getLnkFilePath = function(ext, fileName) {
   var refImagePath = [
     this.refImagesRoot || this.currentSpecTestBasePath,
     'images',
     this._getRuntimePathSegment(),
-    (refFileName + extension)
+    (fileName + ext)
   ].join('/');
 
   return path.resolve(refImagePath).replace(/\\/g,'/');
@@ -317,7 +260,6 @@ RemoteStorageProvider.prototype.onBeforeEachSpec = function(spec){
 
   this.meta = {
     _meta : {
-      type: '',
       spec: {
         lib: spec.lib,
         name: spec.name,

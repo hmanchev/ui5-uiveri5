@@ -105,10 +105,10 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                   };
 
                   that.storageProvider.storeRefImage(expectedImageName,actualImageBuffer)
-                    .then(function(refImageUrl){
+                    .then(function(refRes){
                       // update details and store message
                       res.details = {
-                        refImageUrl:refImageUrl
+                        refImageUrl:refRes.refImageUrl
                       };
                       result.message = JSON.stringify(res);
                       // fail
@@ -202,22 +202,8 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         imageName: expectedImageName
                       };
 
-                      // store ref image
-                      var storeRefPromise;
-                      if (that.update) {
-                        storeRefPromise =
-                          that.storageProvider.storeRefImage(expectedImageName, actualImageBuffer);
-                      }
-
-                      // store actual image
-                      var storeActPromise =
-                        that.storageProvider.storeActImage(expectedImageName, actualImageBuffer)
-                          .then(function (actImageUrl) {
-                            res.details.actImageUrl = actImageUrl;
-                          });
-
-                      // store diff image
-                      var storeDiffPromise = Q.Promise(function (resolveFn, rejectFn) {
+                      // extract diff image to buffer
+                      Q.Promise(function (resolveFn, rejectFn) {
                         var diffImageChunks = [];
                         var diffImageReadStream = comparisonResult.getDiffImage().pack();
                         diffImageReadStream.on('data', function (chunk) {
@@ -228,30 +214,25 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         });
                         diffImageReadStream.on('end', function () {
                           var diffImageBuffer = Buffer.concat(diffImageChunks);
-                          that.storageProvider.storeDiffImage(expectedImageName, diffImageBuffer)
-                            .then(function (diffImageUrl) {
-                              res.details.diffImageUrl = diffImageUrl;
-                              resolveFn();
-                            })
-                            .catch(function (error) {
-                              rejectFn(error);
-                            });
+                          resolveFn(diffImageBuffer);
                         });
+                      }).then(function(diffImageBuffer){
+                        return that.storageProvider.storeRefActDiffImage(
+                          expectedImageName,actualImageBuffer,diffImageBuffer,that.update);
+                      }).then(function (storeRes) {
+                        // ref should be left the ref image before update
+                        res.details.actImageUrl = storeRes.actImageUrl;
+                        res.details.diffImageUrl = storeRes.diffImageUrl;
+                        res.failureType = 'COMPARISON';
+                        result.message = JSON.stringify(res);
+                        // fail
+                        defer.fulfill(false);
+                      })
+                      .catch(function (error) {
+                        result.message = error.stack;
+                        // fail
+                        defer.fulfill(false);
                       });
-
-                      // wait for both promises and finish the match
-                      Q.all([storeRefPromise,storeActPromise, storeDiffPromise])
-                        .then(function () {
-                          res.failureType = 'COMPARISON';
-                          result.message = JSON.stringify(res);
-                          // fail
-                          defer.fulfill(false);
-                        })
-                        .catch(function (error) {
-                          result.message = error.stack;
-                          // fail
-                          defer.fulfill(false);
-                        });
                     }
                   }
                 );

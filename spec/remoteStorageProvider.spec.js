@@ -1,4 +1,7 @@
 var fs = require('fs');
+var Q = require('q');
+Q.longStackSupport = true;
+
 var storageMock = require('./remoteStorageProvider/remoteStorageMock')();
 
 describe("RemoteStorageProvider", function () {
@@ -45,8 +48,25 @@ describe("RemoteStorageProvider", function () {
 
     storageProvider.storeRefImage(initialImgName, imageBuffer)
       .then(function(result) {
-        expect(result).toMatch(
-          '.*/images/*');
+        expect(result.refImageUrl).toMatch('.*/images/*');
+        expect(fs.statSync(lnkPath + '.ref.lnk').isFile()).toBe(true);
+        done();
+      }).catch(function(error){
+      fail(error);
+      done()
+    });
+  });
+
+  it("Should store new ref,act and diff images", function(done) {
+    var storageProvider = new RemoteStorageProvider({},
+      {refImagesRoot: refImageRoot, imageStorageUrl: imageStorageMockUrl},logger,runtime);
+    storageProvider.onBeforeEachSpec(spec);
+
+    storageProvider.storeRefActDiffImage(initialImgName, imageBuffer, imageBuffer, true)
+      .then(function(result) {
+        expect(result.refImageUrl).toMatch('.*/images/*');
+        expect(result.actImageUrl).toMatch('.*/images/*');
+        expect(result.diffImageUrl).toMatch('.*/images/*');
         expect(fs.statSync(lnkPath + '.ref.lnk').isFile()).toBe(true);
         done();
       }).catch(function(error){
@@ -71,38 +91,6 @@ describe("RemoteStorageProvider", function () {
           }
           done();
         });
-      }).catch(function(error){
-        fail(error);
-        done()
-      });
-  });
-
-  it("Should store new act image", function(done) {
-    var storageProvider = new RemoteStorageProvider({},
-      {refImagesRoot: refImageRoot, imageStorageUrl: imageStorageMockUrl},logger,runtime);
-    storageProvider.onBeforeEachSpec(spec);
-
-    storageProvider.storeActImage(initialImgName, imageBuffer)
-      .then(function(result) {
-        expect(result).toMatch(
-          '.*/images/*');
-        done();
-      }).catch(function(error){
-        fail(error);
-        done()
-      });
-  });
-
-  it("Should store new diff image", function(done) {
-    var storageProvider = new RemoteStorageProvider({},
-      {refImagesRoot: refImageRoot, imageStorageUrl: imageStorageMockUrl},logger,runtime);
-    storageProvider.onBeforeEachSpec(spec);
-
-    storageProvider.storeDiffImage(initialImgName, imageBuffer)
-      .then(function(result) {
-        expect(result).toMatch(
-          '.*/images/*');
-        done();
       }).catch(function(error){
         fail(error);
         done()

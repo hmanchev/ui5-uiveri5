@@ -1,5 +1,7 @@
 
 var fs = require('fs');
+var Q = require('q');
+Q.longStackSupport = true;
 
 describe("LocalStorageProvider", function () {
   var LocalStorageProvider = require('../src/image/localStorageProvider');
@@ -23,7 +25,8 @@ describe("LocalStorageProvider", function () {
   var refImageBuffer;
 
   it("Should read ref image", function(done) {
-    var storageProvider = new LocalStorageProvider({},{refImagesRoot:__dirname + '/localStorageProvider'},logger,runtime);
+    var storageProvider = new LocalStorageProvider({},
+      {refImagesRoot:__dirname + '/localStorageProvider'},logger,runtime);
     storageProvider.onBeforeEachSpec(spec);
 
     storageProvider.readRefImage('arrow_left').then(function(result){
@@ -39,91 +42,55 @@ describe("LocalStorageProvider", function () {
   });
 
   it("Should store new ref image", function(done) {
-    var storageProvider = new LocalStorageProvider({},{refImagesRoot:'target/localStorageProvider'},logger,runtime);
+    var storageProvider = new LocalStorageProvider({},
+      {refImagesRoot:'target/localStorageProvider'},logger,runtime);
     storageProvider.onBeforeEachSpec(spec);
 
     storageProvider.storeRefImage('arrow_left',refImageBuffer)
-      .then(function(imageUrl){
-        fs.stat(imageUrl,function(error,stat){
-          if(error){
-            fail(error);
-            done();
-          } else {
-            expect(stat.size).toBe(1239);
-            // remove leftovers
-            fs.unlink(imageUrl,function(error){
-              if (error){
-                fail(error);
-              }
-              done();
-            });
-          }
-        });
+      .then(function(res) {
+        return Q.ninvoke(fs, 'stat', res.refImageUrl)
+          .then(function () {
+            return Q.ninvoke(fs, 'unlink', res.refImageUrl);
+          });
       })
-      .catch(function(error){
+      .then(function(result){
+        done();
+      })
+      .catch(function(error) {
         fail(error);
         done();
       });
   });
 
-  it("Should store new act image", function(done) {
-    var storageProvider = new LocalStorageProvider({},{actImagesRoot:'target/localStorageProvider'},logger,runtime);
+  it("Should store new ref, act and diff image", function(done) {
+    var storageProvider = new LocalStorageProvider({},
+      {refImagesRoot:'target/localStorageProvider'},logger,runtime);
     storageProvider.onBeforeEachSpec(spec);
 
-    storageProvider.storeActImage('arrow_left',refImageBuffer)
-      .then(function(imageUrl){
-        fs.stat(imageUrl,function(error,stat){
-          if(error){
-            fail(error);
-            done();
-          } else {
-            expect(stat.size).toBe(1239);
-            // remove leftovers
-            fs.unlink(imageUrl,function(error){
-              if (error){
-                fail(error);
-              }
-              done();
-            });
-          }
-        });
+    storageProvider.storeRefActDiffImage('arrow_left',refImageBuffer,refImageBuffer,false)
+      .then(function(images) {
+        return Q.all([
+          Q.ninvoke(fs, 'stat', images.actImageUrl),
+          Q.ninvoke(fs, 'stat', images.diffImageUrl)
+        ]).then(function () {
+          return Q.all([
+            Q.ninvoke(fs, 'unlink', images.actImageUrl),
+            Q.ninvoke(fs, 'unlink', images.diffImageUrl)
+          ]);
+        })
       })
-      .catch(function(error){
-        fail(error);
+      .then(function(result){
         done();
-      });
-  });
-
-  it("Should store new diff image", function(done) {
-    var storageProvider = new LocalStorageProvider({},{actImagesRoot:'target/localStorageProvider'},logger,runtime);
-    storageProvider.onBeforeEachSpec(spec);
-
-    storageProvider.storeDiffImage('arrow_left',refImageBuffer)
-      .then(function(imageUrl){
-        fs.stat(imageUrl,function(error,stat){
-          if(error){
-            fail(error);
-            done();
-          } else {
-            expect(stat.size).toBe(1239);
-            // remove leftovers
-            fs.unlink(imageUrl,function(error){
-              if (error){
-                fail(error);
-              }
-              done();
-            });
-          }
-        });
       })
-      .catch(function(error){
+      .catch(function(error) {
         fail(error);
         done();
       });
   });
 
   it("Should return correctly if image does not exist", function(done) {
-    var storageProvider = new LocalStorageProvider({},{refImagesRoot:__dirname + '/localStorageProvider'},logger,runtime);
+    var storageProvider = new LocalStorageProvider({},
+      {refImagesRoot:__dirname + '/localStorageProvider'},logger,runtime);
     storageProvider.onBeforeEachSpec(spec);
 
     storageProvider.readRefImage('not_existing').then(function(result){
