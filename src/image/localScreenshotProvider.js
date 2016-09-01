@@ -174,62 +174,67 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
     element.getSize().then(function (elementSize) {
       elementDimensions.width = elementSize.width;
       elementDimensions.height = elementSize.height;
-      element.getLocation().then(function (elementLocation) {
-        elementDimensions.top = elementLocation.y;
-        elementDimensions.left = elementLocation.x;
-        var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
-        if (remoteOptions && remoteOptions.scaling) {
-          if (remoteOptions.scaling.x && remoteOptions.scaling.x > 0 && remoteOptions.scaling.x !== 1) {
-            elementDimensions.width = Math.round(elementDimensions.width * remoteOptions.scaling.x);
-            elementDimensions.left = Math.round(elementDimensions.left * remoteOptions.scaling.x);
-          }
-          if (remoteOptions.scaling.y && remoteOptions.scaling.y > 0 && remoteOptions.scaling.y !== 1) {
-            elementDimensions.height = Math.round(elementDimensions.height * remoteOptions.scaling.y);
-            elementDimensions.top = Math.round(elementDimensions.top * remoteOptions.scaling.y);
-          }
-        }
-        var png = new PNG();
-        png.parse(originalImageBuffer, function (err, data) {
-          if(err) {
-            deferCropScreenshot.reject(new Error('Cannot crop the screenshot: ' + err));
-          } else {
-            // check if the element is completely outside the view port
-            if (elementDimensions.left > data.width || elementDimensions.top > data.height ||
-              ((elementDimensions.width + elementDimensions.left) < 0) ||
-              ((elementDimensions.height + elementDimensions.top) < 0)) {
-              deferCropScreenshot.reject(new Error('Cannot crop element because is outside of the view port. ' +
-                'View port: width=' + data.width + ', height=' + data.height + '. Element properties: width=' +
-                elementDimensions.width + ', height=' + elementDimensions.height + ', left=' + elementDimensions.left +
-                ', top=' + elementDimensions.top));
-            } else {
-              // element is partially or completely in the view port
-              var cropConfig = {};
-
-              if(elementDimensions.left < 0) {
-                cropConfig.left = 0;
-                cropConfig.width = Math.min((elementDimensions.width + elementDimensions.left), data.width);
-              } else {
-                cropConfig.left = elementDimensions.left;
-                cropConfig.width = (elementDimensions.width + elementDimensions.left) < data.width ?
-                  elementDimensions.width : (data.width - elementDimensions.left);
-              }
-
-              if(elementDimensions.top < 0) {
-                cropConfig.top = 0;
-                cropConfig.height = Math.min((elementDimensions.height + elementDimensions.top), data.height);
-              } else {
-                cropConfig.top = elementDimensions.top;
-                cropConfig.height = (elementDimensions.height + elementDimensions.top) < data.height ?
-                  elementDimensions.height : (data.height - elementDimensions.top);
-              }
-
-              that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
-                deferCropScreenshot.fulfill(croppedElement);
-              });
+      if (elementDimensions.width <= 0 || elementDimensions.height <= 0) {
+        deferCropScreenshot.reject(new Error('Cannot crop element because of size issue! Element width=' +
+          elementDimensions.width + ', height=' + elementDimensions.height));
+      } else {
+        element.getLocation().then(function (elementLocation) {
+          elementDimensions.top = elementLocation.y;
+          elementDimensions.left = elementLocation.x;
+          var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
+          if (remoteOptions && remoteOptions.scaling) {
+            if (remoteOptions.scaling.x && remoteOptions.scaling.x > 0 && remoteOptions.scaling.x !== 1) {
+              elementDimensions.width = Math.round(elementDimensions.width * remoteOptions.scaling.x);
+              elementDimensions.left = Math.round(elementDimensions.left * remoteOptions.scaling.x);
+            }
+            if (remoteOptions.scaling.y && remoteOptions.scaling.y > 0 && remoteOptions.scaling.y !== 1) {
+              elementDimensions.height = Math.round(elementDimensions.height * remoteOptions.scaling.y);
+              elementDimensions.top = Math.round(elementDimensions.top * remoteOptions.scaling.y);
             }
           }
+          var png = new PNG();
+          png.parse(originalImageBuffer, function (err, data) {
+            if (err) {
+              deferCropScreenshot.reject(new Error('Cannot crop the screenshot: ' + err));
+            } else {
+              // check if the element is completely outside the view port
+              if (elementDimensions.left > data.width || elementDimensions.top > data.height ||
+                ((elementDimensions.width + elementDimensions.left) < 0) ||
+                ((elementDimensions.height + elementDimensions.top) < 0)) {
+                deferCropScreenshot.reject(new Error('Cannot crop element because is outside of the view port. ' +
+                  'View port: width=' + data.width + ', height=' + data.height + '. Element properties: width=' +
+                  elementDimensions.width + ', height=' + elementDimensions.height + ', left=' + elementDimensions.left +
+                  ', top=' + elementDimensions.top));
+              } else {
+                // element is partially or completely in the view port
+                var cropConfig = {};
+
+                if (elementDimensions.left < 0) {
+                  cropConfig.left = 0;
+                  cropConfig.width = Math.min((elementDimensions.width + elementDimensions.left), data.width);
+                } else {
+                  cropConfig.left = elementDimensions.left;
+                  cropConfig.width = (elementDimensions.width + elementDimensions.left) < data.width ?
+                    elementDimensions.width : (data.width - elementDimensions.left);
+                }
+
+                if (elementDimensions.top < 0) {
+                  cropConfig.top = 0;
+                  cropConfig.height = Math.min((elementDimensions.height + elementDimensions.top), data.height);
+                } else {
+                  cropConfig.top = elementDimensions.top;
+                  cropConfig.height = (elementDimensions.height + elementDimensions.top) < data.height ?
+                    elementDimensions.height : (data.height - elementDimensions.top);
+                }
+
+                that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
+                  deferCropScreenshot.fulfill(croppedElement);
+                });
+              }
+            }
+          });
         });
-      });
+      }
     });
   } else {
     deferCropScreenshot.fulfill(browserScreenshot);
