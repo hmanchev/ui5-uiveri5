@@ -40,7 +40,7 @@ ModuleLoader.prototype._loadModule = function(moduleDef,args,instanceConfig){
     }
     var clonedModuleDef = _.clone(moduleDef);
     delete clonedModuleDef.name;
-    instanceConfig = _.merge(instanceConfig,clonedModuleDef);
+    instanceConfig = _.merge(clonedModuleDef,instanceConfig);
   } else if (_.isString(moduleDef)) {
     moduleName = moduleDef;
   } else {
@@ -88,7 +88,7 @@ ModuleLoader.prototype.loadModuleIfAvailable = function(moduleName,args) {
 
 /**
  * Load explicitly named module instance
- * @param {string} moduleName - used as key in config to find module instance name
+ * @param {string|Object} moduleName - used as key in config to find module instance name
  * @param {*[]} args
  * @param {string} [modulePath]
  */
