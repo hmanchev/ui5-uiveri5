@@ -46,6 +46,11 @@ Update the fork remote repo:
 git push origin master
 ```
 
+And delete the local branch:
+```
+git branch -d <local branch>
+```
+
 ### [More info](https://2buntu.com/articles/1459/keeping-your-forked-repo-synced-with-the-upstream-source/)
 
 ## Testing
@@ -62,6 +67,13 @@ $ npm run test --specs spec/StatisticsCollector.spec.js
 
 ## Release
 ### Release new version
+
+Assuming you have local copy of a fork with `upstream` and `origin` remotes setup correctly.
+
+* Create a local branch over an up-to-date master branch
+```
+git checkout -b release
+```
 
 * Increment version in package.json.
 Increment patch number if this release contains only bugfixes, increment minor version number if contains features.
@@ -85,5 +97,5 @@ git tag -a v1.xx.y -m "<message 1>" -m "<message 2>"
 
 * Push the new tag
 ```
-git push --follow-tags
+git push --follow-tags origin release:master
 ```
