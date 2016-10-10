@@ -29,7 +29,7 @@ Values and defaults:
 * platformName - one of (windows|mac|linux|android|ios|winphone)} - platform name, default: windows
 * platformVersion - platform number like 7,8 for windows; 4.4,5.0 for android;, default: *
 * platformResolution - format: /\d+x\d+/- platform resolution, WIDTHxHEIGHT, default: resolved from available
-* ui5.theme - one of (bluecrystal|hcp) - UI5 theme, default bluecrystal
+* ui5.theme - one of (bluecrystal|belize|hcp) - UI5 theme, default belize
 * ui5.direction - one of (rtl|ltr) - UI5 direction, default: ltr
 * ui5.mode - one of (cosy|compact) - UI5 mode, default: cosy
 
