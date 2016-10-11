@@ -5,7 +5,7 @@ var DEFAULT_BROWSER_NAME = 'chrome';
 var DEFAULT_PLATFORM_NAME = 'windows';
 var DEFAULT_VERSION = '*';
 var DEFAULT_DEVICE_NAME = '*';
-var DEFAULT_UI5_THEME = 'bluecrystal';
+var DEFAULT_UI5_THEME = 'belize';
 var DEFAULT_UI5_DIRECTION = 'ltr';
 var DEFAULT_UI5_MODE = 'cozy';
 
@@ -29,7 +29,7 @@ var supportedPlatformNames = [
   'windows','mac','linux','android','ios','winphone'
 ];
 var supportedUI5Themes = [
-  'bluecrystal','hcb'
+  'bluecrystal','belize','hcb'
 ];
 var supportedUI5Directions = [
   'ltr','rtl'
@@ -47,7 +47,7 @@ var supportedUI5Modes = [
  * @param {number} platformVersion - platform number like 7,8 for windows; 4.4,5.0 for android;, default: *
  * @param {string(default|/\d+x\d+/)} platformResolution - platform resolution, WIDTHxHEIGHT, default: resolved from available
  * @param {string} deviceName - device name, default: *
- * @param {string(bluecrystal|hcb)} ui5.theme - UI5 theme, default bluecrystal
+ * @param {string(bluecrystal|belize|hcb)} ui5.theme - UI5 theme, default belize
  * @param {string(rtl|ltr)} ui5.direction - UI5 direction, default: ltr
  * @param {string(cozy|compact)} ui5.mode - UI5 mode, default: cozy
  * @param {Object} capabilities - additional browser capabilities object
