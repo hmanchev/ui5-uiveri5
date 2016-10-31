@@ -20,7 +20,7 @@ exports.config = {
           executable: '${filename}-${version}.${patch}.jar'
         },
         chromedriver: {
-          version: '2.21',
+          version: '2.25',
           unzip: true,
           filename: 'chromedriver',
           url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${chromeOsTypeString}.zip',
