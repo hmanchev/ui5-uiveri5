@@ -49,9 +49,8 @@ ConnectionProvider.prototype._mergeRuntimeCapabilities = function(capabilities,r
   // merge capabilities on root level
   _.merge(capabilities,runtime.capabilities);
 
-  // clone runtime without the capabilities
+  // provide runtime in browser capabilities
   capabilities.runtime = runtime;
-  delete capabilities.runtime.capabilities;
 
   return capabilities;
 };

@@ -24,13 +24,13 @@ var PNG = require('pngjs').PNG;
  * @param {LocalScreenshotProviderConfig} config
  * @param {LocalScreenshotProviderInstanceConfig} instanceConfig
  * @param {Logger} logger
- * @param {LocalScreenshotProviderInstanceConfig} currentCapabilities
+ * @param {Runtime} runtime
  */
-function LocalScreenshotProvider(config,instanceConfig,logger,currentCapabilities) {
+function LocalScreenshotProvider(config,instanceConfig,logger,runtime) {
   //this.config = config;
   //this.instanceConfig = instanceConfig;
   this.logger = logger;
-  this.currentCapabilities = currentCapabilities;
+  this.runtime = runtime;
 
   // set default for take if not provided
   this.take = typeof config.take !== 'undefined' ? config.take : DEFAULT_TAKE;
@@ -80,7 +80,7 @@ LocalScreenshotProvider.prototype._takeFullScreenshot = function() {
   var that = this;
   that.logger.debug('Taking full screenshot');
 
-  var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
+  var remoteOptions = that.runtime.capabilities.remoteWebDriverOptions;
   if(remoteOptions && remoteOptions.contextSwitch) {
     var nativeName = 'NATIVE_APP';
     var webviewName = 'WEBVIEW_1';
@@ -119,12 +119,12 @@ LocalScreenshotProvider.prototype._getBrowserScreenshot = function(fullScreensho
   var that = this;
   that.logger.debug('Taking browser screenshot');
 
-  var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
+  var remoteOptions = that.runtime.capabilities.remoteWebDriverOptions;
   if(remoteOptions && remoteOptions.crops) {
     that.logger.debug('Cropping viewport screenshot');
     var screenshotBuffer = new Buffer(fullScreenshot, 'base64');
 
-    var runtimeResolution = that.currentCapabilities.runtime.platformResolution.split('x');
+    var runtimeResolution = that.runtime.platformResolution.split('x');
     var cropConfig = {};
     cropConfig.width = runtimeResolution[0];
     cropConfig.height = runtimeResolution[1];
@@ -181,7 +181,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
         element.getLocation().then(function (elementLocation) {
           elementDimensions.top = elementLocation.y;
           elementDimensions.left = elementLocation.x;
-          var remoteOptions = that.currentCapabilities.remoteWebDriverOptions;
+          var remoteOptions = that.runtime.capabilities.remoteWebDriverOptions;
           if (remoteOptions && remoteOptions.scaling) {
             if (remoteOptions.scaling.x && remoteOptions.scaling.x > 0 && remoteOptions.scaling.x !== 1) {
               elementDimensions.width = Math.round(elementDimensions.width * remoteOptions.scaling.x);
@@ -278,6 +278,6 @@ LocalScreenshotProvider.prototype._crop = function(originalImageBuffer, cropConf
   return deferCrop.promise;
 };
 
-module.exports = function (config,instanceConfig,logger,currentCapabilities) {
-  return new LocalScreenshotProvider(config,instanceConfig,logger,currentCapabilities);
+module.exports = function (config,instanceConfig,logger,runtime) {
+  return new LocalScreenshotProvider(config,instanceConfig,logger,runtime);
 };

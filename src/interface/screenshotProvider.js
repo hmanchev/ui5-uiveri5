@@ -5,9 +5,9 @@
  * @param {Config} config
  * @param {Object} instanceConfig
  * @param {Logger} logger
- * @param {Object} currentCapabilities
+ * @param {Object} runtime
  */
-function ScreenshotProvider(config,instanceConfig,logger,currentCapabilities){
+function ScreenshotProvider(config,instanceConfig,logger,runtime){
 }
 
 /**

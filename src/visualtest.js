@@ -165,20 +165,21 @@ function run(config) {
       var storageProvider;
       // register a hook to be called when webdriver is created ( may not be connected yet )
       browser.getProcessedConfig().then(function(protractorConfig) {
-        var currentCapabilities = protractorConfig.capabilities;
-        var currentRuntime = runtimeResolver.resolveRuntimeFromCapabilities(currentCapabilities);
+        var runtime = runtimeResolver.resolveRuntimeFromCapabilities(
+          protractorConfig.capabilities);
+
+        // export current runtime for tests
+        browser.testrunner.runtime = runtime;
 
         // register screenshot provider
-        var screenshotProvider = moduleLoader.loadModuleIfAvailable('screenshotProvider',[currentCapabilities]);
+        var screenshotProvider =
+          moduleLoader.loadModuleIfAvailable('screenshotProvider',[runtime]);
         if(screenshotProvider){
           screenshotProvider.register();
         }
 
         // load storage provider
-        storageProvider = moduleLoader.loadModuleIfAvailable('storageProvider',[currentRuntime]);
-
-        // export current runtime for tests
-        browser.testrunner.runtime = currentRuntime;
+        storageProvider = moduleLoader.loadModuleIfAvailable('storageProvider',[runtime]);
 
         // load comparison provider and register the custom matcher
         var comparisonProvider = moduleLoader.loadModuleIfAvailable('comparisonProvider',[storageProvider]);
@@ -187,8 +188,8 @@ function run(config) {
         }
 
         // process remoteWebDriverOptions
-        if (currentCapabilities.remoteWebDriverOptions){
-          var options = currentCapabilities.remoteWebDriverOptions;
+        if (runtime.capabilities.remoteWebDriverOptions){
+          var options = runtime.capabilities.remoteWebDriverOptions;
           if (options.maximized){
             logger.debug('Maximizing browser window');
             browser.driver.manage().window().maximize();
@@ -226,7 +227,7 @@ function run(config) {
         }
 
         // add WebDriver overrides
-        if ( currentCapabilities.enableClickWithActions ) {
+        if (runtime.capabilities.enableClickWithActions) {
           logger.debug('Activating WebElement.click() override with actions');
           protractorModule.parent.exports.WebElement.prototype.click = function () {
             logger.debug('Taking over WebElement.click()');
