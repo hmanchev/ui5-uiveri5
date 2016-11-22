@@ -12,6 +12,13 @@ Please use the latest version from here: [releases](https://github.wdf.sap.corp/
 or skip version for HEAD. The --no-optional flag is necessary to avoid the installation of some optional dependencies
 (buffer-utils) that require native build that itself requires PYTHON and VC++.
 
+#### Update already installed version
+* Remove the installed version of visualtest:
+```
+$ npm remove -g visualtest
+```
+* Install latest version as described above.
+
 ### Issues
 
 #### npm show errors mentioning node-gyp and PYTHON
