@@ -96,11 +96,6 @@ fine-grained configurations to the webdriver are necessary.
 ### Automatic download of webdrivers and selenium
 When local webdriver execution is required, the tool tries to download the correct version of selenium jar,
 chromedriver or ie driver executables. Correct versions are specified in conf/profile.conf.js
-If the download failed, please make sure you have proxy settings as environment variables like:
-``` Windows
-set HTTP_PROXY=http://proxy:8080
-set HTTPS_PROXY=http://proxy:8080
-```
 
 ### Webdriver options
 Additional to browser options, webdriver options could be provided in the browserCapabilities object,
@@ -213,13 +208,23 @@ pageLoading: {
 
 ### Override arbitrary configuration from command line:
 You could override arbitrary config value from command like:
-```javascript
-// linux
---config={"browsers:[{"browserName":"firefox"}]}
-// windows
---config={\"browsers\":[{\"browserName\":\"firefox\"}]}
+* as json object
+```console
+// linux console
+--config={"specResolver":"sdk/test-resources"}}
+// windows console
+--config={\"specResolver\":\"sdk/test-resources\"}}
 // java-based environments ( WebStorm debug configuration )
---config={\\\"browsers\\\":[{\\\"browserName\\\":\\\"firefox\\\"}]}
+--config={\\\"specResolver\\\":\\\"sdk/test-resources\\\"}}
+```
+* as json object arrays are merged
+```console
+// execute in parallel also on another browser
+--config={"browsers":[{"browserName":"firefox"}]}
+```
+* as single value
+```console
+--config.specResolver.contentRootUri=sdk/test-resources
 ```
 
 ### Override reference image storage for local image storage case
