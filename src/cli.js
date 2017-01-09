@@ -25,6 +25,8 @@ var argv = require('yargs').
     describe('timeouts', 'Timeouts').
     string('config').
     describe('config', 'JSON formatted config object to override config file options').
+    string('confKey').
+    describe('confKey', 'Config key, accepts extended dot notation').
     count('verbose').
     alias('v', 'verbose').
     describe('verbose', 'Print debug logs').
