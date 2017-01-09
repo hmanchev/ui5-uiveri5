@@ -226,6 +226,10 @@ You could override arbitrary config value from command like:
 ```console
 --config.specResolver.contentRootUri=sdk/test-resources
 ```
+* as single value with complex object notation syntax
+```console
+--confKey=locators[1].name:myCustomLocator
+```
 
 ### Override reference image storage for local image storage case
 When localStorageProvider is used, by default the reference images are stored in the source tree, parallel to the

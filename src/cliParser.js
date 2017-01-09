@@ -67,9 +67,28 @@ CliParser.prototype.parse = function(argv){
     // silently skipp any invalid config statements
   }
 
+  // parse conf key
+  var confKeys = config.confKey;
+  if (confKeys) {
+    if (_.isArray(confKeys)) {
+      _.forEach(confKeys,function(confKey) {
+        _setConfKey(config,confKey);
+      });
+    } else {
+      _setConfKey(config,confKeys);
+    }
+  }
+
   return config;
 };
 
+function _setConfKey(config,confKey) {
+  var columnCharIndex = confKey.indexOf(':');
+  if (columnCharIndex === -1) {
+    return;
+  }
+  _.set(config,confKey.substr(0,columnCharIndex),confKey.substr(columnCharIndex+1));
+}
 function _parseBrowsersString(browsersString){
   var browsers = [];
   var browser = '';
@@ -151,7 +170,7 @@ function _parseBrowsersString(browsersString){
  * Merge objects and arrays
  */
 function _mergeConfig(object,src){
-  return _.merge(object,src,function(objectValue,sourceValue){
+  return _.mergeWith(object,src,function(objectValue,sourceValue){
     if (_.isArray(objectValue)) {
       return objectValue.concat(sourceValue);
     }

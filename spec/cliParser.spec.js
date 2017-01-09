@@ -1,18 +1,18 @@
 
 describe("cliParser", function() {
 
-  var ArgvStub = function(){
+  var ArgvStub = function () {
     this._ = [];
   };
   cliParser = new require('../src/cliParser')();
 
-  describe("Should parse browsers from command-line", function() {
+  describe("Should parse browsers from command-line", function () {
     it('Should parse single browser name as string', function () {
       var argvStub = new ArgvStub();
       argvStub.browsers = 'ie';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'ie'}]);
+      expect(config.browsers).toEqual([{browserName: 'ie'}]);
     });
 
     it('Should parse multiple browser names as string', function () {
@@ -20,15 +20,15 @@ describe("cliParser", function() {
       argvStub.browsers = 'firefox,ie';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'firefox'},{browserName:'ie'}]);
+      expect(config.browsers).toEqual([{browserName: 'firefox'}, {browserName: 'ie'}]);
     });
 
     it('Should parse browser name as array of strings', function () {
       var argvStub = new ArgvStub();
-      argvStub.browsers = ['firefox','ie'];
+      argvStub.browsers = ['firefox', 'ie'];
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'firefox'},{browserName:'ie'}]);
+      expect(config.browsers).toEqual([{browserName: 'firefox'}, {browserName: 'ie'}]);
     });
 
     it('Should parse :-separated arguments in browsers key', function () {
@@ -36,7 +36,7 @@ describe("cliParser", function() {
       argvStub.browsers = 'chrome:45';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'chrome',browserVersion:'45'}]);
+      expect(config.browsers).toEqual([{browserName: 'chrome', browserVersion: '45'}]);
     });
 
     it('Should parse all :-separated arguments with spaces in browsers key', function () {
@@ -45,8 +45,14 @@ describe("cliParser", function() {
       var config = cliParser.parse(argvStub);
 
       expect(config.browsers).toEqual([{
-        browserName:'safari',browserVersion:'*',platformName:'ios',platformVersion:'9.1',platformResolution:'*',
-        deviceName:'iPad Air 2',ui5:{theme:'bluecrystal',direction:'ltr',mode:'cozy'}}]);
+        browserName: 'safari',
+        browserVersion: '*',
+        platformName: 'ios',
+        platformVersion: '9.1',
+        platformResolution: '*',
+        deviceName: 'iPad Air 2',
+        ui5: {theme: 'bluecrystal', direction: 'ltr', mode: 'cozy'}
+      }]);
     });
 
     it('Should parse JSON-formatted arguments in browsers key', function () {
@@ -54,7 +60,7 @@ describe("cliParser", function() {
       argvStub.browsers = '{"browserName":"ie"}';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'ie'}]);
+      expect(config.browsers).toEqual([{browserName: 'ie'}]);
     });
 
     it('Should parse mixed formatted arguments in browsers key', function () {
@@ -62,20 +68,26 @@ describe("cliParser", function() {
       argvStub.browsers = '{"browserName":"ie","ui5":{"theme":"bluecrystal"}},chrome,firefox:*:windows:*:*:*:bluecrystal:ltr:cozy';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'ie',ui5:{theme:'bluecrystal'}},{browserName:'chrome'},{
-        browserName:'firefox',browserVersion:'*',platformName:'windows',platformVersion:'*',platformResolution:'*',
-        deviceName:'*',ui5:{theme:'bluecrystal',direction:'ltr',mode:'cozy'}}]);
+      expect(config.browsers).toEqual([{browserName: 'ie', ui5: {theme: 'bluecrystal'}}, {browserName: 'chrome'}, {
+        browserName: 'firefox',
+        browserVersion: '*',
+        platformName: 'windows',
+        platformVersion: '*',
+        platformResolution: '*',
+        deviceName: '*',
+        ui5: {theme: 'bluecrystal', direction: 'ltr', mode: 'cozy'}
+      }]);
     });
   });
 
-  describe("Should parse generic configs from command-line", function() {
+  describe("Should parse configs from command-line", function () {
 
     it('Should parse JSON-formatted objects in config key', function () {
       var argvStub = new ArgvStub();
       argvStub.config = '{"browsers": [{"browserName": "chrome","browserVersion": "45"}]}';
       var config = cliParser.parse(argvStub);
 
-      expect(config.browsers).toEqual([{browserName:'chrome',browserVersion:'45'}]);
+      expect(config.browsers).toEqual([{browserName: 'chrome', browserVersion: '45'}]);
     });
 
     it('Should merge JSON-formatted objects in config key', function () {
@@ -85,15 +97,44 @@ describe("cliParser", function() {
       var config = cliParser.parse(argvStub);
 
       expect(config.browsers).toEqual(
-        [{browserName:'firefox'},{browserName:'ie'},{browserName:'chrome',browserVersion:'45'}]);
+        [{browserName: 'firefox'}, {browserName: 'ie'}, {browserName: 'chrome', browserVersion: '45'}]);
     });
 
     it('Should parse single value JSON-formatted objects in config key', function () {
       var argvStub = new ArgvStub();
-      argvStub.config = {key1:{key2:'value'}};
+      argvStub.config = {key1: {key2: 'value'}};
       var config = cliParser.parse(argvStub);
 
-      expect(config).toEqual({key1:{key2:'value'},conf: undefined});
+      expect(config).toEqual({key1: {key2: 'value'}, conf: undefined});
+    });
+  });
+
+  describe("Should parse confkey from command-line", function () {
+    it('Should parse simple object notation in confkey', function () {
+      var argvStub = new ArgvStub();
+      argvStub.confKey = 'key1.key2:value';
+      var config = cliParser.parse(argvStub);
+
+      expect(config).toEqual({key1: {key2: 'value'},
+        conf: undefined, confKey: 'key1.key2:value'});
+    });
+
+    it('Should parse complex object notation in confkey', function () {
+      var argvStub = new ArgvStub();
+      argvStub.confKey = 'key1[0].key2:value';
+      var config = cliParser.parse(argvStub);
+
+      expect(config).toEqual({key1: [{key2: 'value'}],
+        conf: undefined, confKey: 'key1[0].key2:value'});
+    });
+
+    it('Should parse several simple object notations in confkey', function () {
+      var argvStub = new ArgvStub();
+      argvStub.confKey = ['key1.key2:value','key1.key3:value1'];
+      var config = cliParser.parse(argvStub);
+
+      expect(config).toEqual({key1: {key2: 'value',key3: 'value1'},
+        conf: undefined, confKey: ['key1.key2:value','key1.key3:value1']});
     });
   });
 });
