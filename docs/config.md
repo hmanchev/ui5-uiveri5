@@ -208,27 +208,30 @@ pageLoading: {
 
 ### Override arbitrary configuration from command line:
 You could override arbitrary config value from command like:
-* as json object
-```console
-// linux console
---config={"specResolver":"sdk/test-resources"}}
-// windows console
---config={\"specResolver\":\"sdk/test-resources\"}}
-// java-based environments ( WebStorm debug configuration )
---config={\\\"specResolver\\\":\\\"sdk/test-resources\\\"}}
-```
-* as json object arrays are merged
-```console
-// execute in parallel also on another browser
---config={"browsers":[{"browserName":"firefox"}]}
-```
-* as single value
+* as single value with object notation
 ```console
 --config.specResolver.contentRootUri=sdk/test-resources
 ```
 * as single value with complex object notation syntax
 ```console
---confKey=locators[1].name:myCustomLocator
+--confKeys=locators[1].name:myCustomLocator;
+```
+* as several single values
+```console
+--confKeys=locators[1].name:myCustomLocator;locators[1].arg1:value1;
+```
+* as json object
+```console
+// linux console
+--config={"specResolver":{"name": "myCustomResolver","arg1":"value1"}}
+// windows console
+--config={\"specResolver\":{\"name\": \"myCustomResolver\",\"arg1\":\"value1\"}}
+// java-based environments ( WebStorm debug configuration )
+--config={\\\"specResolver\\\":{\\\"name\\\": \\\"myCustomResolver\\\",\\\"arg1\\\":\\\"value1\\\"}}
+```
+* as json object arrays are merged
+```console
+--config={"locators":[{"name":"myCustomLocator"}]}
 ```
 
 ### Override reference image storage for local image storage case

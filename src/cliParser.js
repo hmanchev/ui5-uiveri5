@@ -68,7 +68,7 @@ CliParser.prototype.parse = function(argv){
   }
 
   // parse conf key
-  var confKeys = config.confKey;
+  var confKeys = config.confKeys;
   if (confKeys) {
     if (_.isArray(confKeys)) {
       _.forEach(confKeys,function(confKey) {
@@ -83,12 +83,16 @@ CliParser.prototype.parse = function(argv){
 };
 
 function _setConfKey(config,confKey) {
-  var columnCharIndex = confKey.indexOf(':');
-  if (columnCharIndex === -1) {
-    return;
-  }
-  _.set(config,confKey.substr(0,columnCharIndex),confKey.substr(columnCharIndex+1));
+  var pairs = confKey.split(';');
+  _.forEach(pairs,function(pair) {
+    var columnCharIndex = pair.indexOf(':');
+    if (columnCharIndex === -1) {
+      return;
+    }
+    _.set(config,pair.substr(0,columnCharIndex),pair.substr(columnCharIndex+1));
+  });
 }
+
 function _parseBrowsersString(browsersString){
   var browsers = [];
   var browser = '';
