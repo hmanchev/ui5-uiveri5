@@ -46,6 +46,7 @@ function LocalComparisonProvider(config,instanceConfig,logger,storageProvider) {
   this.thresholdPercentage = config.thresholdPercentage || DEFAULT_THRESHOLD_PERCENTAGE;
   this.thresholdPixels = config.thresholdPixels || DEFAULT_THRESHOLD_PIXELS;
   this.imgNameRegEx = config.imgNameRegEx || DEFAULT_IMAGE_NAME_REGEX;
+  this.ignoreNothing = config.ignoreNothing || false;
 
   this.take = typeof config.take !== 'undefined' ? config.take : DEFAULT_COMPARE;
   this.compare = typeof config.compare !== 'undefined' ? config.compare : DEFAULT_COMPARE;
@@ -134,7 +135,11 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                 // compare two images and add input settings - they are chained and set to resJS object
                 // settings include ignore colors, ignore antialiasing, threshold and ignore rectangle
                 that.logger.debug('Comparing current screenshot to reference image: ' + expectedImageName);
-                resemble(refImageResult.refImageBuffer).compareTo(actualImageBuffer).onComplete(
+                var resComparison = resemble(refImageResult.refImageBuffer).compareTo(actualImageBuffer);
+                if (that.ignoreNothing) {
+                  resComparison.ignoreNothing(that.ignoreNothing);
+                }
+                resComparison.onComplete(
                   function (comparisonResult) {
                     // resolve mismatch percentage and count
                     var mismatchPercentage = parseFloat(comparisonResult.misMatchPercentage);

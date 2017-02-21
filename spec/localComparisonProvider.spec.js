@@ -50,6 +50,9 @@ describe("LocalComparisonProvider", function () {
 
     fs.unlinkSync('target' + imagePath + '/drop_down_clean.act.png');
     fs.unlinkSync('target' + imagePath + '/drop_down_clean.diff.png');
+
+    fs.unlinkSync('target' + imagePath + '/calendar_ref.act.png');
+    fs.unlinkSync('target' + imagePath + '/calendar_ref.diff.png');
   });
 
   it('Should pass with similar images', function (done) {
@@ -126,5 +129,18 @@ describe("LocalComparisonProvider", function () {
         done();
       }
     );
+  });
+
+  it('Should fail when color difference is small (ignore nothing option of resemble.js)', function(done) {
+    comparisonConfig.ignoreNothing = true;
+
+    var comparisonProvider = new LocalComparisonProvider(comparisonConfig,comparisonInstanceConfig,logger,storageProvider);
+    comparisonProvider.register(matchers);
+
+    var result = matchers.toLookAs().compare(takeScreenshotMock('calendar_act'),'calendar_ref');
+    result.pass.promise.then(function(passed){
+      expect(passed).toBe(false);
+      done();
+    });
   });
 });
