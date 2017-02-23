@@ -297,10 +297,6 @@ var DirectDriverProvider = function(protConfig,logger,seleniumConfig) {
   this.deps.executors = protractorModule.require('selenium-webdriver/executors');
   this.deps.http = protractorModule.require('selenium-webdriver/http');
   this.deps.remote = protractorModule.require('selenium-webdriver/remote');
-  this.deps.chrome = protractorModule.require('selenium-webdriver/chrome');
-  this.deps.firefox = protractorModule.require('selenium-webdriver/firefox');
-  this.deps.ie = protractorModule.require('selenium-webdriver/ie');
-  this.deps.safari = protractorModule.require('selenium-webdriver/safari');
 };
 
 DirectDriverProvider.prototype.setupEnv = function() {
@@ -326,6 +322,9 @@ DirectDriverProvider.prototype.getNewDriver = function() {
   if (that.seleniumConfig.address) {
     that.logger.debug('Opening remote webdriver session to: ' + that.seleniumConfig.address);
 
+    if (that.seleniumConfig.addressProxy) {
+      that.logger.debug('Using proxy for webdriver connection: ' + that.seleniumConfig.addressProxy);
+    }
     // connect to remote selenium
     var client = new that.deps.http.HttpClient(that.seleniumConfig.address, null,that.seleniumConfig.addressProxy);
     var executor =  new that.deps.http.Executor(client);
@@ -401,6 +400,8 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       // switch on browser
       var browserName = this.protConfig.capabilities.browserName;
       if (browserName == 'chrome') {
+        that.deps.chrome = protractorModule.require('selenium-webdriver/chrome');
+
         // by default chromedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         // only port could be overridden
         that.logger.debug('Starting local chromedriver with executable: ' +
@@ -425,6 +426,8 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         var chromeService = chromeServiceBuilder.build();
         driver =  new that.deps.chrome.Driver(capabilities,chromeService);
       } else if (browserName == 'firefox') {
+        that.deps.firefox = protractorModule.require('selenium-webdriver/firefox');
+
         // firefox is started without specifying host, on findFreePort, returns getLoopbackAddress
         // nothing could be overridden
         that.logger.debug('Starting local firefox with webdriver extension');
@@ -432,6 +435,8 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         // start firefox with selenium extension and connect to it
         driver = new that.deps.firefox.Driver(capabilities);
       } else if (browserName == 'internet explorer') {
+        that.deps.ie = protractorModule.require('selenium-webdriver/ie');
+
         // by default iedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         // only host could be overridden - only set it to webdriver, could not override of the returned getLoopbackAddress address !!!
         that.logger.debug('Starting local iedriver with executable: ' +
@@ -448,6 +453,8 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         // start the local iedriver and connect to it
         driver = new that.deps.ie.Driver(capabilities);
       } else if (browserName == 'safari') {
+        that.deps.safari = protractorModule.require('selenium-webdriver/safari');
+
         // by default safari server always started at 'localhost' and findFreePort, returns 'localhost'
         // nothing could be overridden
         that.logger.debug('Starting local safari with webdriver extension');
