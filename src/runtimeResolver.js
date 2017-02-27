@@ -185,7 +185,8 @@ RuntimeResolver.prototype._mergeMatchingCapabilities = function(runtime,browserC
       var platformNamePattern;
       for (platformNamePattern in browserCapabilities[browserNamePattern]){
         if (this._isMatching(runtime.platformName,platformNamePattern)){
-          _.merge(runtime.capabilities,browserCapabilities[browserNamePattern][platformNamePattern]);
+          runtime.capabilities = _.merge({},
+            browserCapabilities[browserNamePattern][platformNamePattern],runtime.capabilities);
         }
       }
     }

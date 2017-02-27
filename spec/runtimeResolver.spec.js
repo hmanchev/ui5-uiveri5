@@ -51,4 +51,24 @@ describe("RuntimeResolver", function() {
       expect(runtime.capabilities.matched).toBeUndefined();
     });
   });
+
+  describe("Should merge with runtime capabilities", function() {
+    it('Runtime capabilities should overwrite browserCapabilities', function () {
+      var runtime = {
+        capabilities: {
+          key: 'value'
+        },
+        browserName: 'chrome',
+        platformName: 'windows'
+      };
+      resolver._mergeMatchingCapabilities(runtime, {
+        'chrome,chromium': {
+          'windows,mac,linux': {
+            key: 'new_value'
+          }
+        }
+      });
+      expect(runtime.capabilities.key).toBe('value');
+    });
+  });
 });
