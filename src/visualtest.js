@@ -2,8 +2,9 @@
 var _ = require('lodash');
 var proxyquire =  require('proxyquire');
 var url = require('url');
+var clientsidescripts = require('./clientsidescripts');
+var ClassicalWaitForUI5 = require('./waitForUI5/classicalWaitForUI5.script');
 
-var DEFAULT_CLIENTSIDESCRIPTS = './clientsidescripts';
 var DEFAULT_CONNECTION_NAME = 'direct';
 
 /**
@@ -21,7 +22,6 @@ var DEFAULT_CONNECTION_NAME = 'direct';
  *  be browserName, supports column delimited and json formats, defaults to: 'chrome'
  * @property {Object} params - params object to be passed to the tests
  * @property {boolean} ignoreSync - disables waitForUI5 synchronization, defaults to: false
- * @property {String} clientsidescripts - client side scripts file, defaults to: ./clientsidescripts
  */
 
 /**
@@ -62,9 +62,6 @@ function run(config) {
     if (!specs || specs.length==0){
       throw Error("No specs found");
     }
-
-    // set default clientsidescripts module
-    config.clientsidescripts = config.clientsidescripts || DEFAULT_CLIENTSIDESCRIPTS;
 
     // resolve connection
     var connectionName = config.connection || DEFAULT_CONNECTION_NAME;
@@ -120,6 +117,14 @@ function run(config) {
       }
     }
 
+    var ui5SyncDelta = config.timeouts && config.timeouts.waitForUI5Delta;
+    var waitForUI5Timeout = ui5SyncDelta > 0 ? (config.timeouts.allScriptsTimeout - ui5SyncDelta) : 0;
+
+    clientsidescripts.configure(config);
+    var protractor = proxyquire('protractor/lib/protractor', {
+      './clientsidescripts.js': clientsidescripts
+    });
+
     // set specs
     protractorArgv.specs = [];
     specs.forEach(function(spec){
@@ -142,9 +147,6 @@ function run(config) {
     protractorArgv.beforeLaunch =  function() {
 
       // override angular-specific scripts
-      var clientsidesriptsName = config.clientsidescripts;
-      logger.debug('Loading client side scripts module: ' + clientsidesriptsName);
-      var clientsidescripts = require(clientsidesriptsName);
       var protractor = proxyquire('protractor/lib/protractor',
         {'./clientsidescripts.js': clientsidescripts});
 
@@ -237,25 +239,23 @@ function run(config) {
         }
       });
 
-      // log script executions
+      // override with added logging and parameter manipulation
       var origExecuteAsyncScript_= browser.executeAsyncScript_;
       browser.executeAsyncScript_ = function() {
-
-        // log the call
+        // log script execution
         logger.trace('Execute async script: ${name}, code:\n ${JSON.stringify(code)}',
           {name:  arguments[1], code: arguments[0]});
-
-        var ui5SyncDelta = config.timeouts ?
-          (config.timeouts.waitForUI5Delta ? config.timeouts.waitForUI5Delta : null) : null;
-        var waitForUI5Timeout  = ui5SyncDelta > 0 ? (config.timeouts.allScriptsTimeout - ui5SyncDelta) : 0;
-
-        // override configuration
+        // override the timeout used by waitForAngular
         arguments[2] = JSON.stringify({
           waitForUI5Timeout: waitForUI5Timeout
         });
-
-        //call original fn in its context
+        //call original function in its context
         return origExecuteAsyncScript_.apply(browser, arguments);
+      };
+
+      browser.loadWaitForUI5 = function () {
+        return browser.executeScript_(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5',
+          {waitForUI5Timeout: waitForUI5Timeout, ClassicalWaitForUI5: ClassicalWaitForUI5});
       };
 
       // add global matchers
@@ -383,8 +383,7 @@ function run(config) {
 
       // expose navigation helpers to tests
       browser.testrunner.navigation = {
-        to: function(url,auth){
-          var resultPromise;
+        to: function(url,auth) {
           var authenticator =  moduleLoader.loadNamedModule(auth);
 
           // open page and login
@@ -416,7 +415,7 @@ function run(config) {
               browser.controlFlow().execute(function () {
                 logger.debug('Initial page reload requested');
               });
-              resultPromise = browser.driver.navigate().refresh();
+              browser.driver.navigate().refresh();
             }
 
             // wait some time after page is loaded
@@ -429,14 +428,14 @@ function run(config) {
               browser.controlFlow().execute(function () {
                 logger.debug('Initial page load wait: ' + wait + 'ms');
               });
-              resultPromise = browser.sleep(wait);
+              browser.sleep(wait);
             }
           }
 
           // ensure ui5 is loaded - execute waitForUI5() internally
-          resultPromise = browser.waitForAngular();
+          browser.loadWaitForUI5();
 
-          return resultPromise;
+          return browser.waitForAngular();
         },
 
         waitForRedirect: function(url){
@@ -522,13 +521,6 @@ function run(config) {
       // https://github.com/angular/protractor/issues/2036
       return driverActions.mouseMove(bodyElement, {x:-1, y:-1}).perform();
     }
-
-    // override angular-specific scripts
-    var clientsidesriptsName = config.clientsidescripts;
-    logger.debug('Loading client side scripts module: ' + clientsidesriptsName);
-    var clientsidescripts = require(clientsidesriptsName);
-    var protractor = proxyquire('protractor/lib/protractor',
-      {'./clientsidescripts.js': clientsidescripts});
 
     // setup connection provider env
     logger.debug('Setting up connection provider environment');
