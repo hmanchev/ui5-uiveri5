@@ -1,5 +1,6 @@
 var fs = require('fs');
 var Q = require('q');
+var os = require('os');
 Q.longStackSupport = true;
 
 var storageMock = require('./remoteStorageProvider/remoteStorageMock')();
@@ -126,4 +127,23 @@ describe("RemoteStorageProvider", function () {
         done()
       });
   });
+
+  it("Should throw an error if test is running on windows and file path is too long", function(done) {
+    var originalPlatform = os.platform;
+    var spyPlatform = spyOn(os, "platform").and.returnValue('win32');
+
+    var refImage = refImageRoot + "path/with/more/than/250/symbolsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
+    var storageProvider = new RemoteStorageProvider({},
+      {refImagesRoot: refImage, imageStorageUrl: imageStorageMockUrl},logger,runtime);
+    storageProvider.onBeforeEachSpec(spec);
+
+    storageProvider.storeRefImage(initialImgName, imageBuffer)
+      .then(function(result) {
+        fail(result);
+        done();
+      }).catch(function(error){
+        done();
+      });
+  });
 });
+

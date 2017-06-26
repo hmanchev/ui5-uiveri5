@@ -7,6 +7,8 @@ var request = require('request');
 var _ = require('lodash');
 var mkdirp = require('mkdirp');
 
+var os = require('os');
+
 var DEFAULT_IMAGE_STORAGE_URI = 'images';
 
 var DEFAULT_REF_LNK_EXT = '.ref.lnk';
@@ -201,9 +203,10 @@ RemoteStorageProvider.prototype._uploadImage = function(imageName,imageBuffer) {
 RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
   var that = this;
   var refFilePath = that._getLnkFilePath(ext,imageName);
+  var isWin = (os.platform() === 'win32');
 
   return Q.Promise(function(resolveFn,rejectFn) {
-    if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH) {
+    if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH && isWin) {
       rejectFn(new Error('Lnk file path: ' + refFilePath + ' is longer than: ' + DEFAULT_FILE_PATH_LENGTH + ' characters.'));
     } else {
       mkdirp(path.dirname(refFilePath), function (err) {
