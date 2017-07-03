@@ -132,9 +132,9 @@ describe("RemoteStorageProvider", function () {
     var originalPlatform = os.platform;
     var spyPlatform = spyOn(os, "platform").and.returnValue('win32');
 
-    var refImage = refImageRoot + "path/with/more/than/250/symbolsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
+    var refImage = refImageRoot + "/path/with/more/than/250/symbolsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     var storageProvider = new RemoteStorageProvider({},
-      {refImagesRoot: refImage, imageStorageUrl: imageStorageMockUrl},logger,runtime);
+      {refImagesRoot: refImage, imageStorageUrl: imageStorageMockUrl}, logger, runtime);
     storageProvider.onBeforeEachSpec(spec);
 
     storageProvider.storeRefImage(initialImgName, imageBuffer)
@@ -144,6 +144,24 @@ describe("RemoteStorageProvider", function () {
       }).catch(function(error){
         done();
       });
+  });
+
+  it("Should pass if test is running on linux and file path is too long", function(done) {
+    var originalPlatform = os.platform;
+    var spyPlatform = spyOn(os, "platform").and.returnValue('linux');
+
+    var refImage = refImageRoot + "/path/with/more/than/250/symbolsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
+    var storageProvider = new RemoteStorageProvider({},
+      {refImagesRoot: refImage, imageStorageUrl: imageStorageMockUrl}, logger, runtime);
+    storageProvider.onBeforeEachSpec(spec);
+
+    storageProvider.storeRefImage(initialImgName, imageBuffer)
+      .then(function(result) {
+        done();
+      }).catch(function(error){
+        fail(error);
+        done();
+    });
   });
 });
 
