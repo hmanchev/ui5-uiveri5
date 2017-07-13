@@ -35,6 +35,7 @@ UI5FormAuthenticator.prototype.get = function(url){
   browser.driver.get(url);
 
   // synchronize with UI5 on credentials page
+  browser.loadWaitForUI5();
   browser.waitForAngular();
 
   // enter user and pass in the respective fields
