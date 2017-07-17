@@ -20,6 +20,7 @@ var CONTENT_ROOT_URI = 'testsuite/test-resources';
  * @property {string} baseUrl - base url to reference, falsy disables page loading, defaults to: 'http://localhost:8080'
  * @property {string} libFilter - comma separated list of libraries, '*' means all, defaults to: '*'
  * @property {string} specFilter - comma separated list of spec names, '*' means all, defaults to '*'
+ * @property {string} specExclude - comma separated list of spec names, '' means nothing to be excluded
  * @property {string} branch - branch, overwrites automatically derived by git
   */
 
@@ -47,6 +48,7 @@ function LocalUI5SpecResolver(config,instanceConfig,logger){
   this.baseUrl = config.baseUrl || BASE_URL;
   this.libFilter = config.libFilter || '*';
   this.specFilter = config.specFilter || '*';
+  this.specExclude = config.specExclude || '';
   this.suitesGlob = instanceConfig.suitesGlob || DEFAULT_SUITES_GLOB;
   this.suitesExclude = instanceConfig.suitesExclude || DEFAULT_SUITES_EXCLUDE;
   this.suitesRegex = instanceConfig.suitesRegex || DEFAULT_SUITES_REGEX;
@@ -113,6 +115,9 @@ LocalUI5SpecResolver.prototype.resolve = function(){
           // resolve spec filter
           var specFilters = that.specFilter !== '*' ? that.specFilter.split(',') : [];
 
+          // resolve spec exclude
+          var specExcludes = that.specExclude !== '' ? that.specExclude.split(',') : [];
+
           //resolve lib filter
           var libFilters = that.libFilter !== '*' ? that.libFilter.split(',') : [];
 
@@ -164,6 +169,12 @@ LocalUI5SpecResolver.prototype.resolve = function(){
               // apply spec filter
               if (specFilters.length > 0 && !that._isInArray(specFilters, specName)) {
                 that.logger.debug('Drop spec: ' + specName + ' that does not match spec filter: ' + that.specFilter);
+                return;
+              }
+
+              // apply spec exclude filter
+              if (specExcludes.length > 0 && that._isInArray(specExcludes, specName)) {
+                that.logger.debug('Drop spec: ' + specName + ' that does match spec exclude: ' + that.specExclude);
                 return;
               }
 

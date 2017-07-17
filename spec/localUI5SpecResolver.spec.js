@@ -55,6 +55,18 @@ describe("LocalUI5SpecResolver", function () {
     });
   });
 
+  it("Should filter specs only with spec exclude", function(done) {
+    var specResolver = new LocalUI5SpecResolver(
+      {branch: 'overwrite',specExclude: 'Comp11'},{suiteRootPath: __dirname + '/localUI5SpecResolver'},logger);
+    specResolver.resolve().then(function(specs){
+      expect(specs.length).toEqual(3);
+      done();
+    }).catch(function(error){
+      fail(error);
+      done();
+    });
+  });
+
   it("Should filter specs only with lib filter", function(done) {
     var specResolver = new LocalUI5SpecResolver(
       {branch: 'overwrite',libFilter: 'sap.m,sap.gantt'},{suiteRootPath: __dirname + '/localUI5SpecResolver'},logger);

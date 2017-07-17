@@ -7,6 +7,8 @@ var argv = require('yargs').
     describe('libFilter', 'Comma separated list of lib suites to execute, defaults to all').
     string('specFilter').
     describe('specFilter', 'Comma separated list of specs to execute, defaults to all').
+    string('specExclude').
+    describe('specExclude', 'Comma separated list of specs to exclude').
     string('baseUrl').
     describe('baseUrl', 'Base url to execute the spec against, defaults to http://localhost:8080').
     string('seleniumAddress').

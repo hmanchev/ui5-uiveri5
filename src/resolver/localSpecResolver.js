@@ -13,6 +13,7 @@ var DEFAULT_SPEC_REGEX = '(?:\\w\\:)?\\/(?:[\\w\\-\\.]+\\/)*([\\w\\-]+)\\.(?:[\\
  * @extends {Config}
  * @property {string} specs - blob pattern to resolve specs, defaults to: './*.spec.js'
  * @property {string} baseUrl - base url to reference, falsy disables page loading, defaults to: falsy
+ * @property {string} specExclude - comma separated list of spec names, '' means nothing to be excluded
  */
 
 /**
@@ -33,6 +34,7 @@ function LocalSpecResolver(config,instanceConfig,logger){
   //this.instanceConfig = instanceConfig;
   this.logger = logger;
 
+  this.specExclude = config.specExclude || '';
   this.specGlob = config.specs || DEFAULT_SPECS_GLOB;
   this.baseUrl = config.baseUrl;
   this.auth = config.auth;
@@ -58,13 +60,23 @@ LocalSpecResolver.prototype.resolve = function(){
         /** @type {Spec} */
         var specs = [];
 
+        // resolve spec exclude
+        var specExcludes = that.specExclude !== '' ? that.specExclude.split(',') : [];
+
         specPaths.forEach(function(specPath) {
           // extract spec file name - no extension, no path
           var specMatches = specPath.match(that.specRegex);
           if (specMatches === null) {
             throw new Error('Could not parse spec path: ' + specPath);
           }
+
           var specName = specMatches[1];
+
+          // apply spec exclude filter
+          if (specExcludes.length > 0 && that._isInArray(specExcludes, specName)) {
+            that.logger.debug('Drop spec: ' + specName + ' that does match spec exclude: ' + that.specExclude);
+            return;
+          }
 
           /** @type {Spec} */
           var spec = {
@@ -82,6 +94,12 @@ LocalSpecResolver.prototype.resolve = function(){
         resolveFn(specs);
       }
     });
+  });
+};
+
+LocalSpecResolver.prototype._isInArray = function(filterArray, searchFor) {
+  return filterArray.some(function(item) {
+    return item.toLowerCase() === searchFor.toLowerCase();
   });
 };
 
