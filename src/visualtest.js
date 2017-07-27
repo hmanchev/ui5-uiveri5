@@ -2,8 +2,8 @@
 var _ = require('lodash');
 var proxyquire =  require('proxyquire');
 var url = require('url');
-var clientsidescripts = require('./clientsidescripts');
-var ClassicalWaitForUI5 = require('./waitForUI5/classicalWaitForUI5.script');
+var clientsidescripts = require('./scripts/clientsidescripts');
+var ClassicalWaitForUI5 = require('./scripts/classicalWaitForUI5');
 
 var DEFAULT_CONNECTION_NAME = 'direct';
 
@@ -22,6 +22,7 @@ var DEFAULT_CONNECTION_NAME = 'direct';
  *  be browserName, supports column delimited and json formats, defaults to: 'chrome'
  * @property {Object} params - params object to be passed to the tests
  * @property {boolean} ignoreSync - disables waitForUI5 synchronization, defaults to: false
+ * @property {boolean} useClassicalWaitForUI5 - use classical version of waitForUI5, defaults to: false
  */
 
 /**
@@ -120,7 +121,6 @@ function run(config) {
     var ui5SyncDelta = config.timeouts && config.timeouts.waitForUI5Delta;
     var waitForUI5Timeout = ui5SyncDelta > 0 ? (config.timeouts.allScriptsTimeout - ui5SyncDelta) : 0;
 
-    clientsidescripts.configure(config);
     var protractor = proxyquire('protractor/lib/protractor', {
       './clientsidescripts.js': clientsidescripts
     });
@@ -254,8 +254,13 @@ function run(config) {
       };
 
       browser.loadWaitForUI5 = function () {
-        return browser.executeScript_(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5',
-          {waitForUI5Timeout: waitForUI5Timeout, ClassicalWaitForUI5: ClassicalWaitForUI5});
+        return browser.executeScript_(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
+            waitForUI5Timeout: waitForUI5Timeout,
+            ClassicalWaitForUI5: ClassicalWaitForUI5,
+            useClassicalWaitForUI5: config.useClassicalWaitForUI5
+          }).then(function (sMessage) {
+            logger.debug("loadWaitForUI5: " + sMessage);
+          });
       };
 
       // add global matchers
@@ -432,9 +437,9 @@ function run(config) {
             }
           }
 
-          // ensure ui5 is loaded - execute waitForUI5() internally
+          // load waitForUI5 logic on client
           browser.loadWaitForUI5();
-
+          // ensure ui5 is loaded - execute waitForUI5() internally
           return browser.waitForAngular();
         },
 

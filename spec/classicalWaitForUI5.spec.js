@@ -1,4 +1,4 @@
-var ClassicalWaitForUI5 = require('../src/waitForUi5/classicalWaitForUI5.script');
+var ClassicalWaitForUI5 = require('../src/scripts/classicalWaitForUI5');
 var sinon = require('sinon');
 
 describe('waitForUI5: ClassicalWaitForUI5', function() {
