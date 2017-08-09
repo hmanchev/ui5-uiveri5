@@ -6,7 +6,7 @@ exports.config = {
     allScriptsTimeout: 11000,
     defaultTimeoutInterval: 30000
   },
-
+  useClassicalWaitForUI5: true,
   connection: 'direct',
   connectionConfigs: {
     'direct': {
