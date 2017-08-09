@@ -34,6 +34,10 @@ function run(config) {
   // configure logger
   var logger = require('./logger')(config.verbose);
 
+  // log framework version
+  var pjson = require('../package.json');
+  logger.info(pjson.name + " v" + pjson.version);
+
   // log config object so far
   logger.debug('Config from command-line: ${JSON.stringify(config)}',{config:config});
 
