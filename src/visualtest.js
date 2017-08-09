@@ -22,7 +22,7 @@ var DEFAULT_CONNECTION_NAME = 'direct';
  *  be browserName, supports column delimited and json formats, defaults to: 'chrome'
  * @property {Object} params - params object to be passed to the tests
  * @property {boolean} ignoreSync - disables waitForUI5 synchronization, defaults to: false
- * @property {boolean} useClassicalWaitForUI5 - use classical version of waitForUI5, defaults to: false
+ * @property {boolean} useClassicalWaitForUI5 - use classical version of waitForUI5, defaults to: true
  */
 
 /**
