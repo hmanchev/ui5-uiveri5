@@ -65,6 +65,12 @@ var mFunctions = {
     } else {
       fnCallback("waitForAngular: failed to wait for UI5 updates - no waitForUI5 implementation is currently loaded.");
     }
+  },
+  getWindowToolbarSize: function () {
+    return {
+      width: window.outerWidth - window.innerWidth,
+      height: window.outerHeight - window.innerHeight
+    };
   }
 };
 

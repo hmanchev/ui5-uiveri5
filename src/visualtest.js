@@ -161,7 +161,7 @@ function run(config) {
     */
 
     // execute after test env setup and just before test execution starts
-    protractorArgv.onPrepare = function() {
+    protractorArgv.onPrepare = function () {
 
       // publish visualtest configs on protractor's browser object
       browser.testrunner = {};
@@ -169,66 +169,59 @@ function run(config) {
 
       var matchers = {};
       var storageProvider;
+
       // register a hook to be called when webdriver is created ( may not be connected yet )
-      browser.getProcessedConfig().then(function(protractorConfig) {
-        var runtime = runtimeResolver.resolveRuntimeFromCapabilities(
-          protractorConfig.capabilities);
+      browser.getProcessedConfig().then(function (protractorConfig) {
+        var runtime = runtimeResolver.resolveRuntimeFromCapabilities(protractorConfig.capabilities);
 
         // export current runtime for tests
         browser.testrunner.runtime = runtime;
 
         // register screenshot provider
-        var screenshotProvider =
-          moduleLoader.loadModuleIfAvailable('screenshotProvider',[runtime]);
-        if(screenshotProvider){
+        var screenshotProvider = moduleLoader.loadModuleIfAvailable('screenshotProvider', [runtime]);
+        if (screenshotProvider) {
           screenshotProvider.register();
         }
 
         // load storage provider
-        storageProvider = moduleLoader.loadModuleIfAvailable('storageProvider',[runtime]);
+        storageProvider = moduleLoader.loadModuleIfAvailable('storageProvider', [runtime]);
 
         // load comparison provider and register the custom matcher
-        var comparisonProvider = moduleLoader.loadModuleIfAvailable('comparisonProvider',[storageProvider]);
-        if(comparisonProvider){
+        var comparisonProvider = moduleLoader.loadModuleIfAvailable('comparisonProvider', [storageProvider]);
+        if (comparisonProvider) {
           comparisonProvider.register(matchers);
         }
 
         // process remoteWebDriverOptions
-        if (runtime.capabilities.remoteWebDriverOptions){
-          var options = runtime.capabilities.remoteWebDriverOptions;
-          if (options.maximized){
-            logger.debug('Maximizing browser window');
-            browser.driver.manage().window().maximize();
+        var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, "maximized");
+        var remoteWindowPosition = _.get(runtime.capabilities.remoteWebDriverOptions, "position");
+        var remoteViewportSize = _.get(runtime.capabilities.remoteWebDriverOptions, "viewportSize");
+        var remoteBrowserSize = _.get(runtime.capabilities.remoteWebDriverOptions, "browserSize");
+
+        if (isMaximized) {
+          logger.debug('Maximizing browser window');
+          browser.driver.manage().window().maximize();
+        } else {
+          if (remoteWindowPosition) {
+            if (_.some(remoteWindowPosition, _.isUndefined)) {
+              throw Error('Setting browser window position: X and Y coordinates required but not specified');
+            }
+            logger.debug('Setting browser window position: x: ' + remoteWindowPosition.x + ', y: ' + remoteWindowPosition.y);
+            browser.driver.manage().window().setPosition(remoteWindowPosition.x * 1, remoteWindowPosition.y * 1); // convert to integer implicitly
           }
-          if (options.size){
-            if (!options.size.width || !options.size.height){
-              throw Error('Setting browser window size required but no width and/or height specified');
+
+          if (remoteViewportSize) {
+            if (_.some(remoteViewportSize, _.isUndefined)) {
+              throw Error('Setting browser viewport size: width and height required but not specified');
             }
-            var width = options.size.width;
-            if(_.isString(width)){
-              width = parseInt(width,10);
+            logger.debug('Setting browser viewport size: width: ' + remoteViewportSize.width + ', height: ' + remoteViewportSize.height);
+            browser.setViewportSize(remoteViewportSize);
+          } else if (remoteBrowserSize) {
+            if (_.some(remoteBrowserSize, _.isUndefined)) {
+              throw Error('Setting browser window size: width and height required but not specified');
             }
-            var height = options.size.height;
-            if(_.isString(height)){
-              width = parseInt(height,10);
-            }
-            logger.debug('Setting browser width: ' + width + ' ,height: ' + height);
-            browser.driver.manage().window().setSize(width,height);
-          }
-          if (options.position){
-            if (typeof options.position.x  == 'undefined' || typeof options.position.y == 'undefined'){
-              throw Error('Setting browser window position required but no X and/or Y coordinates specified');
-            }
-            var x = options.position.x;
-            if(_.isString(x)){
-              width = parseInt(x,10);
-            }
-            var y = options.position.y;
-            if(_.isString(y)){
-              width = parseInt(y,10);
-            }
-            logger.debug('Setting browser position x: ' + x + ' ,y: ' + y);
-            browser.driver.manage().window().setPosition(x,y);
+            logger.debug('Setting browser window size: width: ' + remoteBrowserSize.width + ', height: ' + remoteBrowserSize.height);
+            browser.driver.manage().window().setSize(remoteBrowserSize.width * 1, remoteBrowserSize.height * 1); // convert to integer implicitly
           }
         }
 
@@ -265,6 +258,12 @@ function run(config) {
           }).then(function (sMessage) {
             logger.debug("loadWaitForUI5: " + sMessage);
           });
+      };
+
+      browser.setViewportSize = function (viewportSize) {
+        return browser.executeScript_(clientsidescripts.getWindowToolbarSize).then(function (toolbarSize) {
+          browser.driver.manage().window().setSize(viewportSize.width * 1 + toolbarSize.width, viewportSize.height * 1 + toolbarSize.height); // convert to integer implicitly
+        });
       };
 
       // add global matchers

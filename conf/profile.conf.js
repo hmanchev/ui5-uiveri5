@@ -89,7 +89,11 @@ exports.config = {
             x: 0,
             y: 0
           },
-          size: {
+          browserSize: {
+            width: 1920,
+            height: 1067
+          },
+          viewportSize: {
             width: 1920,
             height: 1067
           }

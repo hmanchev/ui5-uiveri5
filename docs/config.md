@@ -103,6 +103,34 @@ browsers array or on command line. They are supplied to the respective webdriver
 Please note that chromedriver and iedriver options are considered only when local driver is started directly
 and not over selenium jar.
 
+Browser size and location can be specified in browsers.capabilities.remoteWebDriverOptions. The following are listed in descending priority:
+* maximized - maximizes the browser window
+* position - offset of the browser relative to the upper left screen corner
+* viewportSize - inner size of the browser window (actual page display area)
+* browserSize - outer size of the browser window (including window toolbars)
+
+```
+browsers: [{
+  capabilities: {
+    remoteWebDriverOptions: {
+      maximized: true,
+      position: {
+        x: 0,
+        y: 0
+      },
+      viewportSize: {
+        width: 1920,
+        height: 1067
+      },
+      browserSize: {
+        width: 1920,
+        height: 1067
+      }
+    }
+  }
+}]
+```
+
 #### Chromedriver options
 All chromedriver options as could be provided. Please check:  https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/chrome.js
 Option names match the names of ServiceBuilder object methods.
