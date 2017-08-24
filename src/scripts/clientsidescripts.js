@@ -42,7 +42,7 @@ var mFunctions = {
           ], function (_autoWaiterAsync) {
             _autoWaiterAsync.extendConfig({
               timeout: mScriptParams.waitForUI5Timeout / 1000,
-              timeoutCounter: {
+              timeoutWaiter: {
                 maxDelay: mScriptParams.waitForUI5Timeout
               }
             });
