@@ -8,6 +8,7 @@ var DEFAULT_DEVICE_NAME = '*';
 var DEFAULT_UI5_THEME = 'belize';
 var DEFAULT_UI5_DIRECTION = 'ltr';
 var DEFAULT_UI5_MODE = 'cozy';
+var DEFAULT_EXECUTION_TYPE = '*';
 
 var defaultPlatformResolutionPerPlatformName = {
   windows: '1600x1200',
@@ -178,6 +179,7 @@ RuntimeResolver.prototype.resolveRuntimes = function(){
 };
 
 RuntimeResolver.prototype._mergeMatchingCapabilities = function(runtime,browserCapabilities){
+  var currentExecutionType = this.connectionProvider.getExecutionType();
   // loop over all capabilities
   var browserNamePattern;
   for (browserNamePattern in browserCapabilities){
@@ -185,8 +187,13 @@ RuntimeResolver.prototype._mergeMatchingCapabilities = function(runtime,browserC
       var platformNamePattern;
       for (platformNamePattern in browserCapabilities[browserNamePattern]){
         if (this._isMatching(runtime.platformName,platformNamePattern)){
-          runtime.capabilities = _.merge({},
-            browserCapabilities[browserNamePattern][platformNamePattern],runtime.capabilities);
+          var executionTypePattern;
+          for(executionTypePattern in browserCapabilities[browserNamePattern][platformNamePattern]){
+            if(this._isMatching(currentExecutionType, executionTypePattern)){
+              runtime.capabilities = _.merge({},
+                browserCapabilities[browserNamePattern][platformNamePattern][currentExecutionType],runtime.capabilities);
+            }
+          }
         }
       }
     }

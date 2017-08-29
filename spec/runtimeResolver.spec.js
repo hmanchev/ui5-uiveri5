@@ -1,6 +1,11 @@
 
 describe("RuntimeResolver", function() {
   var resolver = new require('../src/runtimeResolver')();
+  resolver.connectionProvider = {
+    getExecutionType: function() {
+      return 'remote';
+    }
+  };
 
   describe("Should match browserCapabilities", function() {
     it('Should handle separate names', function () {
@@ -12,7 +17,9 @@ describe("RuntimeResolver", function() {
       resolver._mergeMatchingCapabilities(runtime,{
         'chrome,chromium': {
           'windows,mac,linux': {
-            matched: true
+            'remote': {
+              matched: true
+            }
           }
         }
       });
@@ -25,10 +32,19 @@ describe("RuntimeResolver", function() {
         browserName: 'chrome',
         platformName: 'windows'
       };
+
+      resolver.connectionProvider = {
+        getExecutionType: function() {
+          return 'local';
+        }
+      };
+
       resolver._mergeMatchingCapabilities(runtime,{
         'chrome': {
           '*': {
-            matched: true
+            '*': {
+              matched: true
+            }
           }
         }
       });
@@ -71,4 +87,101 @@ describe("RuntimeResolver", function() {
       expect(runtime.capabilities.key).toBe('value');
     });
   });
+
+  describe('Should merge with execution type capabilities', function() {
+    it('Should merge matched execution type - remote', function() {
+      var runtime = {
+        capabilities: {
+          key: 'value'
+        },
+        browserName: 'chrome',
+        platformName: 'windows'
+      };
+
+      resolver.connectionProvider = {
+        getExecutionType: function() {
+          return 'remote';
+        }
+      };
+
+      resolver._mergeMatchingCapabilities(runtime,
+        {
+          'chrome,chromium': {
+            'windows,mac,linux': {
+              'local': {
+                'chromeOptions': {
+                  'args': [
+                    'start-maximized'
+                  ]
+                }
+              },
+              'remote': {
+                'chromeOptions': {
+                  'args': [
+                    'start-minimized'
+                  ]
+                }
+              },
+              'default': {
+                'chromeOptions': {
+                  'args': [
+                    'start-medium'
+                  ]
+                }
+              }
+            }
+          }
+        });
+
+      expect(runtime.capabilities.chromeOptions.args[0]).toBe('start-minimized');
+    });
+
+    it('Should merge matched execution type - local', function() {
+      var runtime = {
+        capabilities: {
+          key: 'value'
+        },
+        browserName: 'chrome',
+        platformName: 'windows'
+      };
+
+      // override to return local execution
+      resolver.connectionProvider = {
+        getExecutionType: function() {
+          return 'local';
+        }
+      };
+
+      resolver._mergeMatchingCapabilities(runtime,
+        {
+          'chrome,chromium': {
+            'windows,mac,linux': {
+              'local': {
+                'chromeOptions': {
+                  'args': [
+                    'start-maximized'
+                  ]
+                }
+              },
+              'remote': {
+                'chromeOptions': {
+                  'args': [
+                    'start-minimized'
+                  ]
+                }
+              },
+              'default': {
+                'chromeOptions': {
+                  'args': [
+                    'start-medium'
+                  ]
+                }
+              }
+            }
+          }
+        });
+
+      expect(runtime.capabilities.chromeOptions.args[0]).toBe('start-maximized');
+    })
+  })
 });

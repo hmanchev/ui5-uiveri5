@@ -49,13 +49,21 @@ DirectConnectionProvider.prototype = _.create(ConnectionProvider.prototype,{
   'constructor': DirectConnectionProvider
 });
 
+
+/**
+ * Return the execution type - remote or local
+ * @return {String} execution type
+ */
+DirectConnectionProvider.prototype.getExecutionType = function() {
+  return this.seleniumConfig.address ? 'remote' : 'local';
+};
+
 /**
  * Prepare capabilities object for this session
  * @param {Runtime} runtime - required runtime for this session
  * @return {Object} capabilities of this session
  */
 DirectConnectionProvider.prototype.resolveCapabilitiesFromRuntime = function(runtime){
-
   // save this runtime so setupEnv() could download respective drivers
   this.runtimes.push(runtime);
 
@@ -141,7 +149,7 @@ DirectConnectionProvider.prototype.setupEnv = function() {
   // attach our custom driverProvider
   proxyquire('protractor/lib/runner',
     {'./driverProviders/direct': function(protConfig){
-        return new DirectDriverProvider(protConfig,that.logger,that.seleniumConfig);
+      return new DirectDriverProvider(protConfig,that.logger,that.seleniumConfig);
       }
     });
 
