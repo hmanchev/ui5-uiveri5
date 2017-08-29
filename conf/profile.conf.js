@@ -45,7 +45,10 @@ exports.config = {
     'browser,chrome': {
       'android': {
         '*': {
-          deviceName: 'android'
+          deviceName: 'android',
+          remoteWebDriverOptions: {
+            maximized: true
+          }
         /*
         remoteWebDriverOptions: {
           contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
@@ -69,8 +72,8 @@ exports.config = {
     'chrome,chromium': {
       'windows,mac,linux': {
         '*': {
-          chromeOptions: {
-            args: ['start-maximized']
+          remoteWebDriverOptions: {
+            maximized: true
           }
           /*
           chromedriverOptions: {
@@ -87,6 +90,9 @@ exports.config = {
     'firefox,ie,safari': {
       'windows,mac,linux': {
         '*': {
+          remoteWebDriverOptions: {
+            maximized: true
+          }
         /*
         position: {
           x: 0,
