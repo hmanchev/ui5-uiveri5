@@ -45,27 +45,24 @@ exports.config = {
     'browser,chrome': {
       'android': {
         '*': {
-          deviceName: 'android',
-          remoteWebDriverOptions: {
-            maximized: true
-          }
-        /*
-        remoteWebDriverOptions: {
-          contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
-          crops: {
-            position: {
-              y: 116
-            },
-            size: {
-              height: 684
-            }
-          },
-          scaling: {
-            x: 1.5,
-            y: 1.5
-          }
-        }
-        */
+          deviceName: 'android'
+          /*
+           remoteWebDriverOptions: {
+           contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
+           crops: {
+           position: {
+           y: 116
+           },
+           size: {
+           height: 684
+           }
+           },
+           scaling: {
+           x: 1.5,
+           y: 1.5
+           }
+           }
+           */
         }
       }
     },
@@ -74,79 +71,85 @@ exports.config = {
         '*': {
           remoteWebDriverOptions: {
             maximized: true
-          }
+          },
+          enableClickWithActions: true
           /*
-          chromedriverOptions: {
-            'enableVerboseLogging': [],
-            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
-          }
-          */
-          /*
-          enableClickWithActions: true,
-          */
+           chromedriverOptions: {
+           'enableVerboseLogging': [],
+           'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
+           }
+           */
         }
       }
     },
     'firefox,ie,safari': {
-      'windows,mac,linux': {
+      'windows,linux': {
+        '*': {
+          remoteWebDriverOptions: {
+            maximized: true
+          },
+          enableClickWithActions: true
+        }
+      },
+      'mac': {
         '*': {
           remoteWebDriverOptions: {
             maximized: true
           }
-        /*
-        position: {
-          x: 0,
-          y: 0
-        },
-        size: {
-          width: 1920,
-          height: 1067
-        },
-        browserSize: {
-          width: 1920,
-          height: 1067
-        },
-        viewportSize: {
-          width: 1920,
-          height: 1067
-        }
-        seleniumOptions: {
-          args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
-        }
-        */
+          /*
+           position: {
+           x: 0,
+           y: 0
+           },
+           size: {
+           width: 1920,
+           height: 1067
+           },
+           browserSize: {
+           width: 1920,
+           height: 1067
+           },
+           viewportSize: {
+           width: 1920,
+           height: 1067
+           }
+           seleniumOptions: {
+           args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
+           }
+           */
         }
       }
+    }
+  },
+
+  auth: 'plain',
+  authConfigs: {
+    'plain': {
+      name: './authenticator/plainAuthenticator'
     },
-
-    auth: 'plain',
-    authConfigs: {
-      'plain': {
-        name: './authenticator/plainAuthenticator'
-      },
-      'basic': {
-        name: './authenticator/basicUrlAuthenticator'
-      },
-      'fiori-form': {
-        name: './authenticator/formAuthenticator',
-        userFieldSelector: '#USERNAME_FIELD input',
-        passFieldSelector: '#PASSWORD_FIELD input',
-        logonButtonSelector: '#LOGIN_LINK'
-      },
-      'sapcloud-form': {
-        name: './authenticator/formAuthenticator',
-        frameSelector: '#IDS_UI_Window',
-        userFieldSelector: '#j_username',
-        passFieldSelector: '#j_password',
-        logonButtonSelector: '#logOnFormSubmit'
-      }
+    'basic': {
+      name: './authenticator/basicUrlAuthenticator'
     },
+    'fiori-form': {
+      name: './authenticator/formAuthenticator',
+      userFieldSelector: '#USERNAME_FIELD input',
+      passFieldSelector: '#PASSWORD_FIELD input',
+      logonButtonSelector: '#LOGIN_LINK'
+    },
+    'sapcloud-form': {
+      name: './authenticator/formAuthenticator',
+      frameSelector: '#IDS_UI_Window',
+      userFieldSelector: '#j_username',
+      passFieldSelector: '#j_password',
+      logonButtonSelector: '#logOnFormSubmit'
+    }
+  },
 
-    reporters: [
-      {name: './reporter/consoleReporter'}
-    ],
+  reporters: [
+    {name: './reporter/consoleReporter'}
+  ],
 
-    locators: [
-      {name: './defaultLocators'}
-    ]
-  }
+  locators: [
+    {name: './defaultLocators'}
+  ]
 };
