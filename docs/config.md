@@ -57,13 +57,26 @@ accept a comma-separated list of names, wildcard character '*'. Prepend the excl
 of the name to exclude this name from the match.
 Those capabilities could be overwritten or extended in the browser runtime configuration.
 
-Add default options to browser capabilities:
+Add default options to browser capabilities. They can be separated for local execution, or for remote.
+For default capabilities (both for local and remote) can be used '*' as third level. The execution type (local or remote)
+is recognized automatically by the framework.
 ```javascript
 browserCapabilities: {
   'chrome': {
     'windows': {
-      chromeOptions: {
-        args: ['start-maximized']
+      'local': {
+        viewportSize: {
+          width: 1920,
+          height: 1067
+        }
+      },
+      'remote': {
+        remoteWebDriverOptions: {
+          maximized: true
+        }
+      },
+      '*': {
+        enableClickWithActions: true
       }
     }
   }
@@ -81,6 +94,7 @@ browsers: [{
   }
 }]
 ```
+There is no need to specify the execution type.
 
 ### Local and remote execution
 If _seleniumAddress_ is provided (either in conf.js or on command line) the tool will connect to this address.
