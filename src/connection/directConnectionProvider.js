@@ -195,7 +195,7 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   var root = path.resolve(__dirname + '/../../selenium').replace(/\\/g,'/');
 
   // compute OS type strings
-  binary.chromeOsTypeString = function(){
+  binary.osTypeString = function(){
     // return type string depending on current OS
     if (os.type() == 'Darwin') {
       return 'mac32';
@@ -215,7 +215,14 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   // resolve vars
   var url = _.template(binary.url)(binary);
   var filename = _.template(binary.filename)(binary);
-  var executable =  root + '/' + _.template(binary.executable)(binary);
+  var executableType = typeof binary.executable;
+
+  if(executableType === 'object') {
+    var executableOs = binary.osTypeString !== 'win32' ? 'mac32' : 'win32';
+    var executable =  root + '/' + _.template(binary.executable[executableOs])(binary);
+  } else {
+    var executable =  root + '/' + _.template(binary.executable)(binary);
+  }
 
   // check if binary already exist
   fs.stat(executable,function(err,stat){
@@ -257,7 +264,7 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
                     fs.renameSync(filenamePath + '/' + filename,executable);
 
                     // fix the executable flag
-                    fs.chmodSync(path.join(argv.out_dir,filename),0755);
+                    fs.chmodSync(path.join(filenamePath,filename + '-' + binary.version),0755);
                   }
 
                   // delete the zip

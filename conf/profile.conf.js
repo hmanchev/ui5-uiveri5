@@ -20,11 +20,14 @@ exports.config = {
           executable: '${filename}-${version}.${patch}.jar'
         },
         chromedriver: {
-          version: '2.28',
+          version: '2.9',
           unzip: true,
           filename: 'chromedriver',
-          url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${chromeOsTypeString}.zip',
-          executable: '${filename}-${version}.exe'
+          url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${osTypeString}.zip',
+          executable: {
+            win32: '${filename}-${version}.exe',
+            mac32: '${filename}-${version}'
+          }
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
         iedriver: {
