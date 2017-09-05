@@ -10,7 +10,7 @@ exports.config = {
   connection: 'direct',
   connectionConfigs: {
     'direct': {
-      name: './connection/directConnectionProvider',
+      name : './connection/directConnectionProvider',
       binaries: {
         selenium: {
           version: '2.51',
@@ -20,13 +20,13 @@ exports.config = {
           executable: '${filename}-${version}.${patch}.jar'
         },
         chromedriver: {
-          version: '2.28',
+          version: '2.9',
           unzip: true,
           filename: 'chromedriver',
           url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${osTypeString}.zip',
           executable: {
             win32: '${filename}-${version}.exe',
-            mac64: '${filename}-${version}'
+            mac32: '${filename}-${version}'
           }
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
@@ -49,23 +49,23 @@ exports.config = {
       'android': {
         '*': {
           deviceName: 'android'
-          /*
-           remoteWebDriverOptions: {
-           contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
-           crops: {
-           position: {
-           y: 116
-           },
-           size: {
-           height: 684
-           }
-           },
-           scaling: {
-           x: 1.5,
-           y: 1.5
-           }
-           }
-           */
+        /*
+        remoteWebDriverOptions: {
+          contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
+          crops: {
+            position: {
+              y: 116
+            },
+            size: {
+              height: 684
+            }
+          },
+          scaling: {
+            x: 1.5,
+            y: 1.5
+          }
+        }
+        */
         }
       }
     },
@@ -82,6 +82,7 @@ exports.config = {
            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
            }
            */
+
         }
       }
     },

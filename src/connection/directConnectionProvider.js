@@ -198,7 +198,7 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   binary.osTypeString = function(){
     // return type string depending on current OS
     if (os.type() == 'Darwin') {
-      return 'mac64';
+      return 'mac32';
     } else if (os.type() == 'Linux') {
       if (os.arch() == 'x64') {
         return 'linux64';
@@ -218,7 +218,7 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   var executableType = typeof binary.executable;
 
   if(executableType === 'object') {
-    var executableOs = binary.osTypeString !== 'win32' ? 'mac64' : 'win32';
+    var executableOs = binary.osTypeString !== 'win32' ? 'mac32' : 'win32';
     var executable =  root + '/' + _.template(binary.executable[executableOs])(binary);
   } else {
     var executable =  root + '/' + _.template(binary.executable)(binary);
