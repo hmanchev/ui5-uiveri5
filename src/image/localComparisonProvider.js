@@ -7,6 +7,7 @@ var Q = require('q');
 //default values
 var DEFAULT_COMPARE = true;
 var DEFAULT_UPDATE = false;
+var DEFAULT_IGNORE_NOTHING = true;
 var DEFAULT_THRESHOLD_PERCENTAGE = 0.1;
 var DEFAULT_THRESHOLD_PIXELS = 200;
 var DEFAULT_IMAGE_NAME_REGEX = /^[\w\-]{3,40}$/;
@@ -46,7 +47,7 @@ function LocalComparisonProvider(config,instanceConfig,logger,storageProvider) {
   this.thresholdPercentage = config.thresholdPercentage || DEFAULT_THRESHOLD_PERCENTAGE;
   this.thresholdPixels = config.thresholdPixels || DEFAULT_THRESHOLD_PIXELS;
   this.imgNameRegEx = config.imgNameRegEx || DEFAULT_IMAGE_NAME_REGEX;
-  this.ignoreNothing = config.ignoreNothing || false;
+  this.ignoreNothing = typeof config.ignoreNothing !== 'undefined' ? config.ignoreNothing : DEFAULT_IGNORE_NOTHING;
 
   this.take = typeof config.take !== 'undefined' ? config.take : DEFAULT_COMPARE;
   this.compare = typeof config.compare !== 'undefined' ? config.compare : DEFAULT_COMPARE;
