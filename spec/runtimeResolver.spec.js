@@ -122,7 +122,7 @@ describe("RuntimeResolver", function() {
                   ]
                 }
               },
-              'default': {
+              '*': {
                 'chromeOptions': {
                   'args': [
                     'start-medium'
@@ -170,7 +170,7 @@ describe("RuntimeResolver", function() {
                   ]
                 }
               },
-              'default': {
+              '*': {
                 'chromeOptions': {
                   'args': [
                     'start-medium'
@@ -182,6 +182,40 @@ describe("RuntimeResolver", function() {
         });
 
       expect(runtime.capabilities.chromeOptions.args[0]).toBe('start-maximized');
-    })
+    });
+
+    it('Should merge matched execution type - all types', function() {
+      var runtime = {
+        capabilities: {
+          key: 'value'
+        },
+        browserName: 'chrome',
+        platformName: 'windows'
+      };
+
+      // override to return local execution
+      resolver.connectionProvider = {
+        getExecutionType: function() {
+          return 'remote';
+        }
+      };
+
+      resolver._mergeMatchingCapabilities(runtime,
+        {
+          'chrome,chromium': {
+            'windows,mac,linux': {
+              '*': {
+                'chromeOptions': {
+                  'args': [
+                    'start-medium'
+                  ]
+                }
+              }
+            }
+          }
+        });
+
+      expect(runtime.capabilities.chromeOptions.args[0]).toBe('start-medium');
+    });
   })
 });
