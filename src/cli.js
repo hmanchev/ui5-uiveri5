@@ -29,6 +29,8 @@ var argv = require('yargs').
     describe('config', 'JSON formatted config object to override config file options').
     string('confKeys').
     describe('confKeys', 'Config keys, accepts extended dot notation').
+    boolean('ignoreNothing').default('ignoreNothing', true).
+    describe('ignoreNothing', 'More precise image comparison in color shades if set to true').
     count('verbose').
     alias('v', 'verbose').
     describe('verbose', 'Print debug logs').
