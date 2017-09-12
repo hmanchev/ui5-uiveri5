@@ -216,12 +216,12 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   var url = _.template(binary.url)(binary);
   var filename = _.template(binary.filename)(binary);
   var executableType = typeof binary.executable;
+  var executable;
 
   if(executableType === 'object') {
-    var executableOs = binary.osTypeString !== 'win32' ? 'mac64' : 'win32';
-    var executable =  root + '/' + _.template(binary.executable[executableOs])(binary);
+    executable =  root + '/' + _.template(binary.executable[binary.osTypeString])(binary);
   } else {
-    var executable =  root + '/' + _.template(binary.executable)(binary);
+    executable =  root + '/' + _.template(binary.executable)(binary);
   }
 
   // check if binary already exist
@@ -264,7 +264,7 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
                     fs.renameSync(filenamePath + '/' + filename,executable);
 
                     // fix the executable flag
-                    fs.chmodSync(path.join(filenamePath,filename + '-' + binary.version),0755);
+                    fs.chmodSync(path.join(executable),0755);
                   }
 
                   // delete the zip

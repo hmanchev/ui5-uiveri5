@@ -26,7 +26,9 @@ exports.config = {
           url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${osTypeString}.zip',
           executable: {
             win32: '${filename}-${version}.exe',
-            mac64: '${filename}-${version}'
+            mac64: '${filename}-${version}',
+            linux32: '${filename}-${version}',
+            linux64: '${filename}-${version}'
           }
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
@@ -82,7 +84,6 @@ exports.config = {
            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
            }
            */
-
         }
       }
     },
