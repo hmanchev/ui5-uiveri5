@@ -140,8 +140,14 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                 if (that.ignoreNothing) {
                   resComparison.ignoreNothing(that.ignoreNothing);
                 }
-                resComparison.onComplete(
-                  function (comparisonResult) {
+
+                resComparison.onComplete(function (comparisonResult, error) {
+                  if (error) {
+                    result.message = 'Image comparison failed, error: ' + error;
+                    that.logger.debug(result.message);
+                    defer.fulfill(false);
+                    return;
+                  }
                     // resolve mismatch percentage and count
                     var mismatchPercentage = parseFloat(comparisonResult.misMatchPercentage);
                     var mismatchPixelsCount = comparisonResult.mismatchCount;
@@ -208,21 +214,7 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                         imageName: expectedImageName
                       };
 
-                      // extract diff image to buffer
-                      Q.Promise(function (resolveFn, rejectFn) {
-                        var diffImageChunks = [];
-                        var diffImageReadStream = comparisonResult.getDiffImage().pack();
-                        diffImageReadStream.on('data', function (chunk) {
-                          diffImageChunks.push(chunk);
-                        });
-                        diffImageReadStream.on('error', function (error) {
-                          rejectFn(error);
-                        });
-                        diffImageReadStream.on('end', function () {
-                          var diffImageBuffer = Buffer.concat(diffImageChunks);
-                          resolveFn(diffImageBuffer);
-                        });
-                      }).then(function(diffImageBuffer){
+                      that._diffImageToBuffer(comparisonResult).then(function(diffImageBuffer){
                         return that.storageProvider.storeRefActDiffImage(
                           expectedImageName,actualImageBuffer,diffImageBuffer,that.update);
                       }).then(function (storeRes) {
@@ -263,6 +255,23 @@ LocalComparisonProvider.prototype.register = function (matchers) {
   };
 
   matchers.toLookAs = toLookAs;
+};
+
+LocalComparisonProvider.prototype._diffImageToBuffer = function (comparisonResult) {
+  return Q.Promise(function (resolveFn, rejectFn) {
+    var diffImageChunks = [];
+    var diffImageReadStream = comparisonResult.getDiffImage().pack();
+    diffImageReadStream.on('data', function (chunk) {
+      diffImageChunks.push(chunk);
+    });
+    diffImageReadStream.on('error', function (error) {
+      rejectFn(error);
+    });
+    diffImageReadStream.on('end', function () {
+      var diffImageBuffer = Buffer.concat(diffImageChunks);
+      resolveFn(diffImageBuffer);
+    });
+  });
 };
 
 module.exports = function (config,instanceConfig,logger,storageProvider) {

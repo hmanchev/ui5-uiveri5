@@ -143,4 +143,18 @@ describe("LocalComparisonProvider", function () {
       done();
     });
   });
+
+  it('Should handle image parsing errors', function (done) {
+    var invalidBuffer = new Buffer('not an actual png', 'utf8');
+    var comparisonProvider = new LocalComparisonProvider(
+      comparisonConfig, comparisonInstanceConfig, logger, storageProvider);
+
+    comparisonProvider.register(matchers);
+    var result = matchers.toLookAs().compare(invalidBuffer, 'arrow_left');
+    result.pass.promise.then(function (passed) {
+      expect(passed).toBe(false);
+      expect(result.message).toContain('Image comparison failed, error: Error while parsing image buffer: Error: Invalid file signature');
+      done();
+    });
+  });
 });
