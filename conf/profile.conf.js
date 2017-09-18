@@ -23,8 +23,13 @@ exports.config = {
           version: '2.28',
           unzip: true,
           filename: 'chromedriver',
-          url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${chromeOsTypeString}.zip',
-          executable: '${filename}-${version}.exe'
+          url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${osTypeString}.zip',
+          executable: {
+            win32: '${filename}-${version}.exe',
+            mac64: '${filename}-${version}',
+            linux32: '${filename}-${version}',
+            linux64: '${filename}-${version}'
+          }
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
         iedriver: {
@@ -46,23 +51,23 @@ exports.config = {
       'android': {
         '*': {
           deviceName: 'android'
-          /*
-           remoteWebDriverOptions: {
-           contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
-           crops: {
-           position: {
-           y: 116
-           },
-           size: {
-           height: 684
-           }
-           },
-           scaling: {
-           x: 1.5,
-           y: 1.5
-           }
-           }
-           */
+        /*
+        remoteWebDriverOptions: {
+          contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
+          crops: {
+            position: {
+              y: 116
+            },
+            size: {
+              height: 684
+            }
+          },
+          scaling: {
+            x: 1.5,
+            y: 1.5
+          }
+        }
+        */
         }
       }
     },
@@ -148,7 +153,6 @@ exports.config = {
   reporters: [
     {name: './reporter/consoleReporter'}
   ],
-
   locators: [
     {name: './defaultLocators'}
   ]
