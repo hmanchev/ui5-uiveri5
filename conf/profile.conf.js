@@ -47,81 +47,30 @@ exports.config = {
   },
 
   browserCapabilities: {
+    /* appium/android require deviceName */
     'browser,chrome': {
       'android': {
         '*': {
           deviceName: 'android'
-        /*
-        remoteWebDriverOptions: {
-          contextSwitch: true, // {native: 'NATIVE_APP', webview: 'WEBVIEW_1'}
-          crops: {
-            position: {
-              y: 116
-            },
-            size: {
-              height: 684
-            }
-          },
-          scaling: {
-            x: 1.5,
-            y: 1.5
-          }
-        }
-        */
         }
       }
     },
-    'chrome,chromium': {
+    /* maximize browser on all desktops to ensure consistent browser size */
+    'chrome,chromium,firefox,ie,safari': {
       'windows,mac,linux': {
         '*': {
           remoteWebDriverOptions: {
             maximized: true
           },
-          enableClickWithActions: true
           /*
-           chromedriverOptions: {
-           'enableVerboseLogging': [],
-           'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
-           }
-           */
-        }
-      }
-    },
-    'firefox,ie,safari': {
-      'windows,linux': {
-        '*': {
-          remoteWebDriverOptions: {
-            maximized: true
-          },
-          enableClickWithActions: true
-        }
-      },
-      'mac': {
-        '*': {
-          remoteWebDriverOptions: {
-            maximized: true
+          chromedriverOptions: {
+            'enableVerboseLogging': [],
+            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
           }
-          /*
-           position: {
-           x: 0,
-           y: 0
-           },
-           size: {
-           width: 1920,
-           height: 1067
-           },
-           browserSize: {
-           width: 1920,
-           height: 1067
-           },
-           viewportSize: {
-           width: 1920,
-           height: 1067
-           }
-           seleniumOptions: {
-           args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
-           }
-           */
+          seleniumOptions: {
+            args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
+          }
+          */
         }
       }
     }

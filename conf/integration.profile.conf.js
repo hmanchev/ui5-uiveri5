@@ -1,6 +1,7 @@
 exports.config = {
   specResolver: './resolver/localSpecResolver',
   pageLoading: {
-    wait: '20000'
+    /* used to overcome issues due to pending async  work that was started before the waitForUI5 was injected */
+    wait: '10000'
   }
 };

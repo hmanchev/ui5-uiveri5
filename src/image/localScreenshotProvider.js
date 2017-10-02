@@ -93,17 +93,17 @@ LocalScreenshotProvider.prototype._takeFullScreenshot = function() {
       }
     }
 
+    that.logger.debug('Switch browser context to: ' + nativeName);
     return browser.switchContext(nativeName).then(function () {
       return browser.takeScreenshot().then(function (fullScreenshot) {
+        that.logger.debug('Switch browser context back to: ' + webviewName);
         return browser.switchContext(webviewName).then(function () {
-          that.logger.debug('Full screenshot with context switch was taken successfully.');
           return webdriver.promise.fulfilled(fullScreenshot);
         });
       });
     });
   } else {
     return browser.takeScreenshot().then(function (fullScreenshot) {
-      that.logger.debug('Full screenshot was taken successfully.');
       return webdriver.promise.fulfilled(fullScreenshot);
     });
   }

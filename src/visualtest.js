@@ -229,7 +229,7 @@ function run(config) {
         if (runtime.capabilities.enableClickWithActions) {
           logger.debug('Activating WebElement.click() override with actions');
           protractorModule.parent.exports.WebElement.prototype.click = function () {
-            logger.debug('Taking over WebElement.click()');
+            logger.trace('Taking over WebElement.click()');
             var driverActions = this.driver_.actions().mouseMove(this).click();
             return _moveMouseOutsideBody(driverActions);
           };
@@ -522,11 +522,9 @@ function run(config) {
      * Moving mouse to body (-1, -1)
      */
     function _moveMouseOutsideBody(driverActions) {
-      logger.debug('Moving mouse to body (-1, -1).');
+      logger.trace('Moving mouse to body (-1, -1).');
+      // the implicit synchronization that element() does is important to ensure app is settled before clicking
       var bodyElement = element(by.css("body"));
-      //var bodyElement = this.driver_.findElement(by.css('body'));
-      // replace once we upgrade beyond protractor 2.3.0
-      // https://github.com/angular/protractor/issues/2036
       return driverActions.mouseMove(bodyElement, {x:-1, y:-1}).perform();
     }
 
