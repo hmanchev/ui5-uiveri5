@@ -149,7 +149,7 @@ LocalScreenshotProvider.prototype._getBrowserScreenshot = function(fullScreensho
     }
 
     return that._crop(screenshotBuffer, cropConfig).then(function (browserScreenshot) {
-        return webdriver.promise.fulfilled(browserScreenshot);
+      return webdriver.promise.fulfilled(browserScreenshot);
     })
   } else {
     return webdriver.promise.fulfilled(fullScreenshot);
@@ -208,7 +208,6 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
               } else {
                 // element is partially or completely in the view port
                 var cropConfig = {};
-
                 if (elementDimensions.left < 0) {
                   cropConfig.left = 0;
                   cropConfig.width = Math.min((elementDimensions.width + elementDimensions.left), data.width);
@@ -227,9 +226,17 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
                     elementDimensions.height : (data.height - elementDimensions.top);
                 }
 
-                that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
-                  deferCropScreenshot.fulfill(croppedElement);
-                });
+                that.logger.debug('Trying to crop element with config: ' + JSON.stringify(cropConfig));
+                // crop only if the cropConfig width and height are proper
+                if(cropConfig.width > 0 && cropConfig.height > 0) {
+                  that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
+                    deferCropScreenshot.fulfill(croppedElement);
+                  });
+                } else {
+                  deferCropScreenshot.reject(new Error('Requested element for crop is placed partially or fully ' +
+                    'outside the viewport. Element width=' + cropConfig.width + ', height=' + cropConfig.height
+                    + ', left=' + cropConfig.left + ', top=' + cropConfig.top));
+                }
               }
             }
           });
@@ -237,6 +244,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
       }
     });
   } else {
+    this.logger.debug('No element provided, continue with full browser screenshot.');
     deferCropScreenshot.fulfill(browserScreenshot);
   }
 
