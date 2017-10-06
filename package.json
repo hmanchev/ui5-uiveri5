@@ -1,6 +1,6 @@
 {
   "name": "visualtestjs",
-  "version": "1.27.3",
+  "version": "1.27.4",
   "dependencies": {
     "adm-zip": "^0.4.7",
     "glob": "~4.3.5",
