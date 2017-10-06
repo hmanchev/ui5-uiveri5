@@ -53,9 +53,9 @@ describe("RemoteStorageProvider", function () {
         expect(fs.statSync(lnkPath + '.ref.lnk').isFile()).toBe(true);
         done();
       }).catch(function(error){
-      fail(error);
-      done()
-    });
+        fail(error);
+        done()
+      });
   });
 
   it("Should store new ref,act and diff images", function(done) {
@@ -73,6 +73,25 @@ describe("RemoteStorageProvider", function () {
       }).catch(function(error){
         fail(error);
         done()
+      });
+  });
+
+  it("Should handle imagestorage downtime error", function (done) {
+    var storageProvider = new RemoteStorageProvider({},
+      {refImagesRoot: refImageRoot, imageStorageUrl: imageStorageMockUrl}, logger, runtime);
+
+    storageProvider.onBeforeEachSpec(spec);
+    storageMock.config.isServiceAvailable = false;
+
+    storageProvider.readRefImage(initialImgName)
+      .then(function () {
+        expect(false).toBeTrue();
+        done();
+      }).catch(function (error) {
+        storageMock.config.isServiceAvailable = true;
+        expect(error.message).toContain('Server responded with status code 503 on request GET');
+        expect(error.message).toContain('response: {"statusCode":503,"body":"Service Unavailable"');
+        done();
       });
   });
 
@@ -164,4 +183,3 @@ describe("RemoteStorageProvider", function () {
     });
   });
 });
-

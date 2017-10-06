@@ -8,11 +8,22 @@ function RemoteStorageMock() {
   this.upload = multer({});
   this.app = express();
   this.imagesMap = {};
+  this.config = {
+    isServiceAvailable: true
+  };
 
   var that = this;
   function getImage(uid) {
     return that.imagesMap[uid];
   }
+
+  this.app.use('*', function (req, res, next) {
+    if (that.config.isServiceAvailable) {
+      next();
+    } else {
+      res.sendStatus(503);
+    }
+  });
 
   // List all existing image's uuid's
   this.app.get('/images/', function(req, res) {
@@ -28,16 +39,16 @@ function RemoteStorageMock() {
   // Get the image with given uuid
   this.app.get('/images/:uuid', function(req, res) {
     var uuid = req.params['uuid'];
-
     var image = getImage(uuid);
-    if (image){
+
+    if (image) {
       res.format({
         'image/png': function () {
           res.send(image.buffer);
         }
       });
     } else {
-      res.status(404).send();
+      res.sendStatus(404);
     }
   });
 

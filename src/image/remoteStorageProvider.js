@@ -59,42 +59,45 @@ function RemoteStorageProvider(config,instanceConfig,logger,runtime) {
  * Read ref image
  * @param {string} imageName - reference image name
  * @return {q.promise<{refImageBuffer:Buffer,refImageUrl:string},{Error}>} - promise that resolves with data and image url,
- *  return null of image is not found
+ * return null if image is not found
  */
-RemoteStorageProvider.prototype.readRefImage = function(imageName){
+RemoteStorageProvider.prototype.readRefImage = function (imageName) {
   var that = this;
   this.logger.debug('Reading reference image: ' + imageName);
 
-  return Q.Promise(function(resolveFn,rejectFn) {
+  return Q.Promise(function (resolveFn, rejectFn) {
     var refImagePath = that._getLnkFilePath(DEFAULT_REF_LNK_EXT, imageName);
+
+    // ensure that lnk file exists
     fs.stat(refImagePath, function(err, stats) {
       if (err) {
         // no such file => return no ref image
         resolveFn(null);
       } else {
-        fs.readFile(refImagePath, function(err, data) {
-          if(err) {
-            rejectFn(new Error('Error while reading: ' + refImagePath + ' ,details: '  + error));
+        fs.readFile(refImagePath, function (err, data) {
+          if (err) {
+            rejectFn(new Error('Error while reading: ' + refImagePath + ' , details: '  + error));
           } else {
+            // parse uuid from lnk file and get reference image from remote storage
             var uuid = data.toString('utf8').match(/(uuid)+\W+(\S+)/)[2];
             var refImageUrl = that.imageStorageUrl + '/' + uuid;
-            request({url: refImageUrl,encoding: 'binary'},
-              function (error,response,body) {
-                if(error) {
-                  rejectFn(new Error('Error while GET to: ' + refImageUrl + ' ,details: '  + error));
+
+            that._request({method: 'GET', url: refImageUrl, encoding: 'binary'}, [404])
+              .then(function (result) {
+                if (result.response.statusCode === 404) {
+                  // reference image does not exist
+                  resolveFn(null);
                 } else {
-                  if(response.statusCode === 404) {
-                    resolveFn(null);
-                  } else {
-                    response.setEncoding();
-                    resolveFn({
-                      refImageBuffer: new Buffer(body,'binary'),
-                      refImageUrl: refImageUrl
-                    });
-                  }
+                  result.response.setEncoding();
+                  // resolve with existing reference image content and url
+                  resolveFn({
+                    refImageBuffer: new Buffer(result.body, 'binary'),
+                    refImageUrl: refImageUrl
+                  });
                 }
-              }
-            );
+              }).catch(function (error) {
+                rejectFn(error);
+              });
           }
         });
       }
@@ -158,46 +161,31 @@ RemoteStorageProvider.prototype.storeRefActDiffImage = function(imageName,actIma
   });
 };
 
-RemoteStorageProvider.prototype._uploadImage = function(imageName,imageBuffer) {
+RemoteStorageProvider.prototype._uploadImage = function (imageName, imageBuffer) {
   var that = this;
-
-  var metaJson = JSON.stringify(this.meta);
   var formData = {
-    "image": {
+    image: {
       value: imageBuffer,
       options: {
         filename: imageName + DEFAULT_IMAGE_EXT
       }
     },
-    "json" : new Buffer(metaJson)
+    json: new Buffer(JSON.stringify(this.meta))
   };
 
-  return Q.Promise(function(resolveFn,rejectFn) {
-    request.post({url: that.imageStorageUrl, formData: formData,
-        auth: that.auth},
-      function (error, response, body) {
-        if (error) {
-          rejectFn(new Error('Error while POST to: ' + that.imageStorageUrl + ' ,details: '  + error));
-        } else {
-          var responseBody = '';
-          try {
-            responseBody = JSON.parse(body);
-          } catch (error) {
-            that.logger.trace('Response body: ' + body);
-            rejectFn(new Error('Cannot parse response body due to: ' + error +
-              ", response: " + JSON.stringify(response)));
-          }
-
-          if(response.statusCode === 201 || response.statusCode === 422) {
-            resolveFn({uuid:responseBody.uuid});
-          } else {
-            rejectFn(new Error('Server responded with status code: ' + response.statusCode +
-              ", response: " + JSON.stringify(response)));
-          }
+  return that._request({method: 'POST', url: that.imageStorageUrl, formData: formData, auth: that.auth}, [422])
+    .then(function (result) {
+      return Q.Promise(function (resolveFn, rejectFn) {
+        var responseBody = '';
+        try {
+          responseBody = JSON.parse(result.body);
+        } catch (error) {
+          that.logger.trace('Response body: ' + result.body);
+          rejectFn(new Error('Cannot parse response body due to: ' + error + ', response: ' + JSON.stringify(result.response)));
         }
+        resolveFn({uuid: responseBody.uuid});
       });
-  });
-
+    });
 };
 
 RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
@@ -247,6 +235,25 @@ RemoteStorageProvider.prototype._getRuntimePathSegment = function(){
     this.runtime.ui5.direction,
     this.runtime.ui5.mode
   ].join('/');
+};
+
+RemoteStorageProvider.prototype._request = function (options, additionalSuccessCodes) {
+  var that = this;
+  return Q.Promise(function (resolveFn, rejectFn) {
+    request(options, function (error, response, body) {
+      var requestUrl = options.method + ' to ' + options.url;
+      var responseBody = ', response: ' + JSON.stringify(response) + ', body: ' + body;
+      if (error) {
+        rejectFn(new Error('Error in ' + requestUrl + ', details: ' + error + responseBody));
+      } else {
+        if (additionalSuccessCodes && _.includes(additionalSuccessCodes, response.statusCode) || response.statusCode < 400) {
+          resolveFn({response: response, body: body});
+        } else {
+          rejectFn(new Error('Server responded with status code ' + response.statusCode + ' on request ' + requestUrl + responseBody));
+        }
+      }
+    });
+  });
 };
 
 /**
