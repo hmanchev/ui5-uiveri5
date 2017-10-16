@@ -107,11 +107,13 @@ selenium jar is started that controls the local webdriver. If _useSeleniumJar_ w
 the selenium jar will be skipped and local webdriver will be started directly. This could be useful when more
 fine-grained configurations to the webdriver are necessary.
 
-### Automatic download of webdrivers and selenium
+###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the seleniumHost parameter to localhost. ######
+
+#### Automatic download of webdrivers and selenium
 When local webdriver execution is required, the tool tries to download the correct version of selenium jar,
 chromedriver or ie driver executables. Correct versions are specified in conf/profile.conf.js
 
-### Webdriver options
+#### Webdriver options
 Additional to browser options, webdriver options could be provided in the browserCapabilities object,
 browsers array or on command line. They are supplied to the respective webdriver when started locally.
 Please note that chromedriver and iedriver options are considered only when local driver is started directly
@@ -145,7 +147,7 @@ browsers: [{
 }]
 ```
 
-#### Chromedriver options
+##### Chromedriver options
 All chromedriver options as could be provided. Please check:  https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/chrome.js
 Option names match the names of ServiceBuilder object methods.
 
@@ -161,7 +163,7 @@ browsers: [{
 }]
 ```
 
-#### Selenium options
+##### Selenium options
 All selenium server command-line argumens could be provided. Please check the available options by running
 selenium-server-standalone.jar with '-h' argument.
 ``` selenium options in conf.js

@@ -375,6 +375,7 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       if (that.seleniumConfig.host){
         opts.args = opts.args.concat(['-host',that.seleniumConfig.host]);
       }
+
       // seleniumOptions.args
       if(this.protConfig.capabilities.seleniumOptions && this.protConfig.capabilities.seleniumOptions.args){
         opts.args = opts.args.concat(this.protConfig.capabilities.seleniumOptions.args);
@@ -394,9 +395,15 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         function(address){
           // override hostname
           if (that.seleniumConfig.host) {
+            that.logger.debug('Overriding hostname with: ' + that.seleniumConfig.host);
             var urlObj = url.parse(address);
-            urlObj.hostname =  that.seleniumConfig.host;
-            address = url.format(urlObj);
+            var overrideUrl = url.parse('');
+            overrideUrl.hostname = that.seleniumConfig.host;
+            overrideUrl.pathname = urlObj.pathname;
+            overrideUrl.port = urlObj.port;
+            overrideUrl.protocol = urlObj.protocol;
+
+            address = url.format(overrideUrl);
           }
           that.logger.debug('Selenium server started and listening at: ' + address);
           return address;
