@@ -24,7 +24,7 @@ var defaultPlatformNamePerBrowserName = {
   safari: 'mac'
 };
 var supportedBrowserNames = [
-  'chrome','chromium','browser','firefox','ie','safari','edge'
+  'chrome','chromium','browser','chromeMobileEmulation','firefox','ie','safari','edge'
 ];
 var supportedPlatformNames = [
   'windows','mac','linux','android','ios','winphone'

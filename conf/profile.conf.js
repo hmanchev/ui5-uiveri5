@@ -73,6 +73,29 @@ exports.config = {
           */
         }
       }
+    },
+    'chromeMobileEmulation': {
+      '*': {
+        '*': {
+          browserName: 'chrome',
+          remoteWebDriverOptions: {
+            maximized: false,
+            scaling: {
+              x: 4.0,
+              y: 4.0
+            }
+          },
+          chromeOptions: {
+            mobileEmulation: {
+              deviceMetrics: {
+                width: 360,
+                height: 560,
+                pixelRatio: 4
+              }
+            }
+          }
+        }
+      }
     }
   },
 

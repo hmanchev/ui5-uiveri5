@@ -48,6 +48,11 @@ Specify several browser runtimes:
 ```
 $ visualtest --browsers=chrome,firefox
 ```
+Emulate Chrome on a mobile device (e.g. a “Samsung Galaxy S7”) from the desktop version of Chrome.
+Specify Chrome mobile emulator:
+```
+$ visualtest --browsers=chromeMobileEmulation
+```
 
 ### Browser capabilities
 
