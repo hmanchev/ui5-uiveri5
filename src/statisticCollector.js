@@ -118,7 +118,8 @@ StatisticCollector.prototype.suiteStarted = function(jasmineSuite){
 
 StatisticCollector.prototype.specStarted = function(jasmineSpec){
   this.currentSpec = {
-    name: jasmineSpec.fullName,
+    // save the description as spec name instead of fullName, which includes the suite name too
+    name: jasmineSpec.description,
     statistic: {
       duration: new Date()  // save start time in duration during the run
     }
