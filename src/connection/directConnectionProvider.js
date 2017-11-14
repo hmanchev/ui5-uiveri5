@@ -168,7 +168,7 @@ DirectConnectionProvider.prototype.setupEnv = function() {
     // switch on browser
     that.runtimes.forEach(function(runtime){
       var browserName = runtime.browserName;
-      if (browserName == 'chrome') {
+      if (browserName == 'chrome' || browserName == 'chromeMobileEmulation') {
         promises.push(that._downloadBinary(that.binaries['chromedriver']).then(
           function(filename){
             that.seleniumConfig.executables.chromedriver = filename;
