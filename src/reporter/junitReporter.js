@@ -1,5 +1,6 @@
 var xmlBuilder = require('xmlbuilder');
 var fs = require("fs");
+var DEFAULT_REPORT_NAME = 'target/report/junitReport.xml';
 
 function JUnitReporter(config,instanceConfig,logger,collector) {
   this.config = config || {};
@@ -13,8 +14,7 @@ function JasmineJUnitReporter(config,instanceConfig,logger,collector) {
   this.instanceConfig  = instanceConfig || {};
   this.collector = collector;
   this.logger = logger;
-  this.reportName = instanceConfig.reportName;
-
+  this.reportName = instanceConfig.reportName || DEFAULT_REPORT_NAME;
 }
 
 JasmineJUnitReporter.prototype.jasmineStarted = function() {
@@ -69,7 +69,7 @@ JasmineJUnitReporter.prototype._suiteAsXml = function() {
     var suiteDetails =  {
       name: suite.name,
       timestamp: new Date(),
-      hostname: 'localhost' || that.config.seleniumAddress, //TODO: get the execution host?
+      hostname: 'localhost' || that.config.seleniumAddress,
       errors: suite.statistic.specs.failed,
       tests: suite.statistic.specs.total,
       pending: suite.statistic.specs.pending,
@@ -118,16 +118,9 @@ JasmineJUnitReporter.prototype._specAsXml = function(spec, suiteName, testsuiteX
   }
 };
 
-JasmineJUnitReporter.prototype._nodeWrite = function(filename, text) {
-
-};
-
 JasmineJUnitReporter.prototype._writeFile = function(filename, text) {
-  var errors = [];
-
   try {
     this.logger.info('Saving Junit xml report to: ' + filename);
-
     var xmlfile = fs.openSync(filename, "w");
     fs.writeSync(xmlfile, text, 0);
     fs.closeSync(xmlfile);
