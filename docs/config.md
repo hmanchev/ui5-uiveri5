@@ -106,13 +106,12 @@ If _seleniumAddress_ is provided (either in conf.js or on command line) the tool
 The remote connection could use pass over http proxy server specified in _seleniumAddressProxy_.
 If not specified, it will try to start local webdriver and download a correct version if not already available.
 By default an automatically resolved free port is used for the locally started webdriver, it could be overwritten
-by _seleniumPort_ configuration. By providing _seleniumHost_ you could specify the local IP/hostname that
-should be used for opening the connection, this could be useful in some network configuration. By default a
+by _seleniumPort_ configuration. By default a
 selenium jar is started that controls the local webdriver. If _useSeleniumJar_ with false value is provided,
 the selenium jar will be skipped and local webdriver will be started directly. This could be useful when more
 fine-grained configurations to the webdriver are necessary.
 
-###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the seleniumHost parameter to localhost. ######
+###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the _loopback_ parameter to _true_. ######
 
 #### Automatic download of webdrivers and selenium
 When local webdriver execution is required, the tool tries to download the correct version of selenium jar,

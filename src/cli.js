@@ -21,6 +21,8 @@ var argv = require('yargs').
     describe('useSeleniumJar','Use selenium jar to start local webdrivers, default to true').
     string('seleniumAddressProxy').
     describe('seleniumAddressProxy','Use this proxy for the WD connection to remote selenium server').
+    boolean('seleniumLoopback').
+    describe('seleniumLoopback', 'Bind the selenium server listener port to loopback interface.').
     string('browsers').
     describe('browsers', 'Comma separated list of browsers to execute tests, defaults to chrome').
     describe('params', 'Param object to be passed to the tests').

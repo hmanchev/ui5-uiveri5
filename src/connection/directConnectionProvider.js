@@ -41,6 +41,8 @@ function DirectConnectionProvider(config,instanceConfig,logger) {
   this.seleniumConfig.useSeleniumJarFlag =
     typeof config.useSeleniumJar !== 'undefined' ? config.useSeleniumJar : true;
   this.seleniumConfig.addressProxy = config.seleniumAddressProxy;
+  this.seleniumConfig.seleniumLoopback =
+    typeof config.seleniumLoopback !== 'undefined' ? config.seleniumLoopback : false;
   this.binaries = instanceConfig.binaries;
 
   this.runtimes = [];
@@ -388,23 +390,15 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       } else if (browserName == 'internet explorer') {
         opts.jvmArgs.push('-Dwebdriver.ie.driver=' + that.seleniumConfig.executables.iedriver);
       }
+
       var seleniumServer = new that.deps.remote.SeleniumServer(that.seleniumConfig.executables.selenium,opts);
+
+      // loopback connecting to selenium server
+      that.seleniumConfig.seleniumLoopback ? seleniumServer.loopbackOnly_ = true : seleniumServer.loopbackOnly_ = false;
 
       // start the selenium server, override the host if necessary
       var addressPromise = seleniumServer.start().then(
         function(address){
-          // override hostname
-          if (that.seleniumConfig.host) {
-            that.logger.debug('Overriding hostname with: ' + that.seleniumConfig.host);
-            var urlObj = url.parse(address);
-            var overrideUrl = url.parse('');
-            overrideUrl.hostname = that.seleniumConfig.host;
-            overrideUrl.pathname = urlObj.pathname;
-            overrideUrl.port = urlObj.port;
-            overrideUrl.protocol = urlObj.protocol;
-
-            address = url.format(overrideUrl);
-          }
           that.logger.debug('Selenium server started and listening at: ' + address);
           return address;
         }
