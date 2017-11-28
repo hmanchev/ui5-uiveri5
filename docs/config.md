@@ -151,6 +151,21 @@ browsers: [{
 }]
 ```
 
+######  Maximize option may be not supported for all browsers. In such case "browserSize" option can be used for setting browser window size. Example: ######
+```
+browsers: [{
+  capabilities: {
+    remoteWebDriverOptions: {
+      maximized: false,
+      browserSize: {
+        width: 1920,
+        height: 1067
+      }
+    }
+  }
+}]
+```
+
 ##### Chromedriver options
 All chromedriver options as could be provided. Please check:  https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/chrome.js
 Option names match the names of ServiceBuilder object methods.
