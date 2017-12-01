@@ -111,7 +111,7 @@ selenium jar is started that controls the local webdriver. If _useSeleniumJar_ w
 the selenium jar will be skipped and local webdriver will be started directly. This could be useful when more
 fine-grained configurations to the webdriver are necessary.
 
-###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the _loopback_ parameter to _true_. ######
+###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the _seleniumLoopback_ parameter to _true_. ######
 
 #### Automatic download of webdrivers and selenium
 When local webdriver execution is required, the tool tries to download the correct version of selenium jar,
