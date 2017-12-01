@@ -62,6 +62,11 @@ exports.config = {
           remoteWebDriverOptions: {
             maximized: true
           },
+          chromeOptions: {
+            'args': [
+              'disable-infobars'
+            ]
+          }
           /*
           chromedriverOptions: {
             'enableVerboseLogging': [],
