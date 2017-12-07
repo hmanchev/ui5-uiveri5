@@ -182,4 +182,35 @@ describe("RemoteStorageProvider", function () {
         done();
     });
   });
+
+  it("Should fail to write empty string to lnk file", function(done) {
+    var emptyStringToWrite = '';
+    var storageProvider = new RemoteStorageProvider({},
+    {refImagesRoot: '', imageStorageUrl: imageStorageMockUrl}, logger, runtime);
+
+    storageProvider._storeLnkFile('ref.lnk', 'failToWrite', emptyStringToWrite).then(function() {
+      fail();
+      done();
+    }).catch(function(error){
+      expect(error.message).toBe('Uuid does not match the expected pattern: /(uuid=)(\\w+)/, uuid tried to write: ');
+      done();
+    });
+  });
+
+  it('Should fail to parse unsupported format of lnk file content', function(done) {
+    var storageProvider = new RemoteStorageProvider({},
+      {refImagesRoot: __dirname + '/remoteStorageProvider/', imageStorageUrl: imageStorageMockUrl},logger,runtime);
+    storageProvider.onBeforeEachSpec(spec);
+
+    storageProvider.readRefImage('empty')
+      .then(function(result) {
+        fail();
+        done();
+      }).catch(function(error){
+        // expect(error.message.indexOf('uuid does not match to the pattern: /(uuid=)(\\w+)/, file content is:  ')).not.toBeLessThan(0);
+      expect(error.message).toContain('uuid does not match to the pattern: /(uuid=)(\\w+)/, file content is:  ');
+      done()
+    });
+  });
+
 });

@@ -14,6 +14,8 @@ var DEFAULT_IMAGE_STORAGE_URI = 'images';
 var DEFAULT_REF_LNK_EXT = '.ref.lnk';
 var DEFAULT_IMAGE_EXT = '.png';
 var DEFAULT_FILE_PATH_LENGTH = 250;
+var LNK_FILE_UUID_PATTERN = /(uuid=)(\w+)/;
+var UUID_PATTERN = /\w+/;
 
 /**
  * @typedef RemoteStorageProviderConfig
@@ -78,26 +80,33 @@ RemoteStorageProvider.prototype.readRefImage = function (imageName) {
           if (err) {
             rejectFn(new Error('Error while reading: ' + refImagePath + ' , details: '  + error));
           } else {
-            // parse uuid from lnk file and get reference image from remote storage
-            var uuid = data.toString('utf8').match(/(uuid)+\W+(\S+)/)[2];
-            var refImageUrl = that.imageStorageUrl + '/' + uuid;
+            var lnkFileData = data.toString('utf-8');
+            var lnkFileUuidMatch = lnkFileData.match(LNK_FILE_UUID_PATTERN);
+            if(lnkFileUuidMatch) {
+              // parse uuid from lnk file and get reference image from remote storage
+              var uuid = lnkFileUuidMatch[2];
+              var refImageUrl = that.imageStorageUrl + '/' + uuid;
 
-            that._request({method: 'GET', url: refImageUrl, encoding: 'binary'}, [404])
-              .then(function (result) {
-                if (result.response.statusCode === 404) {
-                  // reference image does not exist
-                  resolveFn(null);
-                } else {
-                  result.response.setEncoding();
-                  // resolve with existing reference image content and url
-                  resolveFn({
-                    refImageBuffer: new Buffer(result.body, 'binary'),
-                    refImageUrl: refImageUrl
-                  });
-                }
-              }).catch(function (error) {
+              that._request({method: 'GET', url: refImageUrl, encoding: 'binary'}, [404])
+                .then(function (result) {
+                  if (result.response.statusCode === 404) {
+                    // reference image does not exist
+                    resolveFn(null);
+                  } else {
+                    result.response.setEncoding();
+                    // resolve with existing reference image content and url
+                    resolveFn({
+                      refImageBuffer: new Buffer(result.body, 'binary'),
+                      refImageUrl: refImageUrl
+                    });
+                  }
+                }).catch(function (error) {
                 rejectFn(error);
               });
+            } else {
+              rejectFn(new Error('Error while reading: ' + refImagePath + ', uuid does not match to the pattern: ' + LNK_FILE_UUID_PATTERN +
+                ', file content is:  ' + lnkFileData));
+            }
           }
         });
       }
@@ -194,22 +203,26 @@ RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
   var isWin = (os.platform() === 'win32');
 
   return Q.Promise(function(resolveFn,rejectFn) {
-    if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH && isWin) {
-      rejectFn(new Error('Lnk file path: ' + refFilePath + ' is longer than: ' + DEFAULT_FILE_PATH_LENGTH + ' characters.'));
+    if(uuid.match(UUID_PATTERN)) {
+      if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH && isWin) {
+        rejectFn(new Error('Lnk file path: ' + refFilePath + ' is longer than: ' + DEFAULT_FILE_PATH_LENGTH + ' characters.'));
+      } else {
+        mkdirp(path.dirname(refFilePath), function (err) {
+          if (err) {
+            rejectFn(new Error('Error while creating path for lnk file: ' + refFilePath + ' ,details: ' + error));
+          } else {
+            fs.writeFile(refFilePath, 'uuid=' + uuid, function (error) {
+              if (error) {
+                rejectFn(new Error('Error while storing lnk file: ' + refFilePath + ' ,details: ' + error));
+              } else {
+                resolveFn();
+              }
+            });
+          }
+        })
+      }
     } else {
-      mkdirp(path.dirname(refFilePath), function (err) {
-        if (err) {
-          rejectFn(new Error('Error while creating path for lnk file: ' + refFilePath + ' ,details: ' + error));
-        } else {
-          fs.writeFile(refFilePath, 'uuid=' + uuid, function (error) {
-            if (error) {
-              rejectFn(new Error('Error while storing lnk file: ' + refFilePath + ' ,details: ' + error));
-            } else {
-              resolveFn();
-            }
-          });
-        }
-      })
+      rejectFn(new Error('Uuid does not match the expected pattern: ' + LNK_FILE_UUID_PATTERN + ', uuid tried to write: ' + uuid));
     }
   });
 };

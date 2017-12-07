@@ -71,7 +71,7 @@ function RemoteStorageMock() {
     that.imagesMap[uuid] = imageFile;
 
     var jsonRes = {
-      "uuid" : uuid
+      "uuid" : uuid.toString()
     };
 
     res.status(201).send(jsonRes);
