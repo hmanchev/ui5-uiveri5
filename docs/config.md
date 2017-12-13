@@ -342,3 +342,21 @@ browser.testrunner.navigation.to(
   }
 );
 ```
+
+### Screenshot reporter
+The screenshot reporter creates and stores screenshots on specified moments of test execution. Currently, the only covered case is test expectation failure - a screenshot is created for every failed 'expect'. Screenshots are in png format and follow the naming convention: fullTestName-indexOfTestExpectation-creationTime. The default location for storing screenshots is in the subfolder 'target/report/screenshots/' of the current execution directory but it can be configured:
+```
+  reporters: [
+    {name: './reporter/screenshotReporter', screenshotsRoot: 'myScreenshots/'}
+  ]
+```
+Screenshot capture on expectation failure is enabled by default for application testing.
+It can be configured by adding the screenshotReporter and setting the takeScreenshot option:
+```
+  takeScreenshot: {
+    onExpectFailure: true
+  },
+  reporters: [
+    {name: './reporter/screenshotReporter'}
+  ]
+```
