@@ -1,7 +1,7 @@
-# visualtestjs
+# UIVeri5 (visualtestjs)
 
 ## Introduction
-Visualtesjs is a visual and application testing framework for UI5-based applications. It is using
+UIVeri5 is a visual and application testing framework for UI5-based applications. It is using
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
 application as a real user would. Visualtestjs is heavily inspired and based on [Protractor](http://www.protractortest.org/)
 and brings most of its benefits to UI5 applications.
