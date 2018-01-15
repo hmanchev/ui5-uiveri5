@@ -174,6 +174,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
     element.getSize().then(function (elementSize) {
       elementDimensions.width = elementSize.width;
       elementDimensions.height = elementSize.height;
+      that.logger.debug('Element dimensions in CSS pixels: width=' + elementDimensions.width + ', height=' + elementDimensions.height);
       if (elementDimensions.width <= 0 || elementDimensions.height <= 0) {
         deferCropScreenshot.reject(new Error('Cannot crop element because of size issue! Element width=' +
           elementDimensions.width + ', height=' + elementDimensions.height));
@@ -181,6 +182,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
         element.getLocation().then(function (elementLocation) {
           elementDimensions.top = elementLocation.y;
           elementDimensions.left = elementLocation.x;
+          that.logger.debug('Element location in CSS pixels: top=' + elementDimensions.top + ', left=' + elementDimensions.left);
           var remoteOptions = that.runtime.capabilities.remoteWebDriverOptions;
           if (remoteOptions && remoteOptions.scaling) {
             if (remoteOptions.scaling.x && remoteOptions.scaling.x > 0 && remoteOptions.scaling.x !== 1) {
@@ -191,6 +193,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
               elementDimensions.height = Math.round(elementDimensions.height * remoteOptions.scaling.y);
               elementDimensions.top = Math.round(elementDimensions.top * remoteOptions.scaling.y);
             }
+            that.logger.debug('Element scaling factor: x=' + remoteOptions.scaling.x + ', y=' + remoteOptions.scaling.y);
           }
           var png = new PNG();
           png.parse(originalImageBuffer, function (err, data) {
@@ -202,7 +205,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
                 ((elementDimensions.width + elementDimensions.left) < 0) ||
                 ((elementDimensions.height + elementDimensions.top) < 0)) {
                 deferCropScreenshot.reject(new Error('Cannot crop element because is outside of the view port. ' +
-                  'View port: width=' + data.width + ', height=' + data.height + '. Element properties: width=' +
+                  'View port in display pixels: width=' + data.width + ', height=' + data.height + '. Element properties in display pixels: width=' +
                   elementDimensions.width + ', height=' + elementDimensions.height + ', left=' + elementDimensions.left +
                   ', top=' + elementDimensions.top));
               } else {
@@ -226,7 +229,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
                     elementDimensions.height : (data.height - elementDimensions.top);
                 }
 
-                that.logger.debug('Trying to crop element with config: ' + JSON.stringify(cropConfig));
+                that.logger.debug('Trying to crop element in display pixels with config: ' + JSON.stringify(cropConfig));
                 // crop only if the cropConfig width and height are proper
                 if(cropConfig.width > 0 && cropConfig.height > 0) {
                   that._crop(originalImageBuffer, cropConfig).then(function (croppedElement) {
@@ -234,7 +237,7 @@ LocalScreenshotProvider.prototype._cropScreenshot = function(browserScreenshot, 
                   });
                 } else {
                   deferCropScreenshot.reject(new Error('Requested element for crop is placed partially or fully ' +
-                    'outside the viewport. Element width=' + cropConfig.width + ', height=' + cropConfig.height
+                    'outside the viewport. In display pixels element width=' + cropConfig.width + ', height=' + cropConfig.height
                     + ', left=' + cropConfig.left + ', top=' + cropConfig.top));
                 }
               }
@@ -262,7 +265,7 @@ LocalScreenshotProvider.prototype._crop = function(originalImageBuffer, cropConf
   var that = this;
   var deferCrop = webdriver.promise.defer();
 
-  that.logger.debug('Cropping the screenshot with parameters: width=' + cropConfig.width +
+  that.logger.debug('Cropping the screenshot with parameters in display pixels: width=' + cropConfig.width +
     ', height=' + cropConfig.height + ', top=' + cropConfig.top + ', left=' + cropConfig.left);
 
   pngCrop.cropToStream(originalImageBuffer, cropConfig, function (err, outputStream) {
