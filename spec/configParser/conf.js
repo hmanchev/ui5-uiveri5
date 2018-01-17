@@ -1,3 +1,6 @@
 exports.config = {
-  provider: 'name'
+  provider: 'name',
+  multi: [
+    {name: 'option1'},
+  ]
 };

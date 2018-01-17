@@ -1,50 +1,41 @@
-
 var _ = require('lodash');
 
 var DEFAULT_CONF = '../conf/default.conf.js';
 
-function ConfigParser(logger){
+function ConfigParser(logger) {
   this.logger = logger;
+  this.config = {};
 }
 
-ConfigParser.prototype.mergeConfigs = function(config){
+ConfigParser.prototype.mergeConfigs = function (config) {
+  this.config = config;
 
   // load config file
-  var configFileName = config.conf || DEFAULT_CONF;
-  this.logger.debug('Loading config from: ' + configFileName);
-  var configFromConfigFile = require(configFileName).config;
-  config = _mergeConfig(configFromConfigFile,config);
+  this._mergeConfig(this.config.conf || DEFAULT_CONF, 'default');
 
   // resolve profile
-  var profileConfigFileName;
-  if (config.profile){
-    profileConfigFileName = '../conf/' + config.profile + '.profile.conf.js';
-    this.logger.debug('Loading profile config from: ' + profileConfigFileName);
-    var configFromProfileConfigFile = require(profileConfigFileName).config;
-    config = _mergeConfig(configFromProfileConfigFile,config);
+  if (this.config.profile) {
+    this._mergeConfig('../conf/' + this.config.profile + '.profile.conf.js', 'profile config');
   }
 
   // apply common profile
-  profileConfigFileName = '../conf/profile.conf.js';
-  this.logger.debug('Loading common profile config from: ' + profileConfigFileName);
-  var configFromDefaultProfileConfigFile = require(profileConfigFileName).config;
-  config = _mergeConfig(configFromDefaultProfileConfigFile,config);
+  this._mergeConfig('../conf/profile.conf.js', 'common profile');
 
   // return new fully merged config
-  return config;
+  return this.config;
 };
 
-/**
- * Merge objects and arrays
- */
-function _mergeConfig(object,src){
-  return _.merge(object,src,function(objectValue,sourceValue){
-    if (_.isArray(objectValue)) {
-      if (sourceValue) {
-        return objectValue.concat(sourceValue);
-      } else {
-        return objectValue;
-      }
+ConfigParser.prototype._mergeConfig = function (configFile, type) {
+  this.logger.debug('Loading ' + type + ' config from: ' + configFile);
+  var config = require(configFile).config;
+  this.config = _mergeWithArrays(config, this.config);
+};
+
+function _mergeWithArrays(object, src) {
+  return _.mergeWith(object, src, function (objectValue, sourceValue) {
+    // return undefined to use _.merge default strategy
+    if (_.isArray(objectValue) && sourceValue) {
+      return _(objectValue).concat(sourceValue).uniqWith(_.isEqual).value();
     }
   });
 };
