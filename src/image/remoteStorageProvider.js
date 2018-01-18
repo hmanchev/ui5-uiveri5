@@ -69,6 +69,7 @@ RemoteStorageProvider.prototype.readRefImage = function (imageName) {
 
   return Q.Promise(function (resolveFn, rejectFn) {
     var refImagePath = that._getLnkFilePath(DEFAULT_REF_LNK_EXT, imageName);
+    that.logger.debug('Reading file: ' + refImagePath);
 
     // ensure that lnk file exists
     fs.stat(refImagePath, function(err, stats) {
@@ -203,6 +204,8 @@ RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
   var isWin = (os.platform() === 'win32');
 
   return Q.Promise(function(resolveFn,rejectFn) {
+    that.logger.debug('Writing file: ' + refFilePath);
+
     if(uuid.match(UUID_PATTERN)) {
       if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH && isWin) {
         rejectFn(new Error('Lnk file path: ' + refFilePath + ' is longer than: ' + DEFAULT_FILE_PATH_LENGTH + ' characters.'));
