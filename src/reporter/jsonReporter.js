@@ -1,6 +1,6 @@
 
 var fs = require('fs');
-var mkdirp = require('mkdirp');
+var utils = require('./reporterUtils');
 
 var DEFAULT_REPORT_NAME = 'target/report/report.json';
 
@@ -40,17 +40,7 @@ function JasmineJsonReporter(config,instanceConfig,logger,collector) {
 }
 
 JasmineJsonReporter.prototype.jasmineStarted = function() {
-  try {
-    fs.statSync(this.reportName);
-    try {
-      fs.unlinkSync(this.reportName);
-      this.logger.debug('Report: ' + this.reportName + ' is successfully deleted.');
-    } catch (err) {
-      this.logger.error('Error: ' + err.message + ' while deleting file: ' + this.reportName);
-    }
-  } catch (err) {
-    //report not found, do nothing
-  }
+  utils.deleteReport(this.reportName, 'JSON');
 };
 
 JasmineJsonReporter.prototype.suiteStarted = function() {
@@ -68,8 +58,7 @@ JasmineJsonReporter.prototype.suiteDone = function() {
 JasmineJsonReporter.prototype.jasmineDone = function() {
   var overview = this.collector.getOverview();
   var jsonReport = JSON.stringify(overview);
-  mkdirp.sync(this.reportName.substring(0,this.reportName.lastIndexOf('/')));
-  fs.writeFileSync(this.reportName,jsonReport);
+  utils.saveReport(this.reportName, jsonReport);
 };
 
 /**

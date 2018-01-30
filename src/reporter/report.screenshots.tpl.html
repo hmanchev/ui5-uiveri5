@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    .wrapper {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary {
+      padding: 10px 20px;
+    }
+
+    .summary span {
+      padding-right: 20px;
+    }
+
+    .specs {
+      display: flex;
+    }
+
+    .specs .menu {
+      align-self: flex-start;
+      width: 500px;
+      background-color: #add8e6;
+    }
+
+    .specs .menu .selected {
+      background-color: #90c9dc;
+    }
+
+    .specs .name {
+      padding: 10px;
+      border-bottom: 1px solid #ffffff;
+    }
+
+    .name::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 10px;
+      border-radius: 50px;
+    }
+
+    .name.passed::before, .spec.passed .summary {
+      background-color: #3cb371;
+    }
+
+    .name.failed::before, .spec.failed .summary {
+      background-color: #ff6347;
+    }
+    
+    .name:hover {
+      cursor: pointer;
+    }
+    
+    .spec {
+      width: 100%;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #add8e6;
+    }
+
+    .step.passed {
+      background-color: #3cb37166;
+    }
+
+    .step.failed {
+      background-color: #ff634766;
+    }
+
+    .step .content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: 20px;
+    }
+
+    .step .content.reverse {
+      flex-direction: column-reverse;
+    }
+
+    code {
+      width: 50%;
+      height: 200px;
+      display: inline-block;
+      padding: 10px;
+      background-color: #ffffff;
+      overflow: auto;
+    }
+
+    img {
+      width: 400px;
+      margin: 20px 0;
+    }
+
+    .strong {
+      font-weight: 600;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<% var suite = suites[0]; %>
+<div class="wrapper">
+  <div class="summary">
+    <div class="strong"><%- suite.name %></div>
+    <span class="strong">Specs</span>
+    <span>Total: <%- suite.statistic.specs.total %></span>
+    <span>Passed: <%- suite.statistic.specs.passed %></span>
+    <span>Failed: <%- suite.statistic.specs.failed %></span>
+    <span>Pending: <%- suite.statistic.specs.pending %></span>
+    <span>Disabled: <%- suite.statistic.specs.disabled %></span>
+    <span>Duration: <%- Math.round(suite.statistic.duration / 1000 * 10) / 10 %> sec</span>
+  </div>
+  <div class="specs">
+    <div class="menu">
+      <% _.forEach(suite.specs, function (spec, index) { %>
+      <div class="name <%- spec.status %>" onClick="select(this, <%- index %>)"><%- spec.name %></div>
+      <% }); %>
+    </div>
+    <% _.forEach(suite.specs, function (spec, index) { %>
+    <div class="spec <%- spec.status %> <%- index %> hidden">
+      <div class="summary">
+        <div class="strong"><%- spec.name %></div>
+        <span class="strong">Expectations</span>
+        <span>Total: <%- spec.statistic.expectations.total %></span>
+        <span>Passed: <%- spec.statistic.expectations.passed %></span>
+        <span>Failed: <%- spec.statistic.expectations.failed.total %></span>
+        <span>Duration: <%- Math.round(spec.statistic.duration / 1000 * 10) / 10 %> sec</span>
+      </div>
+      <% _.forEach(spec.stepSequence, function (stepType, index) {
+        var step = _.find(spec[stepType], {stepIndex: index});
+      %>
+      <% if (step) { %>
+      <div class="step <%- step.status %>">
+        <p class="strong"><%- index + 1 %>.</p>
+        <div class="content <%- stepType === 'actions' ? 'reverse' : ''%>">
+          <% if (stepType === "expectations") { %>
+          <div>Expectation <%- _.upperCase(step.status) %>: <%- step.message %></div>
+          <% } %>
+          <% if (stepType === "actions") { %>
+          <div>Execute '<%- step.name %>' on element with ID '<%- step.elementId %>'
+            <% if (step.value) { %> with value '<%- step.value %>' <% } %>
+          </div>
+          <% } %>
+          <% if (step.screenshot) { %>
+          <a href="<%- step.screenshot %>" target="_blank">
+            <img data-source="<%- step.screenshot %>"/>
+          </a>
+          <% } %>
+        </div>
+        <% if (step.status === "failed") { %><code><%- step.stack %></code><% } %>
+      </div>
+      <% } %>
+      <% }); %>
+    </div>
+    <% }); %>
+  </div>
+<script>
+  function select(menuItem, specIndex) {
+    var menuElement = document.getElementsByClassName("menu")[0];
+    var menuElements = menuElement.getElementsByClassName("name");
+    Array.prototype.forEach.call(menuElements, function (el) {
+      el.classList.remove("selected");
+    });
+    
+    menuItem.classList.add("selected");
+
+    var specElements = document.getElementsByClassName("spec");
+    Array.prototype.forEach.call(specElements, function (el) {
+      el.classList.add("hidden");
+    });
+
+    specElements[specIndex].classList.remove("hidden");
+    
+    var specImageElements = specElements[specIndex].getElementsByTagName("img");
+    Array.prototype.forEach.call(specImageElements, function (img) {
+      img.src = img.getAttribute("data-source");
+    });
+  }
+
+  (function init () {
+    var menuElement = document.getElementsByClassName("menu")[0];
+    var firstMenuElement = menuElement.getElementsByClassName("name")[0];
+    select(firstMenuElement, 0);
+  })();
+</script>
+</body>
+</html>

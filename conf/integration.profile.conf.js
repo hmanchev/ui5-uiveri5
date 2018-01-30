@@ -5,7 +5,9 @@ exports.config = {
     wait: '10000'
   },
   takeScreenshot: {
-    onExpectFailure: true
+    onExpectFailure: true,
+    onExpectSuccess: true,
+    onAction: true
   },
   reporters: [
     {name: './reporter/screenshotReporter'}

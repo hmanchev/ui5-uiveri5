@@ -1,5 +1,7 @@
 var xmlBuilder = require('xmlbuilder');
 var fs = require("fs");
+var utils = require('./reporterUtils');
+
 var DEFAULT_REPORT_NAME = 'target/report/junitReport.xml';
 
 function JUnitReporter(config,instanceConfig,logger,collector) {
@@ -18,17 +20,7 @@ function JasmineJUnitReporter(config,instanceConfig,logger,collector) {
 }
 
 JasmineJUnitReporter.prototype.jasmineStarted = function() {
-  try {
-    fs.statSync(this.reportName);
-    try {
-      fs.unlinkSync(this.reportName);
-      this.logger.debug('Report: ' + this.reportName + ' is successfully deleted.');
-    } catch (err) {
-      this.logger.error('Error while trying to delete file:' + this.reportName + ', error: ' + err);
-    }
-  } catch (err) {
-    this.logger.error('Error while stat Junit report: ' + err);
-  }
+  utils.deleteReport(this.reportName, 'JUnit');
 };
 
 JasmineJUnitReporter.prototype.suiteStarted = function() {
@@ -58,7 +50,7 @@ JasmineJUnitReporter.prototype.jasmineDone = function() {
   });
 
   this._suiteAsXml();
-  this._writeFile(this.reportName, this.xmlOutput);
+  utils.saveReport(this.reportName, this.xmlOutput);
 };
 
 JasmineJUnitReporter.prototype._suiteAsXml = function() {
@@ -115,17 +107,6 @@ JasmineJUnitReporter.prototype._specAsXml = function(spec, suiteName, testsuiteX
     });
   } else {
       testsuiteXml.ele('testcase', specDetails);
-  }
-};
-
-JasmineJUnitReporter.prototype._writeFile = function(filename, text) {
-  try {
-    this.logger.info('Saving Junit xml report to: ' + filename);
-    var xmlfile = fs.openSync(filename, "w");
-    fs.writeSync(xmlfile, text, 0);
-    fs.closeSync(xmlfile);
-  } catch (error) {
-    this.logger.error('Error while writing junit report: ' + error);
   }
 };
 

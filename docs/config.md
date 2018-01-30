@@ -344,19 +344,26 @@ browser.testrunner.navigation.to(
 ```
 
 ### Screenshot reporter
-The screenshot reporter creates and stores screenshots on specified moments of test execution. Currently, the only covered case is test expectation failure - a screenshot is created for every failed 'expect'. Screenshots are in png format and follow the naming convention: fullTestName-indexOfTestExpectation-creationTime. The default location for storing screenshots is in the subfolder 'target/report/screenshots/' of the current execution directory but it can be configured:
+The screenshot reporter creates an HTML file with a simple representation of the test execution flow. It creates and stores screenshots on specified moments of test execution:
+- on expectation completion (either successful or failed)
+- before action execution (after syncing with the application and immediately before interaction). The currently supported actions are: click and sendKeys.
+
+Screenshots are in png format and follow the naming convention:
+- for expectations: fullTestName_indexOfTestExpectation_status_screenshotCreationTime
+- for actions: actionName_elementID_screenshotCreationTime
+
+The default location for storing the report and screenshots is the subfolder 'target/report/screenshots/' of the current execution directory. It can be changed by the screenshotsRoot parameter:
 ```
   reporters: [
     {name: './reporter/screenshotReporter', screenshotsRoot: 'myScreenshots/'}
   ]
 ```
-Screenshot capture on expectation failure is enabled by default for application testing.
-It can be configured by adding the screenshotReporter and setting the takeScreenshot option:
+Screenshot reporting is enabled for application testing by default. You can configure when screenshots will be taken. Currently the available options are: on expectation failure, on expectation success and on action (including both click and sendKeys).
+Reports can configured by adding the screenshotReporter and setting the takeScreenshot option, for example:
 ```
   takeScreenshot: {
-    onExpectFailure: true
-  },
-  reporters: [
-    {name: './reporter/screenshotReporter'}
-  ]
+    onExpectFailure: true,
+    onExpectSuccess: false,
+    onAction: false
+  }
 ```

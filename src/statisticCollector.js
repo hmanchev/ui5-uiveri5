@@ -122,7 +122,9 @@ StatisticCollector.prototype.specStarted = function(jasmineSpec){
     name: jasmineSpec.description,
     statistic: {
       duration: new Date()  // save start time in duration during the run
-    }
+    },
+    actions: [],
+    stepSequence: []
   };
 };
 
@@ -143,7 +145,9 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
     expectation = {
       status: 'failed',
       matcher: jasmineExpectation.matcherName,
-      stack: jasmineExpectation.stack
+      stack: jasmineExpectation.stack,
+      stepIndex: jasmineExpectation.stepIndex,
+      screenshot: jasmineExpectation.screenshot
     };
 
     // unpack details if any
@@ -171,13 +175,18 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
     if(expectation.failureType === 'COMPARISON'){
       failedWithImageCount++;
     }
+
+    this.currentSpec.stepSequence[expectation.stepIndex] = 'expectations';
   },this);
 
   // process passed expectations
   jasmineSpec.passedExpectations.forEach(function (jasmineExpectation) {
     expectation = {
       status: 'passed',
-      matcher: jasmineExpectation.matcherName
+      matcher: jasmineExpectation.matcherName,
+      stepIndex: jasmineExpectation.stepIndex,
+      screenshot: jasmineExpectation.screenshot,
+      message: jasmineExpectation.message
     };
 
     // unpack details if any
@@ -195,6 +204,8 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
     }
 
     this.currentSpec.expectations.push(expectation);
+
+    this.currentSpec.stepSequence[expectation.stepIndex] = 'expectations';
   },this);
 
   if (specMeta) {
@@ -337,6 +348,11 @@ StatisticCollector.prototype.jasmineDone = function(runMeta){
     },
     passed: passedExpectationsCount
   }
+};
+
+StatisticCollector.prototype.collectAction = function (action) {
+  this.currentSpec.actions.push(action);
+  this.currentSpec.stepSequence[action.stepIndex] = 'actions';
 };
 
 /**

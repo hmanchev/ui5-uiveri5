@@ -542,15 +542,4 @@ function run(config) {
   });
 };
 
-/**
- * Merge objects and arrays
- */
-function _mergeConfig(object,src){
-  return _.merge(object,src,function(objectValue,sourceValue){
-    if (_.isArray(objectValue)) {
-      return objectValue.concat(sourceValue);
-    }
-  });
-};
-
 exports.run = run;

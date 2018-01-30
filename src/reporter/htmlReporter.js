@@ -1,7 +1,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
+var utils = require('./reporterUtils');
 
 var DEFAULT_TEMPLATE_NAME = __dirname + '/report.tpl.html';
 var DEFAULT_REPORT_NAME = 'target/report/report.html';
@@ -43,17 +43,7 @@ function JasmineHtmlReporter(config,instanceConfig,logger,collector) {
 }
 
 JasmineHtmlReporter.prototype.jasmineStarted = function() {
-  try {
-    fs.statSync(this.reportName);
-    try {
-      fs.unlinkSync(this.reportName);
-      this.logger.debug('Report: ' + this.reportName + ' is successfully deleted.');
-    } catch (err) {
-      this.logger.error('Error: ' + err.message + ' while deleting file: ' + this.reportName);
-    }
-  } catch (err) {
-    //report not found, do nothing
-  }
+  utils.deleteReport(this.reportName, 'HTML');
 };
 
 JasmineHtmlReporter.prototype.suiteStarted = function() {
@@ -72,8 +62,7 @@ JasmineHtmlReporter.prototype.jasmineDone = function() {
   var overview = this.collector.getOverview();
   var template = fs.readFileSync(this.templateName, 'utf8');
   var htmlReport = _.template(template)(overview);
-  mkdirp.sync(this.reportName.substring(0,this.reportName.lastIndexOf('/')));
-  fs.writeFileSync(this.reportName,htmlReport);
+  utils.saveReport(this.reportName, htmlReport);
 };
 
 /**
