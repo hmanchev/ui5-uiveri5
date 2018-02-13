@@ -2,19 +2,26 @@ var util = require('util');
 
 // functions to be executed in the browser
 var mFunctions = {
+  
   loadWaiter: function (mScriptParams) {
-    var sDebugLog = "";
+    var sDebugLog = "Loading waitForUI5 implementation, params: " + 
+      "useClassicalWaitForUI5: "  +  mScriptParams.useClassicalWaitForUI5 + 
+      " ,waitForUI5Timeout: " + mScriptParams.waitForUI5Timeout + "ms";
+   
+    if (!window.sap || !window.sap.ui) {
+      return {log: sDebugLog, error: "No UI5 on this page"};
+    }
 
     if (mScriptParams.useClassicalWaitForUI5) {
-      sDebugLog += "Loading classical waitForUI5 implementation.";
+      sDebugLog += "\nLoading classical waitForUI5 implementation.";
       loadClassicalWaitForUI5();
     } else {
       try {
-        sDebugLog += "Loading OPA waitForUI5 implementation.";
+        sDebugLog += "\nLoading OPA waitForUI5 implementation.";
         loadOPAWaitForUI5();
-      } catch (e) {
-        sDebugLog += "Failed to load OPA waitForUI5. Fallback to classical implementation.";
-        loadClassicalWaitForUI5();
+      } catch (err) {
+        sDebugLog += "\nFailed to load OPA waitForUI5, Fallback to loading classical waitForUI5 implementation. Details: " + err;
+        loadClassicalWaitForUI5();  
       }
     }
 
@@ -36,36 +43,37 @@ var mFunctions = {
     function loadOPAWaitForUI5() {
       if (!sap.ui.autoWaiterAsync) {
         try {
-          jQuery.sap.declare('sap.ui.autoWaiterAsync');
-          sap.ui.define([
-            'sap/ui/test/autowaiter/_autoWaiterAsync'
+          sap.ui.define('sap.ui.autoWaiterAsync',[
+            'sap/ui/test/autowaiter/_autoWaiterAsync',
           ], function (_autoWaiterAsync) {
             _autoWaiterAsync.extendConfig({
-              timeout: mScriptParams.waitForUI5Timeout / 1000,
-              timeoutWaiter: {
-                maxDelay: mScriptParams.waitForUI5Timeout
-              }
+              timeout: mScriptParams.waitForUI5Timeout / 1000
             });
             return _autoWaiterAsync;
           }, true);
-        } catch (e) {
-          throw new Error('Cannot define sap.ui.autoWaiterAsync. ' +
-            'Module sap/ui/test/autowaiter/_autoWaiterAsync is not available. Details: ' + e);
+        } catch (err) {
+          throw new Error('Cannot define sap.ui.autoWaiterAsync. Details: ' + err);
         }
       }
     }
 
-    return sDebugLog;
+    return {log: sDebugLog};
   },
+
   waitForAngular: function (mScriptParams, fnCallback) {
-    if (sap.ui.autoWaiterAsync) {
-      sap.ui.autoWaiterAsync.waitAsync(fnCallback);
-    } else if (sap.ui.ClassicalWaitForUI5) {
-      sap.ui.ClassicalWaitForUI5.notifyWhenStable(fnCallback);
+    if (!window.sap || !window.sap.ui) {
+      fnCallback("waitForUI5: no UI5 on this page.");
     } else {
-      fnCallback("waitForAngular: failed to wait for UI5 updates - no waitForUI5 implementation is currently loaded.");
+      if (sap.ui.autoWaiterAsync) {
+        sap.ui.autoWaiterAsync.waitAsync(fnCallback);
+      } else if (sap.ui.ClassicalWaitForUI5) {
+        sap.ui.ClassicalWaitForUI5.notifyWhenStable(fnCallback);
+      } else {
+        fnCallback("waitForUI5: no waitForUI5 implementation is currently loaded.");
+      }
     }
   },
+
   getWindowToolbarSize: function () {
     return {
       width: window.outerWidth - window.innerWidth,

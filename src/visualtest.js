@@ -255,8 +255,11 @@ function run(config) {
             waitForUI5Timeout: waitForUI5Timeout,
             ClassicalWaitForUI5: ClassicalWaitForUI5,
             useClassicalWaitForUI5: config.useClassicalWaitForUI5
-          }).then(function (sMessage) {
-            logger.debug("loadWaitForUI5: " + sMessage);
+          }).then(function (res) {
+            logger.debug("loadWaitForUI5: " + res.log);
+            if (res.error) {
+              throw new Error("loadWaitForUI5: " + res.error);
+            }
           });
       };
 
@@ -290,7 +293,8 @@ function run(config) {
         //TODO consider several describe() per spec file
         suiteStarted: function(result){
 
-          // enclose all WebDriver operations in a new flow so to handle potential failures
+          // enclose all WebDriver operations in a new flow for a gracefull handlong of failures
+          // will call jasmine.fail() that will handle the error
           browser.controlFlow().execute(function() {
 
             var specFullName = result.description;
@@ -341,7 +345,13 @@ function run(config) {
               }
             });
           }).then(null,function(error){
-            // TODO display only once -> https://github.com/jasmine/jasmine/issues/778
+            // the failure in reporter -> beforAll will not stop further suite execution !
+            // fail-fast was discussed here -> https://github.com/jasmine/jasmine/issues/778
+            // stop the suite will require jasmin 3.0 -> https://github.com/jasmine/jasmine/issues/414
+            // stop the spec when error require jasmin 2.4 -> https://jasmine.github.io/2.4/node.html#section-13
+            // completing of this functionality in jasmine 2.8 -> https://github.com/jasmine/jasmine/issues/577 
+            // In jasmine 2.3 a throwOnExpectationFailure(true) was added -> https://stackoverflow.com/questions/22119193/stop-jasmine-test-after-first-expect-fails
+            // it does not make sense for us at it simply throws error from the first failed expectation and this kills the whole execution
             fail(error);
           });
         },
@@ -400,21 +410,6 @@ function run(config) {
           });
           authenticator.get(url);
 
-          /*
-          // ensure page is fully loaded - wait for window.url to become the same as requested
-          var plainContentUrl = url.match(/([^\?\#]+)/)[1];
-          browser.driver.wait(function () {
-            return browser.driver.executeScript(function () {
-              return window.location.href;
-            }).then(function (url) {
-              // match only host/port/path as app could manipulate request args and fragment
-              var urlMathes = url.match(/([^\?\#]+)/);
-              return urlMathes !== null && urlMathes[1] === plainContentUrl;
-              //return url === spec.contentUrl;
-            });
-          }, browser.getPageTimeout, 'waiting for page to fully load');
-          */
-
           // handle pageLoading options
           if (config.pageLoading) {
 
@@ -442,7 +437,8 @@ function run(config) {
 
           // load waitForUI5 logic on client
           browser.loadWaitForUI5();
-          // ensure ui5 is loaded - execute waitForUI5() internally
+
+          // ensure app is fully loaded before starting the interactions
           return browser.waitForAngular();
         },
 
@@ -495,7 +491,8 @@ function run(config) {
         reporter.register(jasmineEnv);
       });
 
-      // register flow error handler - seem not necessary to do this manually as jasminewd2 does it well
+      // register flow error handler - seem not necessary to do this manually as jasminewd2 ecnloses each jasmine operation (it,spec,beforeEach,...)
+      // in execution flow and handles the potential errors.
       /*
       protractor.promise.controlFlow().on('uncaughtException', function(err) {
         console.log('There was an uncaught exception: ' + err);
