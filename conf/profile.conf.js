@@ -56,7 +56,7 @@ exports.config = {
       }
     },
     /* maximize browser on all desktops to ensure consistent browser size */
-    'chrome,chromium,firefox,ie,safari': {
+    'chrome,chromium,firefox,ie,edge,safari': {
       'windows,mac,linux': {
         '*': {
           remoteWebDriverOptions: {
