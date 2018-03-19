@@ -44,7 +44,7 @@ describe('LocalScreenshotProvider', function() {
     fs.readFile('spec/localScreenshotProvider/browserScreenshot.png', function(error, buffer) {
       screenshotProvider._cropScreenshot(buffer.toString('base64'), element).then(function(){
       }, function(error){
-        expect(error.message).toBe('Cannot crop element because of size issue! Element width=100, height=0, left=1, top=0');
+        expect(error.message).toBe('Requested element for crop is placed partially or fully outside the viewport. In display pixels element width=100, height=0, left=1, top=0');
         done();
       });
     });
@@ -69,7 +69,7 @@ describe('LocalScreenshotProvider', function() {
     fs.readFile('spec/localScreenshotProvider/browserScreenshot.png', function(error, buffer) {
       screenshotProvider._cropScreenshot(buffer.toString('base64'), element).then(function(){
       }, function(error){
-        expect(error.message).toBe('Cannot crop element because is outside of the view port. View port: width=635, height=421. Element properties: width=100, height=100, left=1, top=-110');
+        expect(error.message).toBe('Cannot crop element because is outside of the view port. View port in display pixels: width=635, height=421. Element properties in display pixels: width=100, height=100, left=1, top=-110');
         done();
       });
     });

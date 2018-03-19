@@ -84,6 +84,7 @@ describe("LocalComparisonProvider", function () {
   });
 
   it('Should pass with different images and higher pixel and percentage thresholds', function(done) {
+    comparisonConfig.ignoreNothing = false;
     comparisonConfig.thresholdPixels = 1987;
     comparisonConfig.thresholdPercentage = 0.75;
 
