@@ -1,7 +1,7 @@
 # UIVeri5 (visualtestjs)
 
 ## Introduction
-UIVeri5 is a visual and application testing framework for UI5-based applications. It is using
+UIVeri5 is a visual and application testing framework for UI5-based applications. It uses
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
 application as a real user would. Visualtestjs is heavily inspired and based on [Protractor](http://www.protractortest.org/)
 and brings most of its benefits to UI5 applications.
@@ -72,7 +72,7 @@ it('should view the TrackPurchase Order screen', function () {
 
 ### Visual testing
 
-### Run visual tests for openui5
+### Run visual tests for OpenUI5
 * Please follow the procedure [install globally](docs/installation.md).
 * Run all available tests:
 ```
@@ -81,10 +81,10 @@ $ grunt visualtest
 Please check [developing.md](https://github.com/SAP/openui5/blob/master/docs/developing.md) and
 [tools.md](https://github.com/SAP/openui5/blob/master/docs/tools.md) for further command-line arguments that
 visualtest grunt task accepts. Please check [controllibraries.md](https://github.com/SAP/openui5/blob/master/docs/controllibraries.md)
-and [visualtesting.md](docs/visualtesting.md) how to write visual tests.
+and [visualtesting.md](docs/usage/visualtesting.md) how to write visual tests.
 Please use the sample visual tests from the draft commit above for reference.
 
-### Run visual tests for ui5-contributor project
+### Run visual tests for UI5-contributor project
 * Please follow the procedure [install globally](docs/installation.md).
 * Create a conf.js file in the root of your project with the following content:
 ```
@@ -110,8 +110,9 @@ exports.config = {
 ```
 $ visualtest
 ```
+Please check [applicationtesting.md](docs/usage/applicationtesting.md) for tips on how to write integration tests.
 
-### Features
+### Configuration
 
 By default visualtest will discover all applicable visual tests and execute them on local chrome
 over automatically started selenium server on localhost:4444.

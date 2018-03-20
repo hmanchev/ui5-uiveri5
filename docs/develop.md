@@ -55,14 +55,26 @@ git branch -d <local branch>
 
 ## Testing
 
-### Run all unit test
+### Run all unit tests
 ```
-$ npm run test
+$ npm run test:unit
 ```
 
 ### Run specific unit test
 ```
-$ npm run test --specs spec/StatisticsCollector.spec.js
+$ npm run test:unit --specs spec/StatisticsCollector.spec.js
+```
+
+### Run all E2E tests
+```
+$ npm run test:e2e
+```
+By default UI5 tests are executed against the latest OpenUI5 release.
+To change the version, modify the UI5 bootstrap script in `visualtestjs/e2e/UI5/index.html`.
+
+### Run all tests (unit and E2E)
+```
+$ npm run test
 ```
 
 ## Release

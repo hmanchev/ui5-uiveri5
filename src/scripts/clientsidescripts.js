@@ -79,6 +79,33 @@ var mFunctions = {
       width: window.outerWidth - window.innerWidth,
       height: window.outerHeight - window.innerHeight
     };
+  },
+
+  getControlProperty: function (mScriptParams) {
+    if (!window.sap || !window.sap.ui) {
+      return {error: "No UI5 found on the page"};
+    }
+    sap.ui.require(["sap/ui/test/_ControlFinder"]);
+    var control = sap.ui.test._ControlFinder._getControlForElement(mScriptParams.elementId);
+    var property = control ? sap.ui.test._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
+    return {property: property};
+  },
+
+  findByControl: function (sMatchers, oParentElement) {
+    if (!window.sap || !window.sap.ui) {
+      throw new Error("findByControl: no UI5 on this page.");
+    }
+
+    sap.ui.require(["sap/ui/test/_ControlFinder"]);
+
+    var mMatchers = JSON.parse(sMatchers);
+
+    if (oParentElement) {
+      var control = sap.ui.test._ControlFinder._getControlForElement(oParentElement.id);
+      mMatchers.ancestor = control && [[control.getId()]];
+    }
+
+    return sap.ui.test._ControlFinder._findElements(mMatchers);
   }
 };
 

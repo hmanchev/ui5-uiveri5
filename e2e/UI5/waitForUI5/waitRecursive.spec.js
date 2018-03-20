@@ -1,4 +1,12 @@
-describe("sap.m.waitTestRecursive", function() {
+var utils = require("../utils");
+
+describe("waitRecursive", function() {
+  "use strict";
+
+  beforeAll(function () {
+    utils.injectPageContent(browser, "waitRecursive");
+  });
+
   // verify wait after button click
   it("should click the button and wait", function() {
     element(by.id("button")).click();

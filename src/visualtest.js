@@ -4,6 +4,8 @@ var proxyquire =  require('proxyquire');
 var url = require('url');
 var clientsidescripts = require('./scripts/clientsidescripts');
 var ClassicalWaitForUI5 = require('./scripts/classicalWaitForUI5');
+var Control = require('./control');
+var pageObjectFactory = require('./pageObjectFactory');
 
 var DEFAULT_CONNECTION_NAME = 'direct';
 
@@ -225,6 +227,10 @@ function run(config) {
           }
         }
 
+        protractorModule.parent.exports.ElementFinder.prototype.asControl = function () {
+          return new Control(this.elementArrayFinder_);
+        };
+
         // add WebDriver overrides
         if (runtime.capabilities.enableClickWithActions) {
           logger.debug('Activating WebElement.click() override with actions');
@@ -234,6 +240,7 @@ function run(config) {
             return _moveMouseOutsideBody(driverActions);
           };
         }
+
       });
 
       // override with added logging and parameter manipulation
@@ -537,6 +544,9 @@ function run(config) {
     logger.error(error);
     process.exit(1);
   });
+
+  logger.debug('Loading BDD-style page object factory');
+  pageObjectFactory.register(global);
 };
 
 exports.run = run;

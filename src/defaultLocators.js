@@ -1,3 +1,5 @@
+var webdriver = require('selenium-webdriver');
+var clientsidescripts = require('./scripts/clientsidescripts');
 
 /**
  * Provide jasmine locator
@@ -23,6 +25,20 @@ DefaultLocators.prototype.register = function(by) {
   by.addLocator('jq', function(query,opt_parentElement) {
     return $(opt_parentElement ? opt_parentElement + ' ' + query : query).toArray();
   });
+
+  // mMatchers is an OPA5 control selector map
+  by.control = function (mMatchers) {
+    return {
+      findElementsOverride: function (driver, using, rootSelector) {
+        var sMatchers = JSON.stringify(mMatchers);
+        return driver.findElements(webdriver.By.js(clientsidescripts.findByControl, sMatchers, using, rootSelector));
+      },
+      toString: function toString() {
+        var sMatchers = JSON.stringify(mMatchers);
+        return 'by.control(' + sMatchers + ')';
+      }
+    };
+  };
 };
 
 module.exports = function(config,instanceConfig,logger){

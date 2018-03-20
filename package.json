@@ -19,6 +19,9 @@
   },
   "devDependencies": {
     "express": "^4.13.4",
+    "grunt": "^1.0.2",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-shell": "^2.1.0",
     "jasmine": "^2.2.1",
     "jasminewd2": "0.0.6",
     "multer": "^1.1.0",
@@ -34,7 +37,9 @@
   },
   "scripts": {
     "visualtest": "node bin/visualtest",
-    "test": "node node_modules/jasmine/bin/jasmine"
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node node_modules/jasmine/bin/jasmine",
+    "test:e2e": "grunt e2e"
   },
   "main": "src/visualtest.js"
 }
