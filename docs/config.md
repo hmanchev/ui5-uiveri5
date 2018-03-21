@@ -129,7 +129,7 @@ Browser size and location can be specified in browsers.capabilities.remoteWebDri
 * viewportSize - inner size of the browser window (actual page display area)
 * browserSize - outer size of the browser window (including window toolbars)
 
-```
+```javascript
 browsers: [{
   capabilities: {
     remoteWebDriverOptions: {
@@ -152,7 +152,7 @@ browsers: [{
 ```
 
 ######  Maximize option may be not supported for all browsers. In such case "browserSize" option can be used for setting browser window size. Example: ######
-```
+```javascript
 browsers: [{
   capabilities: {
     remoteWebDriverOptions: {
@@ -170,7 +170,7 @@ browsers: [{
 All chromedriver options as could be provided. Please check:  https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/chrome.js
 Option names match the names of ServiceBuilder object methods.
 
-``` chromedriver options in conf.js
+```javascript  chromedriver options in conf.js
 browsers: [{
   browserName: 'firefox',
   capabilities: {
@@ -185,7 +185,7 @@ browsers: [{
 ##### Selenium options
 All selenium server command-line argumens could be provided. Please check the available options by running
 selenium-server-standalone.jar with '-h' argument.
-``` selenium options in conf.js
+```javascript selenium options in conf.js
 browsers: [{
   browserName: 'firefox',
   capabilities: {
@@ -198,7 +198,7 @@ browsers: [{
 
 ### Passing params to test
 Define in conf.js file
-``` javascript
+```javascript
 exports.config = {
   params: {
     someKey: someValue,
@@ -213,7 +213,7 @@ Override from command line or define new params
 $ visualtest --params.someKey=redefineSomeValue --params.anotherKey.anotherSecondLevelKey=anotherSecondLevelValue
 ```
 Usage in tests
-```
+```javascript
 if('should check something',function(){
   if(browser.testrunner.config.params.someKey) {
     doSomethingWithThisValue(browser.testrunner.config.params.someKey);
@@ -228,7 +228,7 @@ is handled by plugable authenticator [modules](src/moduleLoader.js). Basic(in UR
 authentication modules are available. Form authenticators could be configured with the selectors for the necessary fields.
 Few common auth configurations are available: 'basic','fiori-form','sapcloud-form' and could be used directly as shown below.
 Please check 'authConfigs' section in [profile.conf.js](conf/profile.conf.js) how to customize proprietary authenticator.
-``` javascript
+```javascript
 auth: {
   // form based
   'fiori-form': {
@@ -245,7 +245,7 @@ auth: {
 
 ### Timeouts
 Override default timeout values in config file:
-``` javascript
+```javascript
 timeouts: {
   getPageTimeout: '10000',
   allScriptsTimeout: '11000',
@@ -330,7 +330,7 @@ Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.
 You could override the default auth settings by providing an options object with the same syntax as in conf.js
 If the login performs redirects, the authenticated application url should be supplied as first parameter
 of navigate.to() and the login url should be given as authUrl in the options object.
-```
+```javascript
 browser.testrunner.navigation.to(
   '<url>',{
     auth:{
@@ -343,27 +343,5 @@ browser.testrunner.navigation.to(
 );
 ```
 
-### Screenshot reporter
-The screenshot reporter creates an HTML file with a simple representation of the test execution flow. It creates and stores screenshots on specified moments of test execution:
-- on expectation completion (either successful or failed)
-- before action execution (after syncing with the application and immediately before interaction). The currently supported actions are: click and sendKeys.
-
-Screenshots are in png format and follow the naming convention:
-- for expectations: fullTestName_indexOfTestExpectation_status_screenshotCreationTime
-- for actions: actionName_elementID_screenshotCreationTime
-
-The default location for storing the report and screenshots is the subfolder 'target/report/screenshots/' of the current execution directory. It can be changed by the screenshotsRoot parameter:
-```
-  reporters: [
-    {name: './reporter/screenshotReporter', screenshotsRoot: 'myScreenshots/'}
-  ]
-```
-Screenshot reporting is enabled for application testing by default. You can configure when screenshots will be taken. Currently the available options are: on expectation failure, on expectation success and on action (including both click and sendKeys).
-Reports can configured by adding the screenshotReporter and setting the takeScreenshot option, for example:
-```
-  takeScreenshot: {
-    onExpectFailure: true,
-    onExpectSuccess: false,
-    onAction: false
-  }
-```
+### Reporters
+Test execution results can be summarized in a report. We support several report formats, e.g. JUnit, JSON, HTML. The config file defines the reporters to use and their options. Read all about the available reporters in [reporters.md](docs/reporters.md)
