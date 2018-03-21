@@ -59,7 +59,7 @@ JasmineJUnitReporter.prototype._suiteAsXml = function() {
 
   collector.suites.forEach(function(suite){
     var suiteDetails =  {
-      name: suite.name,
+      name: (that.instanceConfig.prefix || '')+suite.name+(that.instanceConfig.postfix || ''),
       timestamp: new Date(),
       hostname: 'localhost' || that.config.seleniumAddress,
       errors: suite.statistic.specs.failed,
