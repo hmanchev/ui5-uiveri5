@@ -61,17 +61,8 @@ exports.config = {
         '*': {
           remoteWebDriverOptions: {
             maximized: true
-          },
-          chromeOptions: {
-            'args': [
-              'disable-infobars'
-            ]
           }
           /*
-          chromedriverOptions: {
-            'enableVerboseLogging': [],
-            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
-          }
           seleniumOptions: {
             args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
           }
@@ -79,6 +70,25 @@ exports.config = {
         }
       }
     },
+    /* disable informabrs on chrome */
+    'chrome,chromium': {
+      '*': {
+        '*': {
+          chromeOptions: {
+            'args': [
+              'disable-infobars'
+            ]
+          },
+          /*
+          chromedriverOptions: {
+            'enableVerboseLogging': [],
+            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
+          }
+          */
+        }
+      }
+    },
+    /* configure default Galaxy S7 emulation */
     'chromeMobileEmulation': {
       '*': {
         '*': {
