@@ -3,10 +3,7 @@ module.exports = function (grunt) {
   function buildE2ECmd(cwd) {
     return {
       command: 'node ../../bin/visualtest --v',
-      cwd: cwd,
-      options: {
-        failOnError: false
-      }
+      cwd: cwd
     };
   }
 
