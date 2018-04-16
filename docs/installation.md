@@ -10,7 +10,7 @@ $ npm install git://github.wdf.sap.corp/ui5delivery/visualtestjs.git#<version> -
 ```
 Please use the latest version from here: [releases](https://github.wdf.sap.corp/ui5delivery/visualtestjs/releases)
 or skip version for HEAD. The --no-optional flag is necessary to avoid the installation of some optional dependencies
-(buffer-utils) that require native build that itself requires PYTHON and VC++ on Wondows platform.
+(buffer-utils) that require native build that itself requires PYTHON and VC++ on Windows platform.
 
 #### Update already installed version
 * Remove the installed version of visualtest:
