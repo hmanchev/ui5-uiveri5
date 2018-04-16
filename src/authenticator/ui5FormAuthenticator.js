@@ -8,7 +8,7 @@ var webdriver = require('selenium-webdriver');
  * @param {Object} instanceConfig
  * @param {Logger} logger
  */
-function UI5FormAuthenticator(config,instanceConfig,logger){
+function UI5FormAuthenticator(config,instanceConfig,logger,statisticCollector){
   //this.config = config;
   //this.instanceConfig = instanceConfig;
   this.logger = logger;
@@ -18,6 +18,7 @@ function UI5FormAuthenticator(config,instanceConfig,logger){
   this.userFieldSelector = instanceConfig.userFieldSelector;
   this.passFieldSelector = instanceConfig.passFieldSelector;
   this.logonButtonSelector = instanceConfig.logonButtonSelector;
+  this.statisticCollector = statisticCollector;
 }
 
 /**
@@ -26,6 +27,11 @@ function UI5FormAuthenticator(config,instanceConfig,logger){
  * @returns {promise<>} - resolved when the page is full loaded
  */
 UI5FormAuthenticator.prototype.get = function(url){
+
+  this.statisticsCollector.specStarted({
+    description: 'Authentication'
+  });
+
   if (!this.user || !this.pass) {
     return webdriver.promise.rejected(
       new Error('UI5 Form auth requested but user or pass is not specified'));
@@ -39,11 +45,22 @@ UI5FormAuthenticator.prototype.get = function(url){
   browser.waitForAngular();
 
   // enter user and pass in the respective fields
-  element(by.css(this.userFieldSelector));
-  element(by.css(this.passFieldSelector));
-  return element(by.css(this.logonButtonSelector)).click();
+  element(by.css(this.userFieldSelector)).sendKeys(this.user);
+  element(by.css(this.passFieldSelector)).sendKeys(this.pass);
+  element(by.css(this.logonButtonSelector)).click();
+
+  this.statisticsCollector.specDone({
+    status: 'passed',
+    failedExpectations: [],
+    passedExpectations: []
+  }, {
+    isAuthentication: true
+  });
+
+  // ensure redirect is completed
+  return browser.testrunner.navigation.waitForRedirect(url);
 };
 
-module.exports = function(config,logger){
-  return new UI5FormAuthenticator(config,logger);
+module.exports = function(config,logger,statisticCollector){
+  return new UI5FormAuthenticator(config,logger,statisticCollector);
 };

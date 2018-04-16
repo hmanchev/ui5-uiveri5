@@ -409,7 +409,7 @@ function run(config) {
       // expose navigation helpers to tests
       browser.testrunner.navigation = {
         to: function(url,auth) {
-          var authenticator =  moduleLoader.loadNamedModule(auth);
+          var authenticator =  moduleLoader.loadNamedModule(auth, [statisticCollector]);
 
           // open page and login
           browser.controlFlow().execute(function () {

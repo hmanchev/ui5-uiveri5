@@ -8,7 +8,7 @@ var webdriver = require('selenium-webdriver');
  * @param {Object} instanceConfig
  * @param {Logger} logger
  */
-function FormAuthenticator(config,instanceConfig,logger){
+function FormAuthenticator(config,instanceConfig,logger,statisticsCollector){
   //this.config = config;
   //this.instanceConfig = instanceConfig;
   this.logger = logger;
@@ -19,6 +19,7 @@ function FormAuthenticator(config,instanceConfig,logger){
   this.userFieldSelector = instanceConfig.userFieldSelector;
   this.passFieldSelector = instanceConfig.passFieldSelector;
   this.logonButtonSelector = instanceConfig.logonButtonSelector;
+  this.statisticsCollector = statisticsCollector;
 }
 
 /**
@@ -27,6 +28,11 @@ function FormAuthenticator(config,instanceConfig,logger){
  * @returns {promise<>} - resolved when the page is full loaded
  */
 FormAuthenticator.prototype.get = function(url){
+
+  this.statisticsCollector.specStarted({
+    description: 'Authentication'
+  });
+
   var that = this;
 
   if (!this.user || !this.pass) {
@@ -58,12 +64,20 @@ FormAuthenticator.prototype.get = function(url){
   // enter user and pass in the respective fields
   browser.driver.findElement(by.css(this.userFieldSelector)).sendKeys(this.user);
   browser.driver.findElement(by.css(this.passFieldSelector)).sendKeys(this.pass);
-  return browser.driver.findElement(by.css(this.logonButtonSelector)).click();
+  browser.driver.findElement(by.css(this.logonButtonSelector)).click();
+
+  this.statisticsCollector.specDone({
+    status: 'passed',
+    failedExpectations: [],
+    passedExpectations: []
+  }, {
+    isAuthentication: true
+  });
 
   // ensure redirect is completed
   return browser.testrunner.navigation.waitForRedirect(url);
 };
 
-module.exports = function(config,logger){
-  return new FormAuthenticator(config,logger);
+module.exports = function (config,instanceConfig,logger,statisticsCollector) {
+  return new FormAuthenticator(config,instanceConfig,logger,statisticsCollector);
 };

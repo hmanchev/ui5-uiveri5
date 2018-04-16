@@ -140,11 +140,13 @@
     <div class="spec <%- spec.status %> <%- index %> hidden">
       <div class="summary">
         <div class="strong"><%- spec.name %></div>
+        <% if (!spec.meta || !spec.meta.isAuthentication) { %>
         <span class="strong">Expectations</span>
         <span>Total: <%- spec.statistic.expectations.total %></span>
         <span>Passed: <%- spec.statistic.expectations.passed %></span>
         <span>Failed: <%- spec.statistic.expectations.failed.total %></span>
         <span>Duration: <%- Math.round(spec.statistic.duration / 1000 * 10) / 10 %> sec</span>
+        <% } %>
       </div>
       <% _.forEach(spec.stepSequence, function (stepType, index) {
         var step = _.find(spec[stepType], {stepIndex: index});

@@ -62,12 +62,17 @@ JasmineScreenshotReporter.prototype._registerOnAction = function (options) {
 
     protractorModule.parent.exports.WebElement.prototype[action] = function () {
       var element = this;
-      var actionArgs = arguments;
-      
+      var actionValue = arguments[0];
+
       // TODO: save the locator which was used to find the element
       return element.getAttribute('id').then(function (elementId) {
-        var onAction = that._onAction({element: element, elementId: elementId, actionName: action, actionValue: actionArgs[0]});
-        return originalAction.apply(element, actionArgs).then(onAction, onAction);
+        var onAction = that._onAction({
+          element: element,
+          elementId: elementId,
+          name: action,
+          value: actionValue
+        });
+        return originalAction.call(element, actionValue).then(onAction, onAction);
       });
     };
   });
@@ -94,19 +99,17 @@ JasmineScreenshotReporter.prototype._onAction = function (options) {
 
   return function () {
     if (that._isEnabled('onAction') && that.lastSyncScreenshot) {
-      var screenshotName = that._generateActionScreenshotName(options.actionName, options.elementId);
+      var screenshotName = that._generateActionScreenshotName(options.name, options.elementId);
       that._saveScreenshot(screenshotName, that.lastSyncScreenshot);
       delete that.lastSyncScreenshot;
     }
 
-    that.collector.collectAction({
-      name: options.actionName,
-      elementId: options.elementId,
-      value: options.actionValue,
+    var action = _.extend(_.pick(options, ['name', 'elementId', 'value']), {
       stepIndex: that.stepIndex,
       screenshot: screenshotName
     });
 
+    that.collector.collectAction(action);
     that.stepIndex += 1;
   };
 };
