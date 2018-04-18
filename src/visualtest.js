@@ -47,6 +47,29 @@ function run(config) {
   var configParser = require('./configParser')(logger);
   config = configParser.mergeConfigs(config);
 
+  config.osTypeString = (function() {
+    var os = require('os');
+    var osType = '';
+
+    if (os.type() == 'Darwin') {
+      osType = 'mac64';
+    } else if (os.type() == 'Linux') {
+      if (os.arch() == 'x64') {
+        osType = 'linux64';
+      } else {
+        osType = 'linux32';
+      }
+    } else if (os.type() == 'Windows_NT') {
+      osType = 'win32';
+    } else {
+      osType = 'unknown';
+    }
+
+    return osType;
+  })();
+
+  configParser.resolvePlaceholders(config);
+
   // update logger with resolved configs
   logger.setLevel(config.verbose);
 
@@ -338,7 +361,6 @@ function run(config) {
                 }
                 parsedSpecUrl.search += value;
               });
-              spec.contentUrl = _.template(url.format(parsedSpecUrl))(browser.testrunner.runtime.ui5);
             }
 
             // open test page
@@ -356,7 +378,7 @@ function run(config) {
             // fail-fast was discussed here -> https://github.com/jasmine/jasmine/issues/778
             // stop the suite will require jasmin 3.0 -> https://github.com/jasmine/jasmine/issues/414
             // stop the spec when error require jasmin 2.4 -> https://jasmine.github.io/2.4/node.html#section-13
-            // completing of this functionality in jasmine 2.8 -> https://github.com/jasmine/jasmine/issues/577 
+            // completing of this functionality in jasmine 2.8 -> https://github.com/jasmine/jasmine/issues/577
             // In jasmine 2.3 a throwOnExpectationFailure(true) was added -> https://stackoverflow.com/questions/22119193/stop-jasmine-test-after-first-expect-fails
             // it does not make sense for us at it simply throws error from the first failed expectation and this kills the whole execution
             fail(error);

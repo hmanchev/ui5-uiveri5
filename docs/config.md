@@ -243,6 +243,23 @@ auth: {
 }
 ```
 
+Also to avoid leaving credentials in the configs, which may be saved in source control system, the user and pass parameters
+can be described as placeholders and then, the values can be passed from the command line.
+```javascript
+auth: {
+  // form based
+  'fiori-form': {
+    user: '${params.user}',
+    pass: '${params.pass}'
+  }
+}
+```
+
+To replace these placeholders you may pass them in the command line:
+```
+visualtest --params.user=<user> --params.pass=<pass>
+```
+
 ### Timeouts
 Override default timeout values in config file:
 ```javascript

@@ -24,4 +24,21 @@ describe("configParser", function() {
 
     expect(mergedConfig.multi).toEqual([{name: 'option1'}, {name: 'option2'}]);
   });
+
+  it('Should resolve placeholders in config', function () {
+    var config = {
+      conf: __dirname + '/configParser/conf.js',
+      parameters: {
+        test: 'theme',
+        rtl: 'rtl'
+      },
+      osTypeString: 'win64'
+    };
+
+    var mergedConfig = configParser.mergeConfigs(config);
+    configParser.resolvePlaceholders(mergedConfig);
+
+    expect(mergedConfig.test.key.param).toEqual('sap-ui-theme=sap_theme');
+    expect(mergedConfig.test.key.secondParam).toEqual('sap-ui-rtl=true');
+  });
 });

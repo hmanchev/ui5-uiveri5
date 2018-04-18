@@ -196,56 +196,32 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
   var deferred = q.defer();
   var root = path.resolve(__dirname + '/../../selenium').replace(/\\/g,'/');
 
-  // compute OS type strings
-  binary.osTypeString = function(){
-    // return type string depending on current OS
-    if (os.type() == 'Darwin') {
-      return 'mac64';
-    } else if (os.type() == 'Linux') {
-      if (os.arch() == 'x64') {
-        return 'linux64';
-      } else {
-        return 'linux32';
-      }
-    } else if (os.type() == 'Windows_NT') {
-      return 'win32';
-    } else {
-      throw new Error('Unsupported OS: ' + os.type() + ' for chromedriver');
-    }
-  }();
-
-  // resolve vars
-  var url = _.template(binary.url)(binary);
-  var filename = _.template(binary.filename)(binary);
-  var executableType = typeof binary.executable;
-  var executable;
-
-  if(executableType === 'object') {
-    executable =  root + '/' + _.template(binary.executable[binary.osTypeString])(binary);
+  if(typeof binary.executable === 'object') {
+    binary.executable =  root + '/' + binary.executable[that.config.osTypeString];
   } else {
-    executable =  root + '/' + _.template(binary.executable)(binary);
+    binary.executable =  root + '/' + binary.executable;
   }
 
   // check if binary already exist
-  fs.stat(executable,function(err,stat){
+  fs.stat(binary.executable,function(err,stat){
     if (err || stat.size == 0) {
       // create path
-      mkdirp(path.dirname(executable),function (err) {
+      mkdirp(path.dirname(binary.executable),function (err) {
         if(err) {
-          deferred.reject(new Error('Error while creating path for binary: ' + executable + ' ,details: ' + err));
+          deferred.reject(new Error('Error while creating path for binary: ' + binary.executable + ' ,details: ' + err));
         } else {
-          that.logger.info('Downloading webdriver binary: ' + url);
+          that.logger.info('Downloading webdriver binary: ' + binary.url);
           // download executable
           var requestStream = request({
-            url: url
+            url: binary.url
           }).on('error',function (err) {
-              deferred.reject(new Error('Error while downloading: ' + url + ' ,details: ' + err +
+              deferred.reject(new Error('Error while downloading: ' + binary.url + ' ,details: ' + err +
               '\nPlease make sure you have internet connection. ' +
               'If necessary, set HTTP_PROXY and HTTPS_PROXY environment variables'));
             });
           // unzip if necessary
           if (binary.unzip){
-            var filenameZip = executable + '.zip';
+            var filenameZip = binary.executable + '.zip';
             requestStream.pipe(fs.createWriteStream(filenameZip))
               .on('error', function (err) {
                 deferred.reject(new Error('Error while saving zip file: ' + filenameZip + ' ,details: ' + err));
@@ -261,38 +237,38 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
                   // rename the extracted file to final name
                   var extractedFilename = filenamePath + '/';
                   if (os.type() == 'Windows_NT') {
-                    fs.renameSync(filenamePath + '/' + filename + '.exe',executable);
+                    fs.renameSync(filenamePath + '/' + binary.filename + '.exe',binary.executable);
                   } else {
-                    fs.renameSync(filenamePath + '/' + filename,executable);
+                    fs.renameSync(filenamePath + '/' + binary.filename,binary.executable);
 
                     // fix the executable flag
-                    fs.chmodSync(path.join(executable),0755);
+                    fs.chmodSync(path.join(binary.executable),0755);
                   }
 
                   // delete the zip
                   fs.unlinkSync(filenameZip);
 
                   // resolve with final name
-                  deferred.resolve(executable);
+                  deferred.resolve(binary.executable);
                 } catch(err) {
                   deferred.reject(new Error('Error while processing: ' + filenameZip + ' ,details: ' + err));
                 }
               });
           } else {
-            requestStream.pipe(fs.createWriteStream(executable))
+            requestStream.pipe(fs.createWriteStream(binary.executable))
               .on('error', function (err) {
-                deferred.reject(new Error('Error while saving: ' + executable + ' ,details: ' + err));
+                deferred.reject(new Error('Error while saving: ' + binary.executable + ' ,details: ' + err));
               })
               .on('finish', function () {
-                deferred.resolve(executable);
+                deferred.resolve(binary.executable);
               });
           }
         }
       });
     } else {
-      that.logger.info('Found correct webdriver locally: ' + executable);
+      that.logger.info('Found correct webdriver locally: ' + binary.executable);
       // file exist => resolve with known name
-      deferred.resolve(executable);
+      deferred.resolve(binary.executable);
     }
   });
 

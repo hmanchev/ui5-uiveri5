@@ -16,19 +16,23 @@ exports.config = {
           version: '2.51',
           patch: '0',
           filename: 'selenium-server-standalone',
-          url: 'https://selenium-release.storage.googleapis.com/${version}/${filename}-${version}.${patch}.jar',
-          executable: '${filename}-${version}.${patch}.jar'
+          url: 'https://selenium-release.storage.googleapis.com/${connectionConfigs.direct.binaries.selenium.version}/' +
+          '${connectionConfigs.direct.binaries.selenium.filename}-${connectionConfigs.direct.binaries.selenium.version}.' +
+          '${connectionConfigs.direct.binaries.selenium.patch}.jar',
+          executable: '${connectionConfigs.direct.binaries.selenium.filename}-${connectionConfigs.direct.binaries.selenium.version}.' +
+          '${connectionConfigs.direct.binaries.selenium.patch}.jar'
         },
         chromedriver: {
           version: '2.36',
           unzip: true,
           filename: 'chromedriver',
-          url: 'https://chromedriver.storage.googleapis.com/${version}/${filename}_${osTypeString}.zip',
+          url: 'https://chromedriver.storage.googleapis.com/${connectionConfigs.direct.binaries.chromedriver.version}/' +
+          '${connectionConfigs.direct.binaries.chromedriver.filename}_${osTypeString}.zip',
           executable: {
-            win32: '${filename}-${version}.exe',
-            mac64: '${filename}-${version}',
-            linux32: '${filename}-${version}',
-            linux64: '${filename}-${version}'
+            win32: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}.exe',
+            mac64: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}',
+            linux32: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}',
+            linux64: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}'
           }
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
@@ -37,8 +41,11 @@ exports.config = {
           patch: '0',
           unzip: true,
           filename: 'IEDriverServer',
-          url: 'http://selenium-release.storage.googleapis.com/${version}/${filename}_Win32_${version}.${patch}.zip',
-          executable: '${filename}-${version}.${patch}.exe'
+          url: 'http://selenium-release.storage.googleapis.com/${connectionConfigs.direct.binaries.iedriver.version}/' +
+          '${connectionConfigs.direct.binaries.iedriver.filename}_Win32_${connectionConfigs.direct.binaries.iedriver.version}.' +
+          '${connectionConfigs.direct.binaries.iedriver.patch}.zip',
+          executable: '${connectionConfigs.direct.binaries.iedriver.filename}-${connectionConfigs.direct.binaries.iedriver.version}.' +
+          '${connectionConfigs.direct.binaries.iedriver.patch}.exe'
         }
       }
     }//,

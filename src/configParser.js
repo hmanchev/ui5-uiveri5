@@ -28,7 +28,22 @@ ConfigParser.prototype.mergeConfigs = function (config) {
 ConfigParser.prototype._mergeConfig = function (configFile, type) {
   this.logger.debug('Loading ' + type + ' config from: ' + configFile);
   var config = require(configFile).config;
+
+  // merge the loaded *.conf.js file with command line parameters
   this.config = _mergeWithArrays(config, this.config);
+};
+
+ConfigParser.prototype.resolvePlaceholders = function(obj) {
+  var that = this;
+  _.forEach(obj, function(value, key) {
+      if (_.isObject(value)) {
+         that.resolvePlaceholders(value);
+      } else if (_.isString(value)) {
+        obj[key] = _.template(obj[key])(that.config);
+      }
+  });
+
+  return obj;
 };
 
 function _mergeWithArrays(object, src) {
