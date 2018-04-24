@@ -19,7 +19,7 @@ expect(someElement.count()).toBeGreaterThan(0);
 UIVeri5 can synchronize with UI5 automatically. This means that it will check for unfinished asynchronous work performed by the application before every action and expectation (essentially before every element location). This stabilizes test execution as the test waits for the application to become responsive before continuing with the next step.
 
 ### Locators - id vs css vs jq
-You can use every locator already available in Protractor as well as the custom UIVeri5 locators: `jq` and `control`. More about locators can be found in [locators.md](docs/usage/locators.md).
+You can use every locator already available in Protractor as well as the custom UIVeri5 locators: `jq` and `control`. More about locators can be found in [locators.md](locators.md).
 
 ### executeScript
 

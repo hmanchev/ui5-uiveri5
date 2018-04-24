@@ -20,4 +20,4 @@ Image name can contain only allowed file system symbols like: litters, numbers, 
 Image name length should be minimum 3 characters length and maximum 40 characters length.
 
 ## Test structure
-For recommendations on test code structure, see [basics.md](docs/usage/basics.md), [locators.md](docs/usage/locators.md) and [expectations.md](docs/usage/expectations.md)
+For recommendations on test code structure, see [basics.md](basics.md), [locators.md](locators.md) and [expectations.md](expectations.md)

@@ -224,10 +224,10 @@ if('should check something',function(){
 ### Authentication
 __Syntax for auth config changed in v1.7.__
 To test a protected page you need to specify authentication type and credentials in config. Authentication
-is handled by plugable authenticator [modules](src/moduleLoader.js). Basic(in URL) and plain form and form with UI5
+is handled by plugable authenticator [modules](../src/moduleLoader.js). Basic(in URL) and plain form and form with UI5
 authentication modules are available. Form authenticators could be configured with the selectors for the necessary fields.
 Few common auth configurations are available: 'basic','fiori-form','sapcloud-form' and could be used directly as shown below.
-Please check 'authConfigs' section in [profile.conf.js](conf/profile.conf.js) how to customize proprietary authenticator.
+Please check 'authConfigs' section in [profile.conf.js](../conf/profile.conf.js) how to customize proprietary authenticator.
 ```javascript
 auth: {
   // form based
@@ -361,4 +361,4 @@ browser.testrunner.navigation.to(
 ```
 
 ### Reporters
-Test execution results can be summarized in a report. We support several report formats, e.g. JUnit, JSON, HTML. The config file defines the reporters to use and their options. Read all about the available reporters in [reporters.md](docs/reporters.md)
+Test execution results can be summarized in a report. We support several report formats, e.g. JUnit, JSON, HTML. The config file defines the reporters to use and their options. Read all about the available reporters in [reporters.md](reporters.md)

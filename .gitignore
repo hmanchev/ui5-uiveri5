@@ -2,6 +2,7 @@
 /target
 /.idea
 /selenium
+/e2e/**/target
 
 npm-debug.log
 
