@@ -17,21 +17,21 @@ and brings most of its benefits to UI5 applications.
 Visual testing is a css regression testing approach based on creating and comparing screenshot of a rendered component.
 Reference screenshots could be stored locally or in central git-lfs-like repository (comming soon).
 An except of actual visual test:
-````
+```js
 describe('sap.m.Wizard', function() {
-	it('should load test page', function () {
-		expect(takeScreenshot()).toLookAs('initial');
-	});
-	it('should show the next page', function () {
-		element(by.id('branch-wiz-sel')).click();
-		expect(takeScreenshot()).toLookAs('branching-initial');
-	});
+  it('should load test page', function () {
+    expect(takeScreenshot()).toLookAs('initial');
+  });
+  it('should show the next page', function () {
+    element(by.id('branch-wiz-sel')).click();
+    expect(takeScreenshot()).toLookAs('branching-initial');
+  });
 });
-````
+```
 ### Application testing
 The synchronous nature of the test written with visualtesjs greatly simplifies the creation and maintenance of application tests.
 A except of actual Fiori application test:
-````
+```js
 var masterSection = {
   search: {
     input: element(by.comp(masterSectionSearchWrapper + sapMSearchInput)),
@@ -57,16 +57,16 @@ it('should view the TrackPurchase Order screen', function () {
   filterPopup.noneFilterItem.click();
   filterPopup.okButton.click();
 
-  //Search for purchase orders with a certain supplier, and check if the results are correct
+  // Search for purchase orders with a certain supplier, and check if the results are correct
   masterSection.search.input.clear().sendKeys(testData.SUPPLIER_NAME);
   masterSection.search.searchIcon.click();
   expect(masterSection.orders.list.count()).toBe(masterSection.orders.forSupplierList.count());
 
-  //Doublecheck that some results are correct
+  // Doublecheck that some results are correct
   masterSection.orders.first.click();
   expect(purchaseOrderPage.supplierTitle.getText()).toBe(testData.SUPPLIER_NAME);
 });
-````
+```
 
 ## Usage
 
@@ -87,7 +87,7 @@ Please use the sample visual tests from the draft commit above for reference.
 ### Run visual tests for UI5-contributor project
 * Please follow the procedure [install globally](docs/installation.md).
 * Create a conf.js file in the root of your project with the following content:
-```
+```js
 exports.config = {
   profile: 'visual'
 };
@@ -101,7 +101,7 @@ $ visualtest
 ### Integration testing
 * Please follow the procedure [install globally](docs/installation.md).
 * Create a folder for your integration tests, place them inside and create a conf.js file:
-```
+```js
 exports.config = {
   profile: 'integration'
 };
