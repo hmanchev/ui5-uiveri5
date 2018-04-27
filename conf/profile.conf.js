@@ -1,10 +1,11 @@
 exports.config = {
   // timeouts in ms, keep proportions when modifying
   timeouts: {
-    waitForUI5Delta: 500,
+    waitForUI5Delta: 200,
     getPageTimeout: 10000,
     allScriptsTimeout: 11000,
-    defaultTimeoutInterval: 30000
+    defaultTimeoutInterval: 30000,
+    waitForUI5PollingInterval: 400
   },
   useClassicalWaitForUI5: true,
   connection: 'direct',

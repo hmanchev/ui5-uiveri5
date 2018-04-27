@@ -283,6 +283,7 @@ function run(config) {
       browser.loadWaitForUI5 = function () {
         return browser.executeScript_(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
             waitForUI5Timeout: waitForUI5Timeout,
+            waitForUI5PollingInterval: config.timeouts.waitForUI5PollingInterval,
             ClassicalWaitForUI5: ClassicalWaitForUI5,
             useClassicalWaitForUI5: config.useClassicalWaitForUI5
           }).then(function (res) {

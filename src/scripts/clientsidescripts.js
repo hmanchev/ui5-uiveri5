@@ -6,7 +6,8 @@ var mFunctions = {
   loadWaiter: function (mScriptParams) {
     var sDebugLog = "Loading waitForUI5 implementation, params: " + 
       "useClassicalWaitForUI5: "  +  mScriptParams.useClassicalWaitForUI5 + 
-      " ,waitForUI5Timeout: " + mScriptParams.waitForUI5Timeout + "ms";
+      " ,waitForUI5Timeout: " + mScriptParams.waitForUI5Timeout + "ms" + 
+      " ,waitForUI5PollingInterval: " + mScriptParams.waitForUI5PollingInterval + "ms";
    
     if (!window.sap || !window.sap.ui) {
       return {log: sDebugLog, error: "No UI5 on this page"};
@@ -47,7 +48,8 @@ var mFunctions = {
             'sap/ui/test/autowaiter/_autoWaiterAsync',
           ], function (_autoWaiterAsync) {
             _autoWaiterAsync.extendConfig({
-              timeout: mScriptParams.waitForUI5Timeout / 1000
+              timeout: mScriptParams.waitForUI5Timeout,
+              interval: mScriptParams.waitForUI5PollingInterval
             });
             return _autoWaiterAsync;
           }, true);
