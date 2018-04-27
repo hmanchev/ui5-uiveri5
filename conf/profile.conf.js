@@ -24,7 +24,7 @@ exports.config = {
           '${connectionConfigs.direct.binaries.selenium.patch}.jar'
         },
         chromedriver: {
-          version: '2.36',
+          version: '2.37',
           unzip: true,
           filename: 'chromedriver',
           url: 'https://chromedriver.storage.googleapis.com/${connectionConfigs.direct.binaries.chromedriver.version}/' +
