@@ -67,31 +67,8 @@ CliParser.prototype.parse = function(argv){
     // silently skipp any invalid config statements
   }
 
-  // parse conf key
-  var confKeys = config.confKeys;
-  if (confKeys) {
-    if (_.isArray(confKeys)) {
-      _.forEach(confKeys,function(confKey) {
-        _setConfKey(config,confKey);
-      });
-    } else {
-      _setConfKey(config,confKeys);
-    }
-  }
-
   return config;
 };
-
-function _setConfKey(config,confKey) {
-  var pairs = confKey.split(';');
-  _.forEach(pairs,function(pair) {
-    var columnCharIndex = pair.indexOf(':');
-    if (columnCharIndex === -1) {
-      return;
-    }
-    _.set(config,pair.substr(0,columnCharIndex),pair.substr(columnCharIndex+1));
-  });
-}
 
 function _parseBrowsersString(browsersString){
   var browsers = [];

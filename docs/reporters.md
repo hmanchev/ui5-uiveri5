@@ -70,3 +70,9 @@ takeScreenshot: {
   onAction: false
 }
 ```
+
+## Add reporter from command line:
+* add reporter
+```
+--confKeys=reporters[1].reportName:"target/report/jsonReport.json";reporters[1].name:"./reporter/jsonReporter";
+```

@@ -108,42 +108,4 @@ describe("cliParser", function() {
       expect(config).toEqual({key1: {key2: 'value'}, conf: undefined});
     });
   });
-
-  describe("Should parse confkey from command-line", function () {
-    it('Should parse simple object notation in confkey', function () {
-      var argvStub = new ArgvStub();
-      argvStub.confKeys = 'key1.key2:value';
-      var config = cliParser.parse(argvStub);
-
-      expect(config).toEqual({key1: {key2: 'value'},
-        conf: undefined, confKeys: 'key1.key2:value'});
-    });
-
-    it('Should parse complex object notation in confkey', function () {
-      var argvStub = new ArgvStub();
-      argvStub.confKeys = 'key1[0].key2:value';
-      var config = cliParser.parse(argvStub);
-
-      expect(config).toEqual({key1: [{key2: 'value'}],
-        conf: undefined, confKeys: 'key1[0].key2:value'});
-    });
-
-    it('Should parse several simple object notations in confkey object', function () {
-      var argvStub = new ArgvStub();
-      argvStub.confKeys = ['key1.key2:value','key1.key3:value1'];
-      var config = cliParser.parse(argvStub);
-
-      expect(config).toEqual({key1: {key2: 'value',key3: 'value1'},
-        conf: undefined, confKeys: ['key1.key2:value','key1.key3:value1']});
-    });
-
-    it('Should parse several simple object notations in confkey string', function () {
-      var argvStub = new ArgvStub();
-      argvStub.confKeys = 'key1.key2:value;key1.key3:value1';
-      var config = cliParser.parse(argvStub);
-
-      expect(config).toEqual({key1: {key2: 'value',key3: 'value1'},
-        conf: undefined, confKeys: 'key1.key2:value;key1.key3:value1'});
-    });
-  });
 });

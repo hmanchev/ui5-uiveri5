@@ -300,6 +300,10 @@ You could override arbitrary config value from command like:
 ```console
 --confKeys=locators[1].name:myCustomLocator;locators[1].arg1:value1;
 ```
+* change the reportName of already delcared reporter
+```
+--confKeys=reporters[0].reportName:"target/report/jsonReports/report.json"
+```
 * as json object
 ```console
 // linux console

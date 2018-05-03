@@ -46,7 +46,29 @@ ConfigParser.prototype.resolvePlaceholders = function(obj) {
   return obj;
 };
 
+function _setConfKey(config,confKey) {
+  var pairs = confKey.split(';');
+  _.forEach(pairs,function(pair) {
+    var columnCharIndex = pair.indexOf(':');
+    if (columnCharIndex === -1) {
+      return;
+    }
+    _.set(config,pair.substr(0,columnCharIndex),pair.substr(columnCharIndex+1));
+  });
+}
+
 function _mergeWithArrays(object, src) {
+  var config = src;
+  var confKeys = config.confKeys;
+  if (confKeys) {
+    if (_.isArray(confKeys)) {
+      _.forEach(confKeys,function(confKeys) {
+        _setConfKey(config,confKeys);
+      });
+    } else {
+      _setConfKey(config,confKeys);
+    }
+  }
   return _.mergeWith(object, src, function (objectValue, sourceValue) {
     // return undefined to use _.merge default strategy
     if (_.isArray(objectValue) && sourceValue) {
