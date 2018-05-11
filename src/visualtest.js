@@ -47,6 +47,10 @@ function run(config) {
   var configParser = require('./configParser')(logger);
   config = configParser.mergeConfigs(config);
 
+  // resolve runtime and set browsers with capabilities
+  var runtimeResolver = require('./runtimeResolver')(config,logger);
+  config.runtimes = runtimeResolver.resolveRuntimes();
+
   config.osTypeString = (function() {
     var os = require('os');
     var osType = '';
@@ -68,6 +72,7 @@ function run(config) {
     return osType;
   })();
 
+  // resolve all placeholders in config
   configParser.resolvePlaceholders(config);
 
   // update logger with resolved configs
@@ -160,11 +165,13 @@ function run(config) {
       protractorArgv.specs.push(spec.testPath);
     });
 
-    // resolve runtime and set browsers with capabilities
-    var runtimeResolver = require('./runtimeResolver')(config,logger,connectionProvider);
-    var runtimes = runtimeResolver.resolveRuntimes();
-    protractorArgv.multiCapabilities = runtimeResolver.resolveMultiCapabilitiesFromRuntimes(runtimes);
-
+    // resolve browsers capabilities from runtime
+    protractorArgv.multiCapabilities = config.runtimes.map(function(runtime){
+      // prepare capabilities from runtime for this specific connection type
+      return connectionProvider.resolveCapabilitiesFromRuntime(runtime);
+    });
+    logger.debug('Resolved protractor multiCapabilities from runtime: ' + JSON.stringify(protractorArgv.multiCapabilities));
+  
     // execute runtimes consequently
     // TODO consider concurrent execution
     protractorArgv.maxSessions = 1;
@@ -197,7 +204,8 @@ function run(config) {
 
       // register a hook to be called when webdriver is created ( may not be connected yet )
       browser.getProcessedConfig().then(function (protractorConfig) {
-        var runtime = runtimeResolver.resolveRuntimeFromCapabilities(protractorConfig.capabilities);
+        var runtime = connectionProvider.resolveRuntimeFromCapabilities(protractorConfig.capabilities);
+        logger.debug('Runtime resolved from capabilities: ' + JSON.stringify(runtime));
 
         // export current runtime for tests
         browser.testrunner.runtime = runtime;

@@ -4,7 +4,7 @@ exports.config = {
   screenshotProvider: {name: './image/localScreenshotProvider',screenshotSleep: 100},
   comparisonProvider: {name: './image/localComparisonProvider'},
 
-  baseUrlQuery: ['sap-ui-animation=false','sap-ui-theme=sap_${browsers[0].ui5.theme}','sap-ui-rtl=${browsers[0].ui5.direction === \'rtl\'}','sap-ui-xx-formfactor=${browsers[0].ui5.mode}'],
+  baseUrlQuery: ['sap-ui-animation=false','sap-ui-theme=sap_${runtimes[0].ui5.theme}','sap-ui-rtl=${runtimes[0].ui5.direction === \'rtl\'}','sap-ui-xx-formfactor=${runtimes[0].ui5.mode}'],
 
   /* android,ios and mac do not support mouseMove -> click with actions */
   browserCapabilities: {

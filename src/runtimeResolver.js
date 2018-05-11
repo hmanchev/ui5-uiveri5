@@ -67,10 +67,9 @@ var supportedUI5Modes = [
  * @param {RuntimeResolverConfig} config
  * @param {Logger} logger
  */
-function RuntimeResolver(config,logger,connectionProvider){
+function RuntimeResolver(config,logger){
   this.config = config;
   this.logger = logger;
-  this.connectionProvider = connectionProvider;
 };
 
 /**
@@ -157,19 +156,6 @@ RuntimeResolver.prototype.resolveRuntimes = function(){
     }
     if (that.config.browserCapabilities) {
       that._mergeMatchingCapabilities(runtime,that.config.browserCapabilities);
-          /*
-       // merge this specific browser capabilities
-       var capabilities = that.config.browserCapabilities[runtime.browserName];
-       if(capabilities){
-       _.merge(runtime.capabilities,capabilities);
-       }
-
-       // merge 'generic' browser capabilities
-       capabilities = that.config.browserCapabilities['generic'];
-       if(capabilities){
-       _.merge(runtime.capabilities,capabilities);
-       }
-      */
     }
 
     that.logger.debug('Resolved runtime: ' + JSON.stringify(runtime));
@@ -179,7 +165,7 @@ RuntimeResolver.prototype.resolveRuntimes = function(){
 };
 
 RuntimeResolver.prototype._mergeMatchingCapabilities = function(runtime,browserCapabilities){
-  var currentExecutionType = this.connectionProvider.getExecutionType();
+  var currentExecutionType = this._getExecutionType();
   // loop over all capabilities
   var browserNamePattern;
   for (browserNamePattern in browserCapabilities){
@@ -198,6 +184,10 @@ RuntimeResolver.prototype._mergeMatchingCapabilities = function(runtime,browserC
       }
     }
   }
+};
+
+RuntimeResolver.prototype._getExecutionType = function() {
+  return this.config.seleniumAddress ? 'remote' : 'local';
 };
 
 /**
@@ -224,34 +214,6 @@ RuntimeResolver.prototype._isMatching = function(name,pattern){
   return matchingFlag;
 };
 
-/**
- * Prepare protractor/selenium browser capabilities from runtime
- * @param {[Runtime]} runtimes - requsted runtimes
- */
-RuntimeResolver.prototype.resolveMultiCapabilitiesFromRuntimes = function(runtimes){
-  var that = this;
-
-  // resolve capabilities from runtime over this provider
-  var protractorMultiCapabilities = runtimes.map(function(runtime){
-
-    // prepare capabilities from runtime for this specific connection type
-    return that.connectionProvider.resolveCapabilitiesFromRuntime(runtime);
-  });
-
-  that.logger.debug('Resolved protractor multiCapabilities: ' + JSON.stringify(protractorMultiCapabilities));
-  return protractorMultiCapabilities;
-};
-
-/**
- * Enrich runtime from connected browser capabilities
- * @param capabilities
- * @return {Runtime} updated runtime with values from capabilities
- */
-RuntimeResolver.prototype.resolveRuntimeFromCapabilities = function(capabilities){
-
-  return this.connectionProvider.resolveRuntimeFromCapabilities(capabilities);
-};
-
-module.exports = function(config,logger,connectionProvider){
-  return new RuntimeResolver(config,logger,connectionProvider);
+module.exports = function(config,logger){
+  return new RuntimeResolver(config,logger);
 };

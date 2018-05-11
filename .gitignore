@@ -3,6 +3,7 @@
 /.idea
 /selenium
 /e2e/**/target
+/.vscode
 
 npm-debug.log
 

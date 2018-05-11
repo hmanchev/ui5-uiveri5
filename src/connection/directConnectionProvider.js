@@ -51,15 +51,6 @@ DirectConnectionProvider.prototype = _.create(ConnectionProvider.prototype,{
   'constructor': DirectConnectionProvider
 });
 
-
-/**
- * Return the execution type - remote or local
- * @return {String} execution type
- */
-DirectConnectionProvider.prototype.getExecutionType = function() {
-  return this.seleniumConfig.address ? 'remote' : 'local';
-};
-
 /**
  * Prepare capabilities object for this session
  * @param {Runtime} runtime - required runtime for this session

@@ -1,11 +1,6 @@
 
 describe("RuntimeResolver", function() {
   var resolver = new require('../src/runtimeResolver')();
-  resolver.connectionProvider = {
-    getExecutionType: function() {
-      return 'remote';
-    }
-  };
 
   describe("Should match browserCapabilities", function() {
     it('Should handle separate names', function () {
@@ -14,6 +9,12 @@ describe("RuntimeResolver", function() {
         browserName: 'chrome',
         platformName: 'windows'
       };
+
+      // override to return local execution
+      resolver._getExecutionType = function() {
+        return 'remote';
+      };
+
       resolver._mergeMatchingCapabilities(runtime,{
         'chrome,chromium': {
           'windows,mac,linux': {
@@ -33,10 +34,8 @@ describe("RuntimeResolver", function() {
         platformName: 'windows'
       };
 
-      resolver.connectionProvider = {
-        getExecutionType: function() {
-          return 'local';
-        }
+      resolver._getExecutionType = function() {
+        return 'local';
       };
 
       resolver._mergeMatchingCapabilities(runtime,{
@@ -57,6 +56,12 @@ describe("RuntimeResolver", function() {
         browserName: 'chrome',
         platformName: 'windows'
       };
+
+      // override to return local execution
+      resolver._getExecutionType = function() {
+        return 'remote';
+      };
+
       resolver._mergeMatchingCapabilities(runtime,{
         'chrome': {
           '*,!windows': {
@@ -77,6 +82,12 @@ describe("RuntimeResolver", function() {
         browserName: 'chrome',
         platformName: 'windows'
       };
+
+      // override to return local execution
+      resolver._getExecutionType = function() {
+        return 'remote';
+      };
+
       resolver._mergeMatchingCapabilities(runtime, {
         'chrome,chromium': {
           'windows,mac,linux': {
@@ -98,10 +109,8 @@ describe("RuntimeResolver", function() {
         platformName: 'windows'
       };
 
-      resolver.connectionProvider = {
-        getExecutionType: function() {
-          return 'remote';
-        }
+      resolver._getExecutionType = function() {
+        return 'remote';
       };
 
       resolver._mergeMatchingCapabilities(runtime,
@@ -146,10 +155,8 @@ describe("RuntimeResolver", function() {
       };
 
       // override to return local execution
-      resolver.connectionProvider = {
-        getExecutionType: function() {
-          return 'local';
-        }
+      resolver._getExecutionType = function() {
+        return 'local';
       };
 
       resolver._mergeMatchingCapabilities(runtime,
@@ -194,10 +201,8 @@ describe("RuntimeResolver", function() {
       };
 
       // override to return local execution
-      resolver.connectionProvider = {
-        getExecutionType: function() {
-          return 'remote';
-        }
+      resolver._getExecutionType = function() {
+        return 'remote';
       };
 
       resolver._mergeMatchingCapabilities(runtime,
