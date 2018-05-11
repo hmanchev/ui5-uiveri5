@@ -24,7 +24,7 @@ and brings most (and more) of its benefits to UI5 applications.
 
 ### Integration testing
 Integration tests are E2E functional tests for applications with actual backends. 
-conf.js
+* conf.js
 ```js
 exports.config = {
   profile: 'integration',
@@ -32,7 +32,7 @@ exports.config = {
   baseUrl: 'https://openui5.hana.ondemand.com/test-resources/sap/m/demokit/master-detail/webapp/test/mockServer.html',
 };
 ```
-masterdetail.spec.js
+* masterdetail.spec.js
 ```js
 describe('masterdetail', function () {
 
