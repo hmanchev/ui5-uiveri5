@@ -4,18 +4,59 @@
 UIVeri5 is a visual and application testing framework for UI5-based applications. It uses
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
 application as a real user would. Visualtestjs is heavily inspired and based on [Protractor](http://www.protractortest.org/)
-and brings most of its benefits to UI5 applications.
+and brings most (and more) of its benefits to UI5 applications.
 
 ### Benefits
-* Automatic synchronization with UI5 app rendering so there is no need to add waits and sleeps to your test.
+* Automatic synchronization with UI5 app rendering so there is no need to add waits and sleeps to your test. Tests are reliable by design.
 * Tests are written in synchronous manner, no callbacks, no promise chaining so are really simple to write and maintain.
 * Full power of webdriverjs, protractor and jasmine - deferred selectors, custom matchers, custom locators.
-* Open-source (comming soon), console operation, fully configurable, no need for java(comming soon) or IDE.
-* Covers full ui5 browser matrix - Chrome,Firefox,IE on Win7,8, Edge on Win10, Safari on Mac and iOS, Chrome on Android.
+* Control selectors (OPA declarative matchers) allow locating and interacting with UI5 controls.
+* Does not depend on testability support in applications - no problem with autorefreshing views, animated transitions, authentications over OAuth2 providers, etc.
+* Open-source (Outbound OSS is in process), console operation, fully configurable, no need for java (comming soon) or IDE.
+* Covers full ui5 browser matrix - Chrome,Firefox,IE,Edge,Safari,iOS,Android.
+
+#### Upcomming 
+* Fix for latest Firefox and Edge support (Q2 2018)
+* Cucumber syntax for writing Acceptance Tests, similar tyo Gherkin for OPA (Q2 2018)
+* API testing in JS and Cucumber (Q2 2018)
+* Code coverage reporting with istambuljs (Q2 2018)
+* Visual control selectors recording with UI5 Inspector (Q3 2018) 
+
+### Integration testing
+Integration tests are E2E functional tests for applications with actual backends. 
+conf.js
+```js
+exports.config = {
+  profile: 'integration',
+
+  baseUrl: 'https://openui5.hana.ondemand.com/test-resources/sap/m/demokit/master-detail/webapp/test/mockServer.html',
+};
+```
+masterdetail.spec.js
+```js
+describe('masterdetail', function () {
+
+  it('should load the app',function() {
+    expect(browser.getTitle()).toBe('Master-Detail');
+
+    expect(element.all(by.css('.sapMSplitContainerMaster .sapMLIB')).count()).toBe(21);
+  });
+
+  it('should display the details screen',function() {
+    element(by.jq('.sapMSplitContainerMaster .sapMLIB:eq(2)')).click();
+
+    expect(element(by.css('.sapMOHTitle')).getText()).toBe('Object 11');
+  });
+
+  it('should validate line items',function() {
+    expect(element.all(by.css('.sapMSplitContainerDetail tbody tr')).count()).toBe(2);
+  });
+});
+```
 
 ### Visual testing
 Visual testing is a css regression testing approach based on creating and comparing screenshot of a rendered component.
-Reference screenshots could be stored locally or in central git-lfs-like repository (comming soon).
+Reference screenshots could be stored locally or in central git-lfs-like repository.
 An except of actual visual test:
 ```js
 describe('sap.m.Wizard', function() {
@@ -28,75 +69,11 @@ describe('sap.m.Wizard', function() {
   });
 });
 ```
-### Application testing
-The synchronous nature of the test written with visualtesjs greatly simplifies the creation and maintenance of application tests.
-A except of actual Fiori application test:
-```js
-var masterSection = {
-  search: {
-    input: element(by.comp(masterSectionSearchWrapper + sapMSearchInput)),
-    searchIcon: element(by.css(masterSectionSearchWrapper + sapMSearchIcon))
-  },
-  filterIcon: element(by.css(masterSectionWrapper + sapMPageFooter + sapMBarRight + sapMButton))
-};
-
-//FILTER POPUP
-var filterPopupWrapper = staticArea + sapMDialog + '[style*="visibility: visible"]';
-var filterPopup = {
-  noneFilterItem:
-    element.all(by.css(filterPopupWrapper + sapMDialogSection + sapMList + sapMListItems)).get(7),
-  okButton: element(by.cssContainingText(filterPopupWrapper + sapMDialogFooter + sapMButton,'OK'))
-};
-
-it('should view the TrackPurchase Order screen', function () {
-  // set default filter
-  // show filter
-  masterSection.filterIcon.click();
-
-  // select 'Only With Alerts'
-  filterPopup.noneFilterItem.click();
-  filterPopup.okButton.click();
-
-  // Search for purchase orders with a certain supplier, and check if the results are correct
-  masterSection.search.input.clear().sendKeys(testData.SUPPLIER_NAME);
-  masterSection.search.searchIcon.click();
-  expect(masterSection.orders.list.count()).toBe(masterSection.orders.forSupplierList.count());
-
-  // Doublecheck that some results are correct
-  masterSection.orders.first.click();
-  expect(purchaseOrderPage.supplierTitle.getText()).toBe(testData.SUPPLIER_NAME);
-});
-```
+#### Disclamer
+Visual testing in default configuration depends on backend infrastructure for saving the screenshots and tooling and processes for updating the reference images. Currently, this setup is only available and supported for openui5 project itself.
+Anyway, if you wish to experiment with visual testing for other projects and you are ready to spend some time to configure it, do not hesitate to reach us for advice.
 
 ## Usage
-
-### Visual testing
-
-### Run visual tests for OpenUI5
-* Please follow the procedure [install globally](docs/installation.md).
-* Run all available tests:
-```
-$ grunt visualtest
-```
-Please check [developing.md](https://github.com/SAP/openui5/blob/master/docs/developing.md) and
-[tools.md](https://github.com/SAP/openui5/blob/master/docs/tools.md) for further command-line arguments that
-visualtest grunt task accepts. Please check [controllibraries.md](https://github.com/SAP/openui5/blob/master/docs/controllibraries.md)
-and [visualtesting.md](docs/usage/visualtesting.md) how to write visual tests.
-Please use the sample visual tests from the draft commit above for reference.
-
-### Run visual tests for UI5-contributor project
-* Please follow the procedure [install globally](docs/installation.md).
-* Create a conf.js file in the root of your project with the following content:
-```js
-exports.config = {
-  profile: 'visual'
-};
-```
-* Start your server
-* Run all available tests:
-```
-$ visualtest
-```
 
 ### Integration testing
 * Please follow the procedure [install globally](docs/installation.md).
@@ -110,11 +87,33 @@ exports.config = {
 ```
 $ visualtest
 ```
-Please check [applicationtesting.md](docs/usage/applicationtesting.md) for tips on how to write integration tests.
+* Run one specific test
+```
+$ visualtest --specFilter=mytest.spec.js
+```
+Please check [applicationtesting.md](docs/usage/applicationtesting.md) for tips on writing integration tests.
 
-### Configuration
+### Visual testing
 
-By default visualtest will discover all applicable visual tests and execute them on local chrome
+### Run visual tests for OpenUI5
+* Please follow the procedure [intall globally](docs/installation.md).
+* Run all available tests:
+```
+$ grunt visualtest
+```
+* Run only one visual test:
+```
+$ grunt visualtest --specs=ActionSelect
+```
+Please check [developing.md](https://github.com/SAP/openui5/blob/master/docs/developing.md) and
+[tools.md](https://github.com/SAP/openui5/blob/master/docs/tools.md) for further command-line arguments that
+visualtest grunt task accepts. Please check [controllibraries.md](https://github.com/SAP/openui5/blob/master/docs/controllibraries.md)
+and [visualtesting.md](docs/usage/visualtesting.md) how to write visual tests.
+Please start a new visual test by coping an already existing one. Do not forget to add it to the test suite.
+
+### Usage hints
+
+By default uiveri5 will discover all tests and execute them on local chrome
 over automatically started selenium server on localhost:4444.
 All of the defaults could be modified either in conf.js or by providing command-line arguments.
 
@@ -122,24 +121,18 @@ All of the defaults could be modified either in conf.js or by providing command-
 ```
 --browsers=firefox
 ```
-* Run tests on Chrome, Firefox and InternetExplorer in parallel __not implemented yet__
-```
---browsers=chrome,firefox,ie
-```
-* Run tests against test content on remote sapui5 runtime
+* Run tests against specific application
 ```
 --baseUrl="http://<host>:<port>"
 ```
-* Run tests on remove selenium server
+* Run tests against a remove selenium server
 ```
 --seleniumAddress="<host>:<port>/wd/hub"
 ```
-* Run tests on specific Browser/OS combination.
+* Run tests on specific Browser/OS combination (if avaiable on the selenium hub).
 ```
 --browsers="ie:9:windows:8"
 --browsers="chrome:*:windows"
 ```
-* Run tests over remote connection (browserstack, sauselabs, ..) __not implemented__
-```
---browsers="chrome:*:android:4.4" --connection="browserstack:<user>:<token>"
-```
+* Enable verbose logging
+`-v`
