@@ -109,5 +109,5 @@ git tag -a v1.xx.y -m "<message 1>" -m "<message 2>"
 
 * Push the new tag
 ```
-git push --follow-tags origin release:master
+git push --follow-tags upstream release:master
 ```
