@@ -122,14 +122,14 @@ var searchPress = element(by.control({
 ```
 
 Another use case would be controls like ObjectIdentified or ObjectAttribute that could have different aappearance and have OPA interaction adapters. The default "auto" interaction would use the interaction adapter to find the DOM. But if the control is not in the expected apearance and due to the hardcoded interaction adapter type order, it is possible that the search will fail with a message like: _INFO: Expectation FAILED: Failed: unknown error: Control Element sap.m.ObjectAttribute#\_\_attribute0 has no dom representation idSuffix was text_. The you need to overide the intercation type and search for a focused element:
-```
+```javascript
 var objectAttributeText = element(by.control({
-                controlType: "sap.m.ObjectAttribute",
-                interaction: "focus",
-                properties: [{
-                  title: "Freight RFQ"
-                }]
-              })); // will locate the text inside this ObjectAttribute
+  controlType: "sap.m.ObjectAttribute",
+  interaction: "focus",
+  properties: [{
+    title: "Freight RFQ"
+  }]
+})); // will locate the text inside this ObjectAttribute
 ```
 
 #### Control ancestors
