@@ -1,8 +1,12 @@
 # Locators
 
 ## What to prefer
-Use manually assigned IDs and prefer ID selectors in those cases.
-Prefer hierarchical class selectors. Try to compose them the way you would explain to a human where to click.
+Always work on the highest level of abstraction that is possible in the specific case. 
+* Prefer control selectors instead of DOM-level selecto. 
+* Prefer ID selectors if you have manually assinged IDs. 
+* Prefer hierarchical class selectors but avoid layout-specific classes and try to stick to semantical classes.
+
+__Try to compose the selector as if you are explaining a manual tester where to click.__
 
 ## What to avoid
 
@@ -19,11 +23,11 @@ There are several problems with using such generated IDs in application tests.
 1. IDs are stable between application runs but are generated and will definitely change when the application is modified.
 Even minor unrelated change like adding one more button in some common area like header could cause a change of
 all IDs. This will require changes in all selectors used in all tests for this application.
-2. IDs are execution-unique and are generated on the runtime. So repetitive ID's require repetitive navigation path
-in the application. This makes it especially hard for a human to develop and support the test. It is also impossible to
-execute only part of the whole scenario by using disabled or focused specs and suites.
-3. There are cases when the generated IDs will be different depending on the environment the application is running.
-4. Generated IDs are totally not self-documenting and this makes the test harder to understand and maintain.
+2. This is even more probable with metadata-driven UIs like Fiori Elements. The firori elements template could change with a UI5 minor version upgrade and could introduce  new visual elements that will also change the generated IDs of the rest.
+3. IDs are execution-unique and are generated on the runtime. So repetitive ID's require repetitive navigation path
+in the application. This makes it especially hard for a human to develop and support the test as would require to alwasy start from the begioing and pass over the whole test. It is also impossible to execute only part of the whole scenario by using disabled or focused specs and suites.
+4. There are cases when the generated IDs will be different depending on the environment the application is running.
+5. Generated IDs are totally not self-documenting and this makes the test harder to understand and maintain.
 
 ### Avoid non-visible attributes
 Think from the point of view of the users. Users do not see DOM nodes and their attributes but see rendered DOM.
@@ -32,6 +36,9 @@ This also makes the test much self-documenting and simplifies maintenance.
 
 ### Minimize use of attribute locators
 These locators work slow and are usually not closely related to the visual representation. Besides, attribute values may often change and may not be specific enough if used on their own.
+
+## DOM locators
+All standart locators from webdriverjs are supported, please check webdirvejs docs for references.
 
 ## UIVeri5 locators
 
@@ -59,6 +66,7 @@ Much simpler is to use the jquery [:eq()](https://api.jquery.com/eq-selector/) p
 ```javascript
 element(by.jq('.sapMList > ul > li:eq(1)')),
 ```
+  
 ### Control locators
 In the application testing approach we use hierarchical class locators composed of UI5 control main
 (marker) class names (the class names of the control root DOM element). This hierarchical composition is important to guarantee the stability of locators. But the usage of classes is somehow problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed to be backward-compatible. One approach to mitigate this issue is to use control locators. Control locators are closely tied to the control level of abstraction and therefore should be much more intuitive for application developers. Control locators can be written easily by inspecting the application using [UI5 Inspector](https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo)
