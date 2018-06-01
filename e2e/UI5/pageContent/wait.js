@@ -12,8 +12,8 @@ module.exports = {
           console.log('+++++++ CLICKED!');
           window.setTimeout(function() {
             new sap.m.MessageToast.show("Pressed");
-          }, 4000);
-        }, 4000);
+          }, 990);
+        }, 980);
       }
     });
 
