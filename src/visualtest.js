@@ -359,21 +359,22 @@ function run(config) {
             // so no need to synchronize manually with callbacks/promises
 
             // add request params
+            var specUrl = url.parse(spec.contentUrl);
             if (config.baseUrlQuery && config.baseUrlQuery.length >0){
-              var parsedSpecUrl = url.parse(spec.contentUrl);
-              if (parsedSpecUrl.search == null) {
-                parsedSpecUrl.search = "";
+              if (specUrl.search == null) {
+                specUrl.search = "";
               }
               config.baseUrlQuery.forEach(function(value,index){
                 if (index > 0){
-                  parsedSpecUrl.search += '&';
+                  specUrl.search += '&';
                 }
-                parsedSpecUrl.search += value;
+                specUrl.search += value;
               });
             }
 
             // open test page
-            browser.testrunner.navigation.to(spec.contentUrl,'auth').then(function () {
+            var specUrlString = url.format(specUrl);
+            browser.testrunner.navigation.to(specUrlString,'auth').then(function () {
               // call storage provider beforeEach hook
               if (storageProvider && storageProvider.onBeforeEachSpec) {
                 storageProvider.onBeforeEachSpec(spec);
