@@ -24,11 +24,13 @@ exports.config = {
           '${connectionConfigs.direct.binaries.selenium.patch}.jar'
         },
         chromedriver: {
-          version: '2.37',
+          version: '{latest}',
           unzip: true,
           filename: 'chromedriver',
-          url: 'https://chromedriver.storage.googleapis.com/${connectionConfigs.direct.binaries.chromedriver.version}/' +
+          baseurl: 'https://chromedriver.storage.googleapis.com',
+          url: '${connectionConfigs.direct.binaries.chromedriver.baseurl}/${connectionConfigs.direct.binaries.chromedriver.version}/' +
           '${connectionConfigs.direct.binaries.chromedriver.filename}_${osTypeString}.zip',
+          latestVersionUrl: '${connectionConfigs.direct.binaries.chromedriver.baseurl}/LATEST_RELEASE',
           executable: {
             win32: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}.exe',
             mac64: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}',
@@ -47,6 +49,22 @@ exports.config = {
           '${connectionConfigs.direct.binaries.iedriver.patch}.zip',
           executable: '${connectionConfigs.direct.binaries.iedriver.filename}-${connectionConfigs.direct.binaries.iedriver.version}.' +
           '${connectionConfigs.direct.binaries.iedriver.patch}.exe'
+        },
+        geckodriver: {
+          version: '{latest}',
+          unzip: true,
+          filename: 'geckodriver',
+          baseurl: 'http://github.com/mozilla/geckodriver/releases',
+          url: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/download/v${connectionConfigs.direct.binaries.geckodriver.version}' +
+          '/${connectionConfigs.direct.binaries.geckodriver.filename}-v${connectionConfigs.direct.binaries.geckodriver.version}-${osTypeString}.zip',
+          latestVersionUrlRedirect: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/latest',
+          executable: {
+            win32: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            win64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            mac64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux32: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}'
+          }
         }
       }
     }//,
