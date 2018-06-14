@@ -38,7 +38,7 @@
   "scripts": {
     "visualtest": "node bin/visualtest",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "node node_modules/jasmine/bin/jasmine",
+    "test:unit": "jasmine",
     "test:e2e": "grunt e2e"
   },
   "main": "src/visualtest.js"
