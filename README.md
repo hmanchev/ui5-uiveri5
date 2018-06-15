@@ -1,5 +1,7 @@
 # UIVeri5 (visualtestjs)
 
+[![Build Status](https://travis-ci.mo.sap.corp/ui5delivery/visualtestjs.svg?token=q7q1Fy6Pv7CUxGsy7QiW&branch=master)](https://travis-ci.mo.sap.corp/ui5delivery/visualtestjs)
+
 ## Introduction
 UIVeri5 is a visual and application testing framework for UI5-based applications. It uses
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
@@ -10,9 +12,10 @@ and brings most (and more) of its benefits to UI5 applications.
 * Automatic synchronization with UI5 app rendering so there is no need to add waits and sleeps to your test. Tests are reliable by design.
 * Tests are written in synchronous manner, no callbacks, no promise chaining so are really simple to write and maintain.
 * Full power of webdriverjs, protractor and jasmine - deferred selectors, custom matchers, custom locators.
-* Control selectors (OPA declarative matchers) allow locating and interacting with UI5 controls.
-* Does not depend on testability support in applications - no problem with autorefreshing views, animated transitions, authentications over OAuth2 providers, etc.
-* Open-source (Outbound OSS is in process), console operation, fully configurable, no need for java (comming soon) or IDE.
+* Control locators (OPA declarative matchers) allow locating and interacting with UI5 controls.
+* Does not depend on testability support in applications - works with autorefreshing views, resizing elements, animated transitions.
+* Declarative authentications - authentication flow over OAuth2 providers, etc.
+* Open-source (Outbound OSS is in process), console operation (CI ready), fully configurable, no need for java (comming soon) or IDE.
 * Covers full ui5 browser matrix - Chrome,Firefox,IE,Edge,Safari,iOS,Android.
 
 #### Upcomming 
