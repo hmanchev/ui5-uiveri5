@@ -35,7 +35,7 @@ describe("RemoteStorageProvider", function () {
     initialImgName;
 
   beforeAll(function(done) {
-    process.env.NO_PROXY = process.env.NO_PROXY ? '' : 'localhost';
+    process.env.NO_PROXY = process.env.NO_PROXY || 'localhost';
     storageMock.start().then(function(port) {
       imageStorageMockUrl += ':' + port;
       done();

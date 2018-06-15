@@ -7,7 +7,7 @@ describe('DirectConnectionProvider', function() {
   var directConnectionProvider;
   var binaries;
   beforeAll(function(done) {
-    process.env.NO_PROXY = process.env.NO_PROXY ? '' : 'localhost';
+    process.env.NO_PROXY = process.env.NO_PROXY || 'localhost';
     downloadDriversMock.start().then(function(port) {
 
       mockUrl += ':' + port;
