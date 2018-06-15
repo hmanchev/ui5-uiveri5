@@ -139,11 +139,13 @@ DirectConnectionProvider.prototype.buildProtractorArgv = function(){
 DirectConnectionProvider.prototype.setupEnv = function() {
   var that = this;
 
-  // attach our custom driverProvider
-  proxyquire('protractor/lib/runner',
-    {'./driverProviders/direct': function(protConfig){
-      return new DirectDriverProvider(protConfig,that.logger,that.seleniumConfig);
-      }
+  // attach our custom driverProviders
+  var driverProviders = require('protractor/built/driverProviders');
+  driverProviders.buildDriverProvider = function (protConfig) {
+    return new DirectDriverProvider(protConfig, that.logger, that.seleniumConfig);
+  };
+  proxyquire('protractor/built/runner', {
+    './driverProviders': driverProviders
     });
 
   // prepare correct driver and/or selenium jar, download if necessary
@@ -330,7 +332,6 @@ var DirectDriverProvider = function(protConfig,logger,seleniumConfig) {
   // use selenium-webdriver from protractor dependecies
   this.deps = {};
   this.deps.webdriver = protractorModule.require('selenium-webdriver');
-  this.deps.executors = protractorModule.require('selenium-webdriver/executors');
   this.deps.http = protractorModule.require('selenium-webdriver/http');
   this.deps.remote = protractorModule.require('selenium-webdriver/remote');
 };
@@ -424,10 +425,9 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       );
 
       // start the remote webdriver against this local selenium server
-      var executor = new that.deps.executors.DeferredExecutor(
-        that.deps.webdriver.promise.when(addressPromise, function(url) {
-          var client = new that.deps.http.HttpClient(url, null);
-          return new that.deps.http.Executor(client);
+      var executor = new that.deps.http.Executor(
+        that.deps.webdriver.promise.when(addressPromise, function (url) {
+          return new that.deps.http.HttpClient(url, null);
         })
       );
       driver = that.deps.webdriver.WebDriver.createSession(executor,capabilities);
@@ -470,8 +470,6 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         // start firefox with selenium extension and connect to it
         driver = new that.deps.firefox.Driver(capabilities);
       } else if (browserName == 'internet explorer') {
-        that.deps.ie = protractorModule.require('selenium-webdriver/ie');
-
         // by default iedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         // only host could be overridden - only set it to webdriver, could not override of the returned getLoopbackAddress address !!!
         that.logger.debug('Starting local iedriver with executable: ' +
@@ -483,10 +481,11 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         }
 
         // set iedriver executable
-        process.env.PATH = process.env.PATH + path.delimiter + that.seleniumConfig.executables.iedriver;
+        process.env.PATH = process.env.PATH + path.delimiter + path.dirname(that.seleniumConfig.executables.iedriver);
 
         // start the local iedriver and connect to it
-        driver = new that.deps.ie.Driver(capabilities);
+        driver = new that.deps.webdriver.Builder().forBrowser('ie')
+          .withCapabilities(new that.deps.webdriver.Capabilities(capabilities)).build();
       } else if (browserName == 'safari') {
         that.deps.safari = protractorModule.require('selenium-webdriver/safari');
 

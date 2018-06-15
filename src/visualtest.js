@@ -155,8 +155,14 @@ function run(config) {
     var ui5SyncDelta = config.timeouts && config.timeouts.waitForUI5Delta;
     var waitForUI5Timeout = ui5SyncDelta > 0 ? (config.timeouts.allScriptsTimeout - ui5SyncDelta) : 0;
 
-    var protractor = proxyquire('protractor/lib/protractor', {
-      './clientsidescripts.js': clientsidescripts
+    proxyquire('protractor/built/browser', {
+      './clientsidescripts': clientsidescripts
+    });
+    proxyquire('protractor/built/element', {
+      './clientsidescripts': clientsidescripts
+    });
+    proxyquire('protractor/built/locators', {
+      './clientsidescripts': clientsidescripts
     });
 
     // set specs
@@ -178,19 +184,6 @@ function run(config) {
 
     // export protractor module object as global.protractorModule
     protractorArgv.beforeLaunch = __dirname + '/beforeLaunchHandler';
-
-    /* Consider to restore this if custom connectionProvider could be injected that will work on protractor context
-    protractorArgv.beforeLaunch =  function() {
-
-      // override angular-specific scripts
-      var protractor = proxyquire('protractor/lib/protractor',
-        {'./clientsidescripts.js': clientsidescripts});
-
-      // setup connection provider env
-      logger.debug('Setting up connection provider environment');
-      return connectionProvider.setupEnv();
-    };
-    */
 
     // execute after test env setup and just before test execution starts
     protractorArgv.onPrepare = function () {
@@ -265,7 +258,7 @@ function run(config) {
         // add WebDriver overrides
         if (runtime.capabilities.enableClickWithActions) {
           logger.debug('Activating WebElement.click() override with actions');
-          protractorModule.parent.exports.WebElement.prototype.click = function () {
+          protractorModule.parent.parent.exports.WebElement.prototype.click = function () {
             logger.trace('Taking over WebElement.click()');
             var driverActions = this.driver_.actions().mouseMove(this).click();
             return _moveMouseOutsideBody(driverActions);
@@ -289,7 +282,7 @@ function run(config) {
       };
 
       browser.loadWaitForUI5 = function () {
-        return browser.executeScript_(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
+        return browser.executeScriptWithDescription(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
             waitForUI5Timeout: waitForUI5Timeout,
             waitForUI5PollingInterval: config.timeouts.waitForUI5PollingInterval,
             ClassicalWaitForUI5: ClassicalWaitForUI5,
@@ -303,7 +296,7 @@ function run(config) {
       };
 
       browser.setViewportSize = function (viewportSize) {
-        return browser.executeScript_(clientsidescripts.getWindowToolbarSize).then(function (toolbarSize) {
+        return browser.executeScriptWithDescription(clientsidescripts.getWindowToolbarSize, 'browser.setViewportSize').then(function (toolbarSize) {
           browser.driver.manage().window().setSize(viewportSize.width * 1 + toolbarSize.width, viewportSize.height * 1 + toolbarSize.height); // convert to integer implicitly
         });
       };
@@ -346,7 +339,7 @@ function run(config) {
             // disable waitForUI5() if explicitly requested
             if (config.ignoreSync) {
               logger.debug('Disabling client synchronization');
-              browser.ignoreSynchronization = true;
+              browser.waitForAngularEnabled(false);
             }
 
             // open content page if required
@@ -383,8 +376,8 @@ function run(config) {
                 _moveMouseOutsideBody(browser.driver.actions());
               }
             });
-          }).then(null,function(error){
-            // the failure in reporter -> beforAll will not stop further suite execution !
+          }).catch(function(error){
+            // the failure in reporter -> beforeAll will not stop further suite execution !
             // fail-fast was discussed here -> https://github.com/jasmine/jasmine/issues/778
             // stop the suite will require jasmin 3.0 -> https://github.com/jasmine/jasmine/issues/414
             // stop the spec when error require jasmin 2.4 -> https://jasmine.github.io/2.4/node.html#section-13
@@ -529,14 +522,6 @@ function run(config) {
       moduleLoader.loadModule('reporters',[statisticCollector]).forEach(function(reporter){
         reporter.register(jasmineEnv);
       });
-
-      // register flow error handler - seem not necessary to do this manually as jasminewd2 ecnloses each jasmine operation (it,spec,beforeEach,...)
-      // in execution flow and handles the potential errors.
-      /*
-      protractor.promise.controlFlow().on('uncaughtException', function(err) {
-        console.log('There was an uncaught exception: ' + err);
-      });
-      */
     };
 
     protractorArgv.afterLaunch = function(){
@@ -569,7 +554,7 @@ function run(config) {
     return connectionProvider.setupEnv().then(function(){
       // call protractor
       logger.info('Executing ' + specs.length + ' specs');
-      var protractorLauncher = require('protractor/lib/launcher');
+      var protractorLauncher = require('protractor/built/launcher');
       protractorLauncher.init(null,protractorArgv);
     });
   }).catch(function(error){

@@ -9,7 +9,7 @@ Control.prototype.getProperty = function (property) {
     // at least one element is found, elsewise webdriver.error.ErrorCode.NO_SUCH_ELEMENT is thrown
     return webElements[0].getAttribute('id');
   }).then(function (elementId) {
-    return browser.executeScript_(clientsidescripts.getControlProperty, 'Control.getProperty', {
+    return browser.executeScriptWithDescription(clientsidescripts.getControlProperty, 'Control.getProperty', {
       elementId: elementId,
       property: property
     }).then(function (result) {

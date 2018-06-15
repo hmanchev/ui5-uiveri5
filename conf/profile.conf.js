@@ -14,7 +14,7 @@ exports.config = {
       name : './connection/directConnectionProvider',
       binaries: {
         selenium: {
-          version: '2.51',
+          version: '3.12',
           patch: '0',
           filename: 'selenium-server-standalone',
           url: 'https://selenium-release.storage.googleapis.com/${connectionConfigs.direct.binaries.selenium.version}/' +
@@ -40,7 +40,7 @@ exports.config = {
         },
         // for screenshots to work we need to use 32bit IE even with 64bit system, details:
         iedriver: {
-          version: '2.51',
+          version: '3.12',
           patch: '0',
           unzip: true,
           filename: 'IEDriverServer',

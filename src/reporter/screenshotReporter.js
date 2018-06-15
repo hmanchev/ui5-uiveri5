@@ -58,9 +58,9 @@ JasmineScreenshotReporter.prototype._registerOnAction = function (options) {
   this._registerOnSync();
 
   options.actions.forEach(function (action) {
-    var originalAction = protractorModule.parent.exports.WebElement.prototype[action];
+    var originalAction = protractorModule.parent.parent.exports.WebElement.prototype[action];
 
-    protractorModule.parent.exports.WebElement.prototype[action] = function () {
+    protractorModule.parent.parent.exports.WebElement.prototype[action] = function () {
       var element = this;
       var actionValue = arguments[0];
 
@@ -153,6 +153,7 @@ JasmineScreenshotReporter.prototype._registerOnExpectation = function () {
 };
 
 JasmineScreenshotReporter.prototype._takeScreenshot = function (successCallback) {
+  var that = this;
   return browser.takeScreenshot().then(successCallback, function (err) {
     that.logger.error('Error while taking report screenshot: ' + err);
   });

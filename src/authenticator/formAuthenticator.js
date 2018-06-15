@@ -50,15 +50,17 @@ FormAuthenticator.prototype.get = function(url){
   browser.driver.wait(function(){
     // if auth is in frame => switch inside
     if (that.frameSelector) {
-      browser.driver.isElementPresent(by.css(that.frameSelector)).then(function (isInFrame) {
-        if (isInFrame && !switchedToFrame) {
+      browser.driver.findElements(by.css(that.frameSelector)).then(function (elements) {
+        if (!!elements.length && !switchedToFrame) {
           browser.driver.switchTo().frame(browser.driver.findElement(by.css(that.frameSelector))).then(function () {
             switchedToFrame = true;
           });
         }
       });
     }
-    return browser.driver.isElementPresent(by.css(that.userFieldSelector));
+    return browser.driver.findElements(by.css(that.userFieldSelector)).then(function (elements) {
+      return !!elements.length;
+    });
   },browser.getPageTimeout,'Waiting for auth page to fully load');
 
   // enter user and pass in the respective fields
