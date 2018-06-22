@@ -334,6 +334,7 @@ var DirectDriverProvider = function(protConfig,logger,seleniumConfig) {
   this.deps.webdriver = protractorModule.require('selenium-webdriver');
   this.deps.http = protractorModule.require('selenium-webdriver/http');
   this.deps.remote = protractorModule.require('selenium-webdriver/remote');
+  this.deps.command = protractorModule.require('selenium-webdriver/lib/command.js');
 };
 
 DirectDriverProvider.prototype.setupEnv = function() {
@@ -368,12 +369,12 @@ DirectDriverProvider.prototype.getNewDriver = function() {
     driver = that.deps.webdriver.WebDriver.createSession(executor,capabilities);
 
     //augment with appium support
-    that.deps.webdriver.CommandName.SWITCH_CONTEXT = 'context';
-    executor.defineCommand(that.deps.webdriver.CommandName.SWITCH_CONTEXT, 'POST', '/session/:sessionId/context');
+    var CONTEXT_COMMAND = 'context';
+    executor.defineCommand(CONTEXT_COMMAND,'POST','/session/:sessionId/context');
 
     driver.switchContext = function (name) {
       that.logger.debug('Switch context to: ' + name);
-      return driver.schedule(new that.deps.webdriver.Command(that.deps.webdriver.CommandName.SWITCH_CONTEXT).
+      return driver.schedule(new that.deps.command.Command(CONTEXT_COMMAND).
         setParameter('name', name),
         'WebDriver.switchContext()');
     };
