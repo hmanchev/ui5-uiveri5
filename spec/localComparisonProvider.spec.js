@@ -61,7 +61,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('arrow_left'),'arrow_left');
-    result.pass.promise.then(
+    result.pass.then(
       function(passed){
         expect(passed).toBeTruthy();
         done();
@@ -75,7 +75,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('arrow_left_hover'),'arrow_left');
-    result.pass.promise.then(
+    result.pass.then(
       function(passed){
         expect(passed).toBe(false);
         done();
@@ -92,7 +92,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('drop_down_draw'),'drop_down_clean');
-    result.pass.promise.then(
+    result.pass.then(
       function(passed){
         expect(passed).toBeTruthy();
         done();
@@ -108,7 +108,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('drop_down_draw'),'drop_down_clean');
-    result.pass.promise.then(
+    result.pass.then(
       function(passed){
         expect(passed).toBe(false);
         done();
@@ -124,7 +124,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('drop_down_draw'),'drop_down_clean');
-    result.pass.promise.then(
+    result.pass.then(
       function(passed){
         expect(passed).toBe(false);
         done();
@@ -139,7 +139,7 @@ describe("LocalComparisonProvider", function () {
     comparisonProvider.register(matchers);
 
     var result = matchers.toLookAs().compare(takeScreenshotMock('calendar_act'),'calendar_ref');
-    result.pass.promise.then(function(passed){
+    result.pass.then(function(passed){
       expect(passed).toBe(false);
       done();
     });
@@ -152,7 +152,7 @@ describe("LocalComparisonProvider", function () {
 
     comparisonProvider.register(matchers);
     var result = matchers.toLookAs().compare(invalidBuffer, 'arrow_left');
-    result.pass.promise.then(function (passed) {
+    result.pass.then(function (passed) {
       expect(passed).toBe(false);
       expect(result.message).toContain('Image comparison failed, error: Error while parsing image buffer: Error: Invalid file signature');
       done();

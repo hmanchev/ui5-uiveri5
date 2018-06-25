@@ -69,7 +69,7 @@ LocalComparisonProvider.prototype.register = function (matchers) {
         // matcher returns result object
         var defer = webdriver.promise.defer();
         var result = {
-          pass: defer
+          pass: defer.promise
         };
 
         if(!expectedImageName.match(that.imgNameRegEx)) {
