@@ -116,6 +116,10 @@ var mFunctions = {
       mMatchers.ancestor = control && [[control.getId()]];
     }
 
+    if (mMatchers.id && mMatchers.id.regex) {
+      mMatchers.id = new RegExp(mMatchers.id.regex.source, mMatchers.id.regex.flags);
+    }
+
     return sap.ui.test._ControlFinder._findElements(mMatchers);
   }
 };

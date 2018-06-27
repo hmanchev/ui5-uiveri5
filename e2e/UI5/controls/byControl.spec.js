@@ -92,4 +92,20 @@ describe("byControl", function () {
 
 		expect(searchQuery.getText()).toEqual("a");
 	});
+
+	it("should find control by ID regex", function () {
+		var footer = element(by.control({
+			id: /^pa.*[0-9]+-foo/
+		}));
+		var footerWithFlags = element(by.control({
+			id: /^PA.*[0-9]+-foo/gi
+		}));
+		var footerWithRegExpObject = element(by.control({
+			id: new RegExp("^PA.*[0-9]+-foo", "gi")
+		}));
+
+		expect(footer.getAttribute("id")).toEqual("page1-footer");
+		expect(footerWithFlags.getAttribute("id")).toEqual("page1-footer");
+		expect(footerWithRegExpObject.getAttribute("id")).toEqual("page1-footer");
+	});
 });

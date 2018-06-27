@@ -30,6 +30,9 @@ DefaultLocators.prototype.register = function(by) {
   by.control = function (mMatchers) {
     return {
       findElementsOverride: function (driver, using, rootSelector) {
+        if (mMatchers.id instanceof RegExp) {
+          mMatchers.id = {regex: {source: mMatchers.id.source, flags: mMatchers.id.flags}};
+        }
         var sMatchers = JSON.stringify(mMatchers);
         return driver.findElements(webdriver.By.js(clientsidescripts.findByControl, sMatchers, using, rootSelector));
       },
