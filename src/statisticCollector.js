@@ -377,6 +377,13 @@ StatisticCollector.prototype.authDone = function (jasmineSpec, specMeta) {
 };
 
 StatisticCollector.prototype.collectAction = function (action) {
+  // we are collecting statistics outside of a jasmine spec - skip the collection
+  // the screenshot reporter is pushing an action on every sendKeys, if you use sendKeys
+  // If you are using sendKeys inside of the beforeEach of a test the currentSpec will be undefined
+  if (!this.currentSpec) {
+    return;
+  }
+
   this.currentSpec.actions.push(action);
   this.currentSpec.stepSequence[action.stepIndex] = 'actions';
 };
