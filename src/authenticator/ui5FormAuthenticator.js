@@ -8,7 +8,7 @@ var webdriver = require('selenium-webdriver');
  * @param {Object} instanceConfig
  * @param {Logger} logger
  */
-function UI5FormAuthenticator(config,instanceConfig,logger,statisticCollector){
+function UI5FormAuthenticator(config,instanceConfig,logger,statisticsCollector){
   //this.config = config;
   //this.instanceConfig = instanceConfig;
   this.logger = logger;
@@ -18,7 +18,7 @@ function UI5FormAuthenticator(config,instanceConfig,logger,statisticCollector){
   this.userFieldSelector = instanceConfig.userFieldSelector;
   this.passFieldSelector = instanceConfig.passFieldSelector;
   this.logonButtonSelector = instanceConfig.logonButtonSelector;
-  this.statisticCollector = statisticCollector;
+  this.statisticsCollector = statisticsCollector;
 }
 
 /**
@@ -28,9 +28,7 @@ function UI5FormAuthenticator(config,instanceConfig,logger,statisticCollector){
  */
 UI5FormAuthenticator.prototype.get = function(url){
 
-  this.statisticsCollector.specStarted({
-    description: 'Authentication'
-  });
+  var that = this;
 
   if (!this.user || !this.pass) {
     return webdriver.promise.rejected(
@@ -44,23 +42,20 @@ UI5FormAuthenticator.prototype.get = function(url){
   browser.loadWaitForUI5();
   browser.waitForAngular();
 
+  // collect login actions separately
+  this.statisticsCollector.authStarted();
   // enter user and pass in the respective fields
   element(by.css(this.userFieldSelector)).sendKeys(this.user);
   element(by.css(this.passFieldSelector)).sendKeys(this.pass);
-  element(by.css(this.logonButtonSelector)).click();
-
-  this.statisticsCollector.specDone({
-    status: 'passed',
-    failedExpectations: [],
-    passedExpectations: []
-  }, {
-    isAuthentication: true
+  element(by.css(this.logonButtonSelector)).click().then(function () {
+    // wait for all login actions to complete
+    that.statisticsCollector.authDone();
   });
 
   // ensure redirect is completed
   return browser.testrunner.navigation.waitForRedirect(url);
 };
 
-module.exports = function(config,logger,statisticCollector){
-  return new UI5FormAuthenticator(config,logger,statisticCollector);
+module.exports = function(config,logger,statisticsCollector){
+  return new UI5FormAuthenticator(config,logger,statisticsCollector);
 };

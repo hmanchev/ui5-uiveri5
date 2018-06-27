@@ -29,10 +29,6 @@ function FormAuthenticator(config,instanceConfig,logger,statisticsCollector){
  */
 FormAuthenticator.prototype.get = function(url){
 
-  this.statisticsCollector.specStarted({
-    description: 'Authentication'
-  });
-
   var that = this;
 
   if (!this.user || !this.pass) {
@@ -63,17 +59,14 @@ FormAuthenticator.prototype.get = function(url){
     });
   },browser.getPageTimeout,'Waiting for auth page to fully load');
 
+  // collect login actions separately
+  this.statisticsCollector.authStarted();
   // enter user and pass in the respective fields
   browser.driver.findElement(by.css(this.userFieldSelector)).sendKeys(this.user);
   browser.driver.findElement(by.css(this.passFieldSelector)).sendKeys(this.pass);
-  browser.driver.findElement(by.css(this.logonButtonSelector)).click();
-
-  this.statisticsCollector.specDone({
-    status: 'passed',
-    failedExpectations: [],
-    passedExpectations: []
-  }, {
-    isAuthentication: true
+  browser.driver.findElement(by.css(this.logonButtonSelector)).click().then(function () {
+    // wait for all login actions to complete
+    that.statisticsCollector.authDone();
   });
 
   // ensure redirect is completed

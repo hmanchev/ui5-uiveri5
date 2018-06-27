@@ -350,6 +350,32 @@ StatisticCollector.prototype.jasmineDone = function(runMeta){
   }
 };
 
+// starts mock spec consisting of authentication steps.
+// solves the issue that sometimes (like when there is a beforeAll block)
+// the authentication starts before the first spec is detected by jasmine
+StatisticCollector.prototype.authStarted = function (jasmineSpec) {
+  // normally authentication is started after the first spec is started.
+  // in this case, since authStarted changes the currentSpec, we lose information about the first spec in the suite.
+  // preserve the first spec before continuing with authentication
+  this.specStartedBeforeAuth = this.currentSpec;
+  this.specStarted({
+    description: 'Authentication'
+  });
+};
+
+// completes mock spec consisting of authentication steps
+StatisticCollector.prototype.authDone = function (jasmineSpec, specMeta) {
+  this.specDone({
+    status: 'passed',
+    failedExpectations: [],
+    passedExpectations: []
+  }, {
+    isAuthentication: true
+  });
+  // restore the information about the first spec in the suite
+  this.currentSpec = this.specStartedBeforeAuth;
+};
+
 StatisticCollector.prototype.collectAction = function (action) {
   this.currentSpec.actions.push(action);
   this.currentSpec.stepSequence[action.stepIndex] = 'actions';
