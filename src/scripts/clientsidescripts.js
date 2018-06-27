@@ -87,7 +87,12 @@ var mFunctions = {
     if (!window.sap || !window.sap.ui) {
       return {error: "No UI5 found on the page"};
     }
-    sap.ui.require(["sap/ui/test/_ControlFinder"]);
+    try {
+      sap.ui.require(["sap/ui/test/_ControlFinder"]);
+    } catch (err) {
+      throw new Error("Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: " + err);
+    }
+
     var control = sap.ui.test._ControlFinder._getControlForElement(mScriptParams.elementId);
     var property = control ? sap.ui.test._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
     return {property: property};
@@ -98,7 +103,11 @@ var mFunctions = {
       throw new Error("findByControl: no UI5 on this page.");
     }
 
-    sap.ui.require(["sap/ui/test/_ControlFinder"]);
+    try {
+      sap.ui.require(["sap/ui/test/_ControlFinder"]);
+    } catch (err) {
+      throw new Error("Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: " + err);
+    }
 
     var mMatchers = JSON.parse(sMatchers);
 

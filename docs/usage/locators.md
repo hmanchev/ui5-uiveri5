@@ -68,6 +68,7 @@ element(by.jq('.sapMList > ul > li:eq(1)')),
 ```
   
 ### Control locators
+In order to use control locators in your tests, the application under test must use a certain version of UI5. All versions newer than 1.55 are acceptable, as well as all patches of 1.52 and 1.54 after and including 1.52.12 and 1.54.4.
 In the application testing approach we use hierarchical class locators composed of UI5 control main
 (marker) class names (the class names of the control root DOM element). This hierarchical composition is important to guarantee the stability of locators. But the usage of classes is somehow problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed to be backward-compatible. One approach to mitigate this issue is to use control locators. Control locators are closely tied to the control level of abstraction and therefore should be much more intuitive for application developers. Control locators can be written easily by inspecting the application using [UI5 Inspector](https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo)
 Using control locators will give you an ElementFinder of the element best representing the searched control. This element can change according to the applied interaction adapter, which is further described below.
