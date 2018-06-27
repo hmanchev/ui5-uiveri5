@@ -170,23 +170,23 @@ JasmineScreenshotReporter.prototype._saveScreenshot = function (name, data) {
 
 JasmineScreenshotReporter.prototype._generateExpectationScreenshotName = function (specFullName, expectationPassed) {
   var fileName = [
-    specFullName.substring(0, 224),
+    specFullName.substring(0, 220),
     this.stepIndex,
     (expectationPassed ? 'pass' : 'fail'),
     new Date().toISOString().substring(0, 19)
   ].join('_').replace(/[\/\?<>\\:\*\|":\s]/g, '-');
-  
+
   return fileName + '.png';
 };
 
 JasmineScreenshotReporter.prototype._generateActionScreenshotName = function (action, elementId) {
   var fileName = [
     action,
-    elementId,
+    elementId.substring(0, 190),
     this.stepIndex,
     new Date().toISOString().substring(0, 19)
   ].join('_').replace(/[\/\?<>\\:\*\|":\s]/g, '-');
-  
+
   return fileName + '.png';
 };
 
