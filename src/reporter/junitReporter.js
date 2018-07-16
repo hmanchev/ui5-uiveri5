@@ -73,7 +73,7 @@ JasmineJUnitReporter.prototype._suiteAsXml = function() {
     var testsuiteXml = {};
 
     testsuiteXml = that.xmlOutput.ele('testsuite', suiteDetails);
-
+    suite.name = (that.instanceConfig.prefix || '')+suite.name+(that.instanceConfig.postfix || '');
     suite.specs.forEach(function(spec) {
       that._specAsXml(spec, suite.name, testsuiteXml);
     });
