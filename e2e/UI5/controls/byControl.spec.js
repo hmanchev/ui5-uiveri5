@@ -94,18 +94,29 @@ describe("byControl", function () {
 	});
 
 	it("should find control by ID regex", function () {
-		var footer = element(by.control({
-			id: /^pa.*[0-9]+-foo/
-		}));
-		var footerWithFlags = element(by.control({
-			id: /^PA.*[0-9]+-foo/gi
-		}));
-		var footerWithRegExpObject = element(by.control({
-			id: new RegExp("^PA.*[0-9]+-foo", "gi")
-		}));
+		var footerRegexps = [
+			/^pa.*[0-9]+-foo/,
+			/^PA.*[0-9]+-foo/gi,
+			new RegExp("^PA.*[0-9]+-foo", "gi")
+		].forEach(function (oRegexp) {
+			var footer = element(by.control({
+				id: oRegexp
+			}));
+			expect(footer.getAttribute("id")).toEqual("page1-footer");
+		});
+	});
 
-		expect(footer.getAttribute("id")).toEqual("page1-footer");
-		expect(footerWithFlags.getAttribute("id")).toEqual("page1-footer");
-		expect(footerWithRegExpObject.getAttribute("id")).toEqual("page1-footer");
+	it("should find control by property regex", function () {
+		var showNavButtonRegexps = [
+			/show Nav/,
+			/SHOW NAV/gi,
+			new RegExp("^SHOW NAV", "gi")
+		].forEach(function (oRegexp) {
+			var showNavButton = element(by.control({
+				controlType: "sap.m.Button",
+				properties: {text: oRegexp}
+			}));
+			expect(showNavButton.getText()).toEqual("show Nav Button");
+		});
 	});
 });

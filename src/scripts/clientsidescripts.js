@@ -119,6 +119,12 @@ var mFunctions = {
     if (mMatchers.id && mMatchers.id.regex) {
       mMatchers.id = new RegExp(mMatchers.id.regex.source, mMatchers.id.regex.flags);
     }
+    if (mMatchers.properties) {
+      Object.keys(mMatchers.properties).forEach(function (sProperty) {
+        var mRegexp = mMatchers.properties[sProperty].regex;
+        mMatchers.properties[sProperty] = new RegExp(mRegexp.source, mRegexp.flags);
+      });
+    }
 
     return sap.ui.test._ControlFinder._findElements(mMatchers);
   }

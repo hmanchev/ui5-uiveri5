@@ -33,6 +33,14 @@ DefaultLocators.prototype.register = function(by) {
         if (mMatchers.id instanceof RegExp) {
           mMatchers.id = {regex: {source: mMatchers.id.source, flags: mMatchers.id.flags}};
         }
+        if (mMatchers.properties) {
+          Object.keys(mMatchers.properties).forEach(function (sProperty) {
+            var vValue = mMatchers.properties[sProperty];
+            if (vValue instanceof RegExp) {
+              mMatchers.properties[sProperty] = {regex: {source: vValue.source, flags: vValue.flags}};
+            }
+          });
+        }
         var sMatchers = JSON.stringify(mMatchers);
         return driver.findElements(webdriver.By.js(clientsidescripts.findByControl, sMatchers, using, rootSelector));
       },
