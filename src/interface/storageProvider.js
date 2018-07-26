@@ -1,4 +1,4 @@
-
+/* eslint no-unused-vars: */
 /**
  * Stores and loads images
  * @constructor

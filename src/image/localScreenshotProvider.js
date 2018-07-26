@@ -150,7 +150,7 @@ LocalScreenshotProvider.prototype._getBrowserScreenshot = function(fullScreensho
 
     return that._crop(screenshotBuffer, cropConfig).then(function (browserScreenshot) {
       return webdriver.promise.fulfilled(browserScreenshot);
-    })
+    });
   } else {
     return webdriver.promise.fulfilled(fullScreenshot);
   }

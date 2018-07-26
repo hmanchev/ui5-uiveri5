@@ -71,7 +71,7 @@ LocalStorageProvider.prototype.readRefImage = function(refImageName){
   this.logger.debug('Reading ref image file: ' + refImagePath);
 
   return Q.Promise(function(resolveFn,rejectFn){
-    fs.stat(refImagePath, function(err, stats) {
+    fs.stat(refImagePath, function(err) {
       if (err) {
         // no such file => return no ref image
         resolveFn(null);
@@ -92,7 +92,7 @@ LocalStorageProvider.prototype.readRefImage = function(refImageName){
           });
       }
     });
-  })
+  });
 };
 
 /**
@@ -109,7 +109,7 @@ LocalStorageProvider.prototype.storeRefImage = function(imageName,refImageBuffer
     .then(function(url){
       return {
         refImageUrl: url
-      }
+      };
     });
 };
 
@@ -134,7 +134,7 @@ LocalStorageProvider.prototype.storeRefActDiffImage = function(imageName,actImag
       refImageUrl: results[0],
       actImageUrl: results[1],
       diffImageUrl: results[2]
-    }
+    };
   });
 };
 

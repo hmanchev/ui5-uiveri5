@@ -1,5 +1,3 @@
-
-var url = require('url');
 var path = require('path');
 var os = require('os');
 var fs = require('fs');
@@ -146,7 +144,7 @@ DirectConnectionProvider.prototype.setupEnv = function() {
   };
   proxyquire('protractor/built/runner', {
     './driverProviders': driverProviders
-    });
+  });
 
   // prepare correct driver and/or selenium jar, download if necessary
   var promises = [q()];
@@ -195,7 +193,7 @@ DirectConnectionProvider.prototype._getLatestVersion = function(binary) {
       } else {
 
         if(binary.latestVersionUrl) {
-          that.logger.info("Found latest webdriver version: " + body);
+          that.logger.info('Found latest webdriver version: ' + body);
           that.binaries[binary.filename].version = body;
           that.binaries[binary.filename].executable = that.binaries[binary.filename].executable.replace('{latest}',body);
           resolveFn();
@@ -204,13 +202,13 @@ DirectConnectionProvider.prototype._getLatestVersion = function(binary) {
           var redirectPath = res.req.path.split('/');
           var latestVersion = redirectPath[redirectPath.length - 1];
 
-          that.logger.info("Found latest webdriver version: " + latestVersion);
+          that.logger.info('Found latest webdriver version: ' + latestVersion);
           that.binaries[binary.filename].version = latestVersion;
           that.binaries[binary.filename].executable = that.binaries[binary.filename].executable.replace('{latest}',latestVersion);
           resolveFn();
         }
       }
-    })
+    });
   });
 };
 
@@ -245,7 +243,6 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
             zip.extractAllTo(filenamePath,true);
 
             // rename the extracted file to final name
-            var extractedFilename = filenamePath + '/';
             if (os.type() == 'Windows_NT') {
               fs.renameSync(filenamePath + '/' + binary.filename + '.exe',binary.executable);
             } else {
@@ -273,7 +270,7 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
           resolveFn(binary.executable);
         });
     }
-  })
+  });
 
 
 };
@@ -374,9 +371,11 @@ DirectDriverProvider.prototype.getNewDriver = function() {
 
     driver.switchContext = function (name) {
       that.logger.debug('Switch context to: ' + name);
-      return driver.schedule(new that.deps.command.Command(CONTEXT_COMMAND).
-        setParameter('name', name),
-        'WebDriver.switchContext()');
+      return driver.schedule(
+        new that.deps.command.Command(CONTEXT_COMMAND)
+          .setParameter('name', name),
+        'WebDriver.switchContext()'
+      );
     };
   } else {
     // start local driver
@@ -426,7 +425,7 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       );
 
       // start the remote webdriver against this local selenium server
-      var executor = new that.deps.http.Executor(
+      executor = new that.deps.http.Executor(
         that.deps.webdriver.promise.when(addressPromise, function (url) {
           return new that.deps.http.HttpClient(url, null);
         })
@@ -434,7 +433,7 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       driver = that.deps.webdriver.WebDriver.createSession(executor,capabilities);
     } else  {
       // switch on browser
-      var browserName = this.protConfig.capabilities.browserName;
+      browserName = this.protConfig.capabilities.browserName;
       if (browserName == 'chrome') {
         that.deps.chrome = protractorModule.require('selenium-webdriver/chrome');
 

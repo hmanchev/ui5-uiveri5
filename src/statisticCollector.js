@@ -158,7 +158,7 @@ StatisticCollector.prototype.specDone = function(jasmineSpec, specMeta) {
       expectation.message = timeoutMsg;
       // for DEBUG logs show formatted details
       var timeoutDetailsRegExp = new RegExp(timeoutMsg + '.+?(?=")');
-      expectation.stack = JSON.parse('\"' + timeoutDetailsRegExp.exec(message)[0] + '\"');
+      expectation.stack = JSON.parse('"' + timeoutDetailsRegExp.exec(message)[0] + '"');
     } else if (message.indexOf('{') === 0 && message.lastIndexOf('}')+1 === message.length) {
       var messageJSON = JSON.parse(message);
       expectation.message = messageJSON.message;
@@ -347,13 +347,13 @@ StatisticCollector.prototype.jasmineDone = function(runMeta){
       image: failedWithImageExpectationsCount
     },
     passed: passedExpectationsCount
-  }
+  };
 };
 
 // starts mock spec consisting of authentication steps.
 // solves the issue that sometimes (like when there is a beforeAll block)
 // the authentication starts before the first spec is detected by jasmine
-StatisticCollector.prototype.authStarted = function (jasmineSpec) {
+StatisticCollector.prototype.authStarted = function () {
   // normally authentication is started after the first spec is started.
   // in this case, since authStarted changes the currentSpec, we lose information about the first spec in the suite.
   // preserve the first spec before continuing with authentication
@@ -364,7 +364,7 @@ StatisticCollector.prototype.authStarted = function (jasmineSpec) {
 };
 
 // completes mock spec consisting of authentication steps
-StatisticCollector.prototype.authDone = function (jasmineSpec, specMeta) {
+StatisticCollector.prototype.authDone = function () {
   this.specDone({
     status: 'passed',
     failedExpectations: [],

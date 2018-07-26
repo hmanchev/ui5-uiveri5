@@ -1,4 +1,4 @@
-
+/* eslint no-unused-vars: */
 /**
  * Provide jasmine locator
  * @constructor

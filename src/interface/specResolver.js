@@ -1,3 +1,4 @@
+/* eslint no-unused-vars: */
 /**
  * @typedef Spec
  * @type {Object}

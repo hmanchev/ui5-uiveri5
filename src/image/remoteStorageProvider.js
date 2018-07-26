@@ -72,14 +72,14 @@ RemoteStorageProvider.prototype.readRefImage = function (imageName) {
     that.logger.debug('Reading file: ' + refImagePath);
 
     // ensure that lnk file exists
-    fs.stat(refImagePath, function(err, stats) {
+    fs.stat(refImagePath, function(err) {
       if (err) {
         // no such file => return no ref image
         resolveFn(null);
       } else {
         fs.readFile(refImagePath, function (err, data) {
           if (err) {
-            rejectFn(new Error('Error while reading: ' + refImagePath + ' , details: '  + error));
+            rejectFn(new Error('Error while reading: ' + refImagePath + ' , details: '  + err));
           } else {
             var lnkFileData = data.toString('utf-8');
             var lnkFileUuidMatch = lnkFileData.match(LNK_FILE_UUID_PATTERN);
@@ -102,8 +102,8 @@ RemoteStorageProvider.prototype.readRefImage = function (imageName) {
                     });
                   }
                 }).catch(function (error) {
-                rejectFn(error);
-              });
+                  rejectFn(error);
+                });
             } else {
               rejectFn(new Error('Error while reading: ' + refImagePath + ', uuid does not match to the pattern: ' + LNK_FILE_UUID_PATTERN +
                 ', file content is:  ' + lnkFileData));
@@ -133,7 +133,7 @@ RemoteStorageProvider.prototype.storeRefImage = function(imageName,refImageBuffe
     // return result object
     return {
       refImageUrl: that.imageStorageUrl + '/' + actUuid
-    }
+    };
   });
 };
 
@@ -167,7 +167,7 @@ RemoteStorageProvider.prototype.storeRefActDiffImage = function(imageName,actIma
       refImageUrl: that.imageStorageUrl + '/' + actUuid,
       actImageUrl: that.imageStorageUrl + '/' + actUuid,
       diffImageUrl: that.imageStorageUrl + '/' + diffUuid
-    }
+    };
   });
 };
 
@@ -210,8 +210,8 @@ RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
       if(refFilePath.length > DEFAULT_FILE_PATH_LENGTH && isWin) {
         rejectFn(new Error('Lnk file path: ' + refFilePath + ' is longer than: ' + DEFAULT_FILE_PATH_LENGTH + ' characters.'));
       } else {
-        mkdirp(path.dirname(refFilePath), function (err) {
-          if (err) {
+        mkdirp(path.dirname(refFilePath), function (error) {
+          if (error) {
             rejectFn(new Error('Error while creating path for lnk file: ' + refFilePath + ' ,details: ' + error));
           } else {
             fs.writeFile(refFilePath, 'uuid=' + uuid, function (error) {
@@ -222,7 +222,7 @@ RemoteStorageProvider.prototype._storeLnkFile = function(ext,imageName,uuid) {
               }
             });
           }
-        })
+        });
       }
     } else {
       rejectFn(new Error('Uuid does not match the expected pattern: ' + LNK_FILE_UUID_PATTERN + ', uuid tried to write: ' + uuid));
@@ -254,7 +254,6 @@ RemoteStorageProvider.prototype._getRuntimePathSegment = function(){
 };
 
 RemoteStorageProvider.prototype._request = function (options, additionalSuccessCodes) {
-  var that = this;
   return Q.Promise(function (resolveFn, rejectFn) {
     request(options, function (error, response, body) {
       var requestUrl = options.method + ' to ' + options.url;

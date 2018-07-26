@@ -1,5 +1,3 @@
-
-var fs = require('fs');
 var utils = require('./reporterUtils');
 
 var DEFAULT_REPORT_NAME = 'target/report/report.json';
@@ -49,7 +47,7 @@ JasmineJsonReporter.prototype.suiteStarted = function() {
 JasmineJsonReporter.prototype.specStarted = function() {
 };
 
-JasmineJsonReporter.prototype.specDone = function(spec) {
+JasmineJsonReporter.prototype.specDone = function() {
 };
 
 JasmineJsonReporter.prototype.suiteDone = function() {

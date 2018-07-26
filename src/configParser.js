@@ -36,11 +36,11 @@ ConfigParser.prototype._mergeConfig = function (configFile, type) {
 ConfigParser.prototype.resolvePlaceholders = function(obj) {
   var that = this;
   _.forEach(obj, function(value, key) {
-      if (_.isObject(value)) {
-         that.resolvePlaceholders(value);
-      } else if (_.isString(value)) {
-        obj[key] = _.template(obj[key])(that.config);
-      }
+    if (_.isObject(value)) {
+      that.resolvePlaceholders(value);
+    } else if (_.isString(value)) {
+      obj[key] = _.template(obj[key])(that.config);
+    }
   });
 
   return obj;
@@ -75,7 +75,7 @@ function _mergeWithArrays(object, src) {
       return _(objectValue).concat(sourceValue).uniqWith(_.isEqual).value();
     }
   });
-};
+}
 
 module.exports = function(logger){
   return new ConfigParser(logger);

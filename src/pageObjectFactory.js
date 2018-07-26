@@ -10,7 +10,7 @@ PageObjectFactory.prototype.createPageObjects = function (pageObjects) {
   var that = this;
 
   _.each(pageObjects, function (definition, page) {
-    var name = "onThe" + page + "Page";
+    var name = 'onThe' + page + 'Page';
 
     that.When[name] = _.extend(that.When[name], definition.actions);
     that.Then[name] = _.extend(that.Then[name], definition.assertions);

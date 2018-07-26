@@ -155,7 +155,7 @@ var ClassicalWaitForUI5 = function (waitForUI5Timeout, oCore) {
     var that = this;
     if (this._isTimeoutTrackable(id, func, delay, errStack)) {
       this._addItemForTracking({'id': id, 'errStack': errStack, 'delay': delay,
-        'func': func.toString().replace(/\"/g, '\'')}, that.aPendingTimeouts);
+        'func': func.toString().replace(/"/g, '\'')}, that.aPendingTimeouts);
       this._logDebugMessage('Timeout scheduled. Timer ID: ' + id + ' Delay: ' + delay + '. Pending timeouts: '
         + this.aPendingTimeouts.length);
     }
@@ -205,7 +205,7 @@ var ClassicalWaitForUI5 = function (waitForUI5Timeout, oCore) {
       var currentTimeoutHash = this._hashTimeout(errStack, delay).toString();
       var isNewTimeout = !this.oTimeoutInfo.hasOwnProperty(currentTimeoutHash);
       if (isNewTimeout) {
-        this.oTimeoutInfo[currentTimeoutHash] = {'func': func.toString().replace(/\"/g, '\''), 'delay': delay,
+        this.oTimeoutInfo[currentTimeoutHash] = {'func': func.toString().replace(/"/g, '\''), 'delay': delay,
           'callCount': 1, 'errStack': errStack};
         return true;
       } else {
@@ -253,6 +253,7 @@ var ClassicalWaitForUI5 = function (waitForUI5Timeout, oCore) {
    */
   this._logDebugMessage = function(message) {
     if (this.debug === true) {
+      /* eslint no-console: */
       console.debug(message);
     }
   };
@@ -383,6 +384,6 @@ var ClassicalWaitForUI5 = function (waitForUI5Timeout, oCore) {
   this._wrapClearTimeout();
   this._wrapXHR();
 
-}
+};
 
 module.exports = ClassicalWaitForUI5;

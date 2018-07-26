@@ -4,24 +4,24 @@ var util = require('util');
 var mFunctions = {
   
   loadWaiter: function (mScriptParams) {
-    var sDebugLog = "Loading waitForUI5 implementation, params: " + 
-      "useClassicalWaitForUI5: "  +  mScriptParams.useClassicalWaitForUI5 + 
-      " ,waitForUI5Timeout: " + mScriptParams.waitForUI5Timeout + "ms" + 
-      " ,waitForUI5PollingInterval: " + mScriptParams.waitForUI5PollingInterval + "ms";
+    var sDebugLog = 'Loading waitForUI5 implementation, params: ' + 
+      'useClassicalWaitForUI5: '  +  mScriptParams.useClassicalWaitForUI5 + 
+      ' ,waitForUI5Timeout: ' + mScriptParams.waitForUI5Timeout + 'ms' + 
+      ' ,waitForUI5PollingInterval: ' + mScriptParams.waitForUI5PollingInterval + 'ms';
    
     if (!window.sap || !window.sap.ui) {
-      return {log: sDebugLog, error: "No UI5 on this page"};
+      return {log: sDebugLog, error: 'No UI5 on this page'};
     }
 
     if (mScriptParams.useClassicalWaitForUI5) {
-      sDebugLog += "\nLoading classical waitForUI5 implementation.";
+      sDebugLog += '\nLoading classical waitForUI5 implementation.';
       loadClassicalWaitForUI5();
     } else {
       try {
-        sDebugLog += "\nLoading OPA waitForUI5 implementation.";
+        sDebugLog += '\nLoading OPA waitForUI5 implementation.';
         loadOPAWaitForUI5();
       } catch (err) {
-        sDebugLog += "\nFailed to load OPA waitForUI5, Fallback to loading classical waitForUI5 implementation. Details: " + err;
+        sDebugLog += '\nFailed to load OPA waitForUI5, Fallback to loading classical waitForUI5 implementation. Details: ' + err;
         loadClassicalWaitForUI5();  
       }
     }
@@ -64,14 +64,14 @@ var mFunctions = {
 
   waitForAngular: function (mScriptParams, fnCallback) {
     if (!window.sap || !window.sap.ui) {
-      fnCallback("waitForUI5: no UI5 on this page.");
+      fnCallback('waitForUI5: no UI5 on this page.');
     } else {
       if (sap.ui.autoWaiterAsync) {
         sap.ui.autoWaiterAsync.waitAsync(fnCallback);
       } else if (sap.ui.ClassicalWaitForUI5) {
         sap.ui.ClassicalWaitForUI5.notifyWhenStable(fnCallback);
       } else {
-        fnCallback("waitForUI5: no waitForUI5 implementation is currently loaded.");
+        fnCallback('waitForUI5: no waitForUI5 implementation is currently loaded.');
       }
     }
   },
@@ -85,12 +85,12 @@ var mFunctions = {
 
   getControlProperty: function (mScriptParams) {
     if (!window.sap || !window.sap.ui) {
-      return {error: "No UI5 found on the page"};
+      return {error: 'No UI5 found on the page'};
     }
     try {
-      sap.ui.require(["sap/ui/test/_ControlFinder"]);
+      sap.ui.require(['sap/ui/test/_ControlFinder']);
     } catch (err) {
-      throw new Error("Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: " + err);
+      throw new Error('Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: ' + err);
     }
 
     var control = sap.ui.test._ControlFinder._getControlForElement(mScriptParams.elementId);
@@ -100,13 +100,13 @@ var mFunctions = {
 
   findByControl: function (sMatchers, oParentElement) {
     if (!window.sap || !window.sap.ui) {
-      throw new Error("findByControl: no UI5 on this page.");
+      throw new Error('findByControl: no UI5 on this page.');
     }
 
     try {
-      sap.ui.require(["sap/ui/test/_ControlFinder"]);
+      sap.ui.require(['sap/ui/test/_ControlFinder']);
     } catch (err) {
-      throw new Error("Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: " + err);
+      throw new Error('Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: ' + err);
     }
 
     var mMatchers = JSON.parse(sMatchers);
@@ -143,8 +143,9 @@ var mFunctions = {
  */
 var scriptsList = [];
 var scriptFmt = (
-'try { return (%s).apply(this, arguments); }\n' +
-'catch(e) { throw (e instanceof Error) ? e : new Error(e); }');
+  'try { return (%s).apply(this, arguments); }\n' +
+  'catch(e) { throw (e instanceof Error) ? e : new Error(e); }'
+);
 for (var fnName in mFunctions) {
   if (mFunctions.hasOwnProperty(fnName)) {
     exports[fnName] = util.format(scriptFmt, mFunctions[fnName]);

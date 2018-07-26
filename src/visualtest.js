@@ -38,7 +38,7 @@ function run(config) {
 
   // log framework version
   var pjson = require('../package.json');
-  logger.info(pjson.name + " v" + pjson.version);
+  logger.info(pjson.name + ' v' + pjson.version);
 
   // log config object so far
   logger.debug('Config from command-line: ${JSON.stringify(config)}',{config:config});
@@ -95,7 +95,7 @@ function run(config) {
   specResolver.resolve().then(function(specs){
 
     if (!specs || specs.length==0){
-      throw Error("No specs found");
+      throw Error('No specs found');
     }
 
     // resolve connection
@@ -219,10 +219,10 @@ function run(config) {
         }
 
         // process remoteWebDriverOptions
-        var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, "maximized");
-        var remoteWindowPosition = _.get(runtime.capabilities.remoteWebDriverOptions, "position");
-        var remoteViewportSize = _.get(runtime.capabilities.remoteWebDriverOptions, "viewportSize");
-        var remoteBrowserSize = _.get(runtime.capabilities.remoteWebDriverOptions, "browserSize");
+        var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, 'maximized');
+        var remoteWindowPosition = _.get(runtime.capabilities.remoteWebDriverOptions, 'position');
+        var remoteViewportSize = _.get(runtime.capabilities.remoteWebDriverOptions, 'viewportSize');
+        var remoteBrowserSize = _.get(runtime.capabilities.remoteWebDriverOptions, 'browserSize');
 
         if (isMaximized) {
           logger.debug('Maximizing browser window');
@@ -283,16 +283,16 @@ function run(config) {
 
       browser.loadWaitForUI5 = function () {
         return browser.executeScriptWithDescription(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
-            waitForUI5Timeout: waitForUI5Timeout,
-            waitForUI5PollingInterval: config.timeouts.waitForUI5PollingInterval,
-            ClassicalWaitForUI5: ClassicalWaitForUI5,
-            useClassicalWaitForUI5: config.useClassicalWaitForUI5
-          }).then(function (res) {
-            logger.debug("loadWaitForUI5: " + res.log);
-            if (res.error) {
-              throw new Error("loadWaitForUI5: " + res.error);
-            }
-          });
+          waitForUI5Timeout: waitForUI5Timeout,
+          waitForUI5PollingInterval: config.timeouts.waitForUI5PollingInterval,
+          ClassicalWaitForUI5: ClassicalWaitForUI5,
+          useClassicalWaitForUI5: config.useClassicalWaitForUI5
+        }).then(function (res) {
+          logger.debug('loadWaitForUI5: ' + res.log);
+          if (res.error) {
+            throw new Error('loadWaitForUI5: ' + res.error);
+          }
+        });
       };
 
       browser.setViewportSize = function (viewportSize) {
@@ -355,7 +355,7 @@ function run(config) {
             var specUrl = url.parse(spec.contentUrl);
             if (config.baseUrlQuery && config.baseUrlQuery.length >0){
               if (specUrl.search == null) {
-                specUrl.search = "";
+                specUrl.search = '';
               }
               config.baseUrlQuery.forEach(function(value,index){
                 if (index > 0){
@@ -410,7 +410,7 @@ function run(config) {
       var statisticCollector = require('./statisticCollector')();
       jasmine.getEnv().addReporter({
         jasmineStarted: function(){
-          statisticCollector.jasmineStarted()
+          statisticCollector.jasmineStarted();
         },
         suiteStarted: function(jasmineSuite){
           statisticCollector.suiteStarted(jasmineSuite);
@@ -499,11 +499,11 @@ function run(config) {
           });
         },
         get meta() {
-         return  {
-           set controlName(value){
-             browser.testrunner.currentSuite.meta = {controlName: value};
-           }
-         };
+          return  {
+            set controlName(value){
+              browser.testrunner.currentSuite.meta = {controlName: value};
+            }
+          };
         }
       };
       browser.testrunner.currentSpec = {
@@ -545,7 +545,7 @@ function run(config) {
     function _moveMouseOutsideBody(driverActions) {
       logger.trace('Moving mouse to body (-1, -1).');
       // the implicit synchronization that element() does is important to ensure app is settled before clicking
-      var bodyElement = element(by.css("body"));
+      var bodyElement = element(by.css('body'));
       return driverActions.mouseMove(bodyElement, {x:-1, y:-1}).perform();
     }
 
@@ -564,6 +564,6 @@ function run(config) {
 
   logger.debug('Loading BDD-style page object factory');
   pageObjectFactory.register(global);
-};
+}
 
 exports.run = run;

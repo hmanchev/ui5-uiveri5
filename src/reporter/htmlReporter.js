@@ -52,7 +52,7 @@ JasmineHtmlReporter.prototype.suiteStarted = function() {
 JasmineHtmlReporter.prototype.specStarted = function() {
 };
 
-JasmineHtmlReporter.prototype.specDone = function(spec) {
+JasmineHtmlReporter.prototype.specDone = function() {
 };
 
 JasmineHtmlReporter.prototype.suiteDone = function() {

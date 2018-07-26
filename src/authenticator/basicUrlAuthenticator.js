@@ -29,7 +29,7 @@ BasicUrlAuthenticator.prototype.get = function(url){
   }
 
   // prepare basic auth url
-  var urlMatches = url.match(/(\w*\:?\/\/)(.+)/);
+  var urlMatches = url.match(/(\w*:?\/\/)(.+)/);
   if (urlMatches === null) {
     return webdriver.promise.rejected(
       new Error('Could not parse url: ' + url));

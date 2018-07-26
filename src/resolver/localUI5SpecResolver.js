@@ -86,7 +86,7 @@ LocalUI5SpecResolver.prototype.resolve = function(){
         branch = that.branch;
         that.logger.debug('Using default branch: ' + branch);
       } else {
-        branch = branch.replace(/\n$/, "");
+        branch = branch.replace(/\n$/, '');
         that.logger.debug('Resolved git branch: ' + branch);
         if (that.branch) {
           branch = that.branch;

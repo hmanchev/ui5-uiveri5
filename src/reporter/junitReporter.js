@@ -1,5 +1,4 @@
 var xmlBuilder = require('xmlbuilder');
-var fs = require("fs");
 var utils = require('./reporterUtils');
 
 var DEFAULT_REPORT_NAME = 'target/report/junitReport.xml';
@@ -30,7 +29,7 @@ JasmineJUnitReporter.prototype.suiteStarted = function() {
 JasmineJUnitReporter.prototype.specStarted = function() {
 };
 
-JasmineJUnitReporter.prototype.specDone = function(spec) {
+JasmineJUnitReporter.prototype.specDone = function() {
 };
 
 JasmineJUnitReporter.prototype.suiteDone = function() {
@@ -106,7 +105,7 @@ JasmineJUnitReporter.prototype._specAsXml = function(spec, suiteName, testsuiteX
       }
     });
   } else {
-      testsuiteXml.ele('testcase', specDetails);
+    testsuiteXml.ele('testcase', specDetails);
   }
 };
 
@@ -122,7 +121,7 @@ JasmineJUnitReporter.prototype._getFailsInSpec = function(suite) {
         if(expectation.status == 'failed') {
           fails.push(spec.name);
         }
-      })
+      });
     }
   });
 

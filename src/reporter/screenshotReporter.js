@@ -1,7 +1,6 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
-var mkdirp = require('mkdirp');
 var utils = require('./reporterUtils');
 
 var DEFAULT_SCREENSHOTS_ROOT = 'target/report/screenshots/';
@@ -130,7 +129,7 @@ JasmineScreenshotReporter.prototype._registerOnExpectation = function () {
       that._takeScreenshot(function (png) {
         that._saveScreenshot(screenshotName, png);
       });
-    };
+    }
 
     if (passed) {
       _.last(specResult[expectationCategory]).message = that._createExpectationMessage(expectation);
@@ -192,7 +191,7 @@ JasmineScreenshotReporter.prototype._generateActionScreenshotName = function (ac
 
 JasmineScreenshotReporter.prototype._isEnabled = function (option) {
   return _.get(this.config, 'takeScreenshot.' + option);
-}
+};
 
 JasmineScreenshotReporter.prototype._createExpectationMessage = function (expectation) {
   return ['Expected', '\'' + expectation.actual + '\'', expectation.matcherName, '\'' + expectation.expected + '\''].join(' ');

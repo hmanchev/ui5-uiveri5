@@ -8,6 +8,7 @@ var DEFAULT_DEVICE_NAME = '*';
 var DEFAULT_UI5_THEME = 'belize';
 var DEFAULT_UI5_DIRECTION = 'ltr';
 var DEFAULT_UI5_MODE = 'cozy';
+/* eslint no-unused-vars: */
 var DEFAULT_EXECUTION_TYPE = '*';
 
 var defaultPlatformResolutionPerPlatformName = {
@@ -70,7 +71,7 @@ var supportedUI5Modes = [
 function RuntimeResolver(config,logger){
   this.config = config;
   this.logger = logger;
-};
+}
 
 /**
  * Resolve requires browser runtimes

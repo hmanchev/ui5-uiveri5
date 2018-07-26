@@ -1,5 +1,3 @@
-
-var _ = require('lodash');
 var resemble = require('./../../lib/resemblejs/resemble');
 var webdriver = require('selenium-webdriver');
 var Q = require('q');
@@ -148,98 +146,97 @@ LocalComparisonProvider.prototype.register = function (matchers) {
                     defer.fulfill(false);
                     return;
                   }
-                    // resolve mismatch percentage and count
-                    var mismatchPercentage = parseFloat(comparisonResult.misMatchPercentage);
-                    var mismatchPixelsCount = comparisonResult.mismatchCount;
+                  // resolve mismatch percentage and count
+                  var mismatchPercentage = parseFloat(comparisonResult.misMatchPercentage);
+                  var mismatchPixelsCount = comparisonResult.mismatchCount;
 
-                    // dimension difference is elevated to 100%
-                    if (!comparisonResult.isSameDimensions) {
-                      mismatchPercentage = 100;
-                      mismatchPixelsCount = -1;
+                  // dimension difference is elevated to 100%
+                  if (!comparisonResult.isSameDimensions) {
+                    mismatchPercentage = 100;
+                    mismatchPixelsCount = -1;
+                  }
+
+                  that.logger.trace('Image comparison done ' +
+                  ',reference image: ${expectedImageName} ' +
+                  ',results: ${JSON.stringify(comparisonResult)} ', {
+                    expectedImageName: expectedImageName,
+                    comparisonResult: comparisonResult
+                  });
+
+                  // resolve pixel threshold from the given threshold percentage
+                  var allImagePixels = comparisonResult.getDiffImage().width * comparisonResult.getDiffImage().height;
+                  var thresholdPixelsFromPercentage = (allImagePixels * that.thresholdPercentage) / 100;
+                  var resolvedPixelThreshold = Math.min(thresholdPixelsFromPercentage, that.thresholdPixels);
+                  var msg;
+
+                  // check the mismatch percentage and the mismatch pixel count
+                  if (mismatchPixelsCount > -1 && mismatchPixelsCount < resolvedPixelThreshold) {
+                    msg = 'Image comparison passed, reference image: ' + expectedImageName +
+                      ', difference in percentages: ' + mismatchPercentage + '% (threshold: ' + that.thresholdPercentage
+                      + '%), difference in pixels: ' + mismatchPixelsCount + ' (threshold: ' + resolvedPixelThreshold
+                      + ')';
+                    that.logger.debug(msg);
+                    result.message = JSON.stringify({
+                      message: msg,
+                      details: {
+                        refImageUrl: refImageResult.refImageUrl
+                      },
+                      imageName: expectedImageName
+                    });
+                    // pass
+                    defer.fulfill({message: result.message});
+                  } else {
+                    if (mismatchPixelsCount == -1) {
+                      msg = 'Image comparison failed, reference image: ' + expectedImageName +
+                        ', difference in image size with: W=' + comparisonResult.dimensionDifference.width +
+                        'px, H=' + comparisonResult.dimensionDifference.height + 'px';
+                    } else {
+                      msg = 'Image comparison failed, reference image: ' + expectedImageName +
+                        ', difference in percentages: ' + mismatchPercentage + '% (threshold: '
+                        + that.thresholdPercentage + '%), difference in pixels: ' + mismatchPixelsCount
+                        + ' (threshold: ' + resolvedPixelThreshold + ')';
                     }
 
-                    that.logger.trace('Image comparison done ' +
-                    ',reference image: ${expectedImageName} ' +
-                    ',results: ${JSON.stringify(comparisonResult)} ', {
-                      expectedImageName: expectedImageName,
-                      comparisonResult: comparisonResult
-                    });
-
-                    // resolve pixel threshold from the given threshold percentage
-                    var allImagePixels = comparisonResult.getDiffImage().width * comparisonResult.getDiffImage().height;
-                    var thresholdPixelsFromPercentage = (allImagePixels * that.thresholdPercentage) / 100;
-                    var resolvedPixelThreshold = Math.min(thresholdPixelsFromPercentage, that.thresholdPixels);
-
-                    // check the mismatch percentage and the mismatch pixel count
-                    if (mismatchPixelsCount > -1 && mismatchPixelsCount < resolvedPixelThreshold) {
-                      var msg = 'Image comparison passed, reference image: ' + expectedImageName +
-                        ', difference in percentages: ' + mismatchPercentage + '% (threshold: ' + that.thresholdPercentage
-                        + '%), difference in pixels: ' + mismatchPixelsCount + ' (threshold: ' + resolvedPixelThreshold
-                        + ')';
-                      that.logger.debug(msg);
-                      result.message = JSON.stringify({
-                        message: msg,
-                        details: {
-                          refImageUrl: refImageResult.refImageUrl
-                        },
-                        imageName: expectedImageName
-                      });
-                      // pass
-                      defer.fulfill({message: result.message});
+                    // handle image updates
+                    if (that.update) {
+                      msg += ' ,update enabled so storing current as reference';
                     } else {
-                      var msg;
-                      if (mismatchPixelsCount == -1) {
-                        msg = 'Image comparison failed, reference image: ' + expectedImageName +
-                          ', difference in image size with: W=' + comparisonResult.dimensionDifference.width +
-                          'px, H=' + comparisonResult.dimensionDifference.height + 'px';
-                      } else {
-                        msg = 'Image comparison failed, reference image: ' + expectedImageName +
-                          ', difference in percentages: ' + mismatchPercentage + '% (threshold: '
-                          + that.thresholdPercentage + '%), difference in pixels: ' + mismatchPixelsCount
-                          + ' (threshold: ' + resolvedPixelThreshold + ')';
-                      }
+                      msg += ' ,update disabled';
+                    }
+                    that.logger.debug(msg);
+                    var res = {
+                      message: msg,
+                      details: {
+                        refImageUrl: refImageResult.refImageUrl
+                      },
+                      imageName: expectedImageName
+                    };
 
-                      // handle image updates
-                      if (that.update) {
-                        msg += ' ,update enabled so storing current as reference';
-                      } else {
-                        msg += ' ,update disabled';
-                      }
-                      that.logger.debug(msg);
-                      var res = {
-                        message: msg,
-                        details: {
-                          refImageUrl: refImageResult.refImageUrl
-                        },
-                        imageName: expectedImageName
-                      };
-
-                      that._diffImageToBuffer(comparisonResult).then(function(diffImageBuffer){
-                        return that.storageProvider.storeRefActDiffImage(
-                          expectedImageName,actualImageBuffer,diffImageBuffer,that.update);
-                      }).then(function (storeRes) {
-                        // ref should be left the ref image before update
-                        res.details.actImageUrl = storeRes.actImageUrl;
-                        res.details.diffImageUrl = storeRes.diffImageUrl;
-                        res.failureType = 'COMPARISON';
-                        result.message = JSON.stringify(res);
-                        // fail
-                        defer.fulfill(false);
-                      })
+                    that._diffImageToBuffer(comparisonResult).then(function(diffImageBuffer){
+                      return that.storageProvider.storeRefActDiffImage(
+                        expectedImageName,actualImageBuffer,diffImageBuffer,that.update);
+                    }).then(function (storeRes) {
+                      // ref should be left the ref image before update
+                      res.details.actImageUrl = storeRes.actImageUrl;
+                      res.details.diffImageUrl = storeRes.diffImageUrl;
+                      res.failureType = 'COMPARISON';
+                      result.message = JSON.stringify(res);
+                      // fail
+                      defer.fulfill(false);
+                    })
                       .catch(function (error) {
                         result.message = error.stack;
                         // fail
                         defer.fulfill(false);
                       });
-                    }
                   }
-                );
+                });
               }
             }).catch(function(error){
-              result.message = error.stack;
-              // fail
-              defer.fulfill(false);
-            });
+            result.message = error.stack;
+            // fail
+            defer.fulfill(false);
+          });
         } else {
           var msg = 'Comparison or screenshot taking disabled so skipping comparison';
           that.logger.debug(msg);
@@ -251,7 +248,7 @@ LocalComparisonProvider.prototype.register = function (matchers) {
 
         return result;
       }
-    }
+    };
   };
 
   matchers.toLookAs = toLookAs;

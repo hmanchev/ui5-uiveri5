@@ -55,10 +55,10 @@ CliParser.prototype.parse = function(argv){
   var confDef = config.config;
   if (confDef){
     if(_.isString(confDef) && confDef.indexOf('{') !== -1 && confDef.indexOf('}') !== -1) {
-        // JSON formatting found => parse it
-        confDef = JSON.parse(confDef);
-        // merge json config over
-        _mergeConfig(config,confDef);
+      // JSON formatting found => parse it
+      confDef = JSON.parse(confDef);
+      // merge json config over
+      _mergeConfig(config,confDef);
     } else if (_.isObject(confDef)){
       _mergeConfig(config,confDef);
       delete config.config;

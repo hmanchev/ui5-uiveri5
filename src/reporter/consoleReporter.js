@@ -41,7 +41,7 @@ JasmineConsoleReporter.prototype.specStarted = function() {
   this.logger.info('Spec started: ' + this.collector.getCurrentSpec().name);
 };
 
-JasmineConsoleReporter.prototype.specDone = function(spec) {
+JasmineConsoleReporter.prototype.specDone = function() {
   var spec = this.collector.getCurrentSpec();
   spec.expectations.forEach(function (expectation) {
     if (expectation.status === 'failed') {
