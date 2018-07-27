@@ -107,6 +107,12 @@ describe("byControl", function () {
 	});
 
 	it("should find control by property regex", function () {
+		var showNavButton = element(by.control({
+			controlType: "sap.m.Button",
+			properties: {text: "show Nav Button"}
+		}));
+		expect(showNavButton.getText()).toEqual("show Nav Button");
+
 		var showNavButtonRegexps = [
 			/show Nav/,
 			/SHOW NAV/gi,

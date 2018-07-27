@@ -122,7 +122,9 @@ var mFunctions = {
     if (mMatchers.properties) {
       Object.keys(mMatchers.properties).forEach(function (sProperty) {
         var mRegexp = mMatchers.properties[sProperty].regex;
-        mMatchers.properties[sProperty] = new RegExp(mRegexp.source, mRegexp.flags);
+        if (mRegexp) {
+          mMatchers.properties[sProperty] = new RegExp(mRegexp.source, mRegexp.flags);
+        }
       });
     }
 
