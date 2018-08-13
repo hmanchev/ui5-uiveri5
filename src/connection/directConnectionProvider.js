@@ -8,6 +8,7 @@ var proxyquire =  require('proxyquire');
 var q = require('q');
 var request = require('request');
 var AdmZip = require('adm-zip');
+var tar = require('tar');
 
 var ConnectionProvider = require('./../interface/connectionProvider');
 
@@ -103,8 +104,8 @@ DirectConnectionProvider.prototype.resolveCapabilitiesFromRuntime = function(run
   } else if (runtime.platformName === 'android') {
     capabilities.platformName = 'Android';
   } else {
-    throw Error('Platform name: ' + runtime.platformName +
-    ' not supported by directConnectionProvider');
+    throw Error('Platform name: ' + runtime.platformName +	
+      ' not supported by directConnectionProvider');	
   }
 
   // format platformVersion
@@ -173,6 +174,12 @@ DirectConnectionProvider.prototype.setupEnv = function() {
             that.seleniumConfig.executables.iedriver = filename;
           })
         );
+      } else if (browserName == 'firefox') {
+        promises.push(that._downloadBinary(that.binaries['geckodriver']).then(
+          function(filename){
+            that.seleniumConfig.executables.geckodriver = filename;
+          })
+        );
       } else {
         that.logger.debug('No need to download webdriver binary for: ' + browserName);
       }
@@ -185,27 +192,33 @@ DirectConnectionProvider.prototype.setupEnv = function() {
 DirectConnectionProvider.prototype._getLatestVersion = function(binary) {
   var that = this;
 
+  that.logger.info('Check for latest version of: ' + binary.filename);
   return q.Promise(function(resolveFn, rejectFn) {
     request({url: binary.latestVersionUrlRedirect || binary.latestVersionUrl}, function(error, res, body) {
       if(error || res.statusCode != 200) {
-        rejectFn(new Error('Error while getting the latest version number for ' + binary.filename + ': ' + error +
-          ', status code: ' + res.statusCode));
+        rejectFn(new Error('Error while getting the latest version number for ' + binary.filename +  
+          (error ? (', error: ' + error) : 
+            (res && res.statusCode ? (', status code: ' + res.statusCode) : ''))));
       } else {
+        var latestVersion;
 
+        // resolve latest version
         if(binary.latestVersionUrl) {
-          that.logger.info('Found latest webdriver version: ' + body);
-          that.binaries[binary.filename].version = body;
-          that.binaries[binary.filename].executable = that.binaries[binary.filename].executable.replace('{latest}',body);
-          resolveFn();
+          latestVersion = body;
         } else if(binary.latestVersionUrlRedirect) {
           // request to the latest version is redirected to the latest release, so get the version from req.path
           var redirectPath = res.req.path.split('/');
-          var latestVersion = redirectPath[redirectPath.length - 1];
+          latestVersion = redirectPath[redirectPath.length - 1];
+        } 
 
+        if (!latestVersion) {
+          rejectFn(new Error('Latest version resolving is not configured correctly, one of latestVersionUrl: ' + binary.latestVersionUrl + 
+          ' or latestVersionUrlRedirect: ' + binary.latestVersionUrlRedirect + ' should be provided'));
+        } else {
           that.logger.info('Found latest webdriver version: ' + latestVersion);
-          that.binaries[binary.filename].version = latestVersion;
-          that.binaries[binary.filename].executable = that.binaries[binary.filename].executable.replace('{latest}',latestVersion);
-          resolveFn();
+          binary.version = latestVersion;
+          binary.executable = binary.executable.replace('{latest}',latestVersion);
+          resolveFn(binary);
         }
       }
     });
@@ -214,7 +227,7 @@ DirectConnectionProvider.prototype._getLatestVersion = function(binary) {
 
 DirectConnectionProvider.prototype._downloadDriver = function(binary) {
   var that = this;
-  binary.url = binary.url.replace('{latest}', binary.version);
+  binary.url = binary.url.replace(/{latest}/g, binary.version);
   binary.executable = binary.executable.replace('{latest}', binary.version);
 
   return q.Promise(function(resolveFn, rejectFn) {
@@ -228,7 +241,7 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
         'If necessary, set HTTP_PROXY and HTTPS_PROXY environment variables'));
     });
     // unzip if necessary
-    if (binary.unzip){
+    if (binary.unzip === true || binary.unzip === 'true'){
       var filenameZip = binary.executable + '.zip';
       requestStream.pipe(fs.createWriteStream(filenameZip))
         .on('error', function (err) {
@@ -243,12 +256,10 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
             zip.extractAllTo(filenamePath,true);
 
             // rename the extracted file to final name
-            if (os.type() == 'Windows_NT') {
-              fs.renameSync(filenamePath + '/' + binary.filename + '.exe',binary.executable);
-            } else {
-              fs.renameSync(filenamePath + '/' + binary.filename,binary.executable);
+            fs.renameSync(filenamePath + '/' + binary.filename,binary.executable);
 
-              // fix the executable flag
+            // make exacutable
+            if (os.type() !== 'Windows_NT') {             
               fs.chmodSync(path.join(binary.executable),0755);
             }
 
@@ -261,6 +272,31 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
             rejectFn(new Error('Error while processing: ' + filenameZip + ' ,details: ' + err));
           }
         });
+    } else if (binary.untar === true || binary.untar === 'true') {
+      var filenamePath = path.dirname(binary.executable);
+      requestStream.pipe(
+        tar.extract({
+          cwd: filenamePath
+        }))
+        .on('error', function (err) {
+          rejectFn(new Error('Error while extracting tar.jz file: ' + binary.executable + ' ,details: ' + err));
+        })
+        .on('finish', function () {
+          try {
+            // rename to final name
+            fs.renameSync(filenamePath + '/' + binary.filename,binary.executable);
+
+            // make exacutable
+            if (os.type() !== 'Windows_NT') {             
+              fs.chmodSync(path.join(binary.executable),0755);
+            }
+
+            // resolve with final name
+            resolveFn(binary.executable);
+          } catch(err) {
+            rejectFn(new Error('Error while processing: ' + binary.executable + ' ,details: ' + err));
+          }
+        });
     } else {
       requestStream.pipe(fs.createWriteStream(binary.executable))
         .on('error', function (err) {
@@ -271,13 +307,10 @@ DirectConnectionProvider.prototype._downloadDriver = function(binary) {
         });
     }
   });
-
-
 };
 
-DirectConnectionProvider.prototype._downloadBinary = function(binary){
+DirectConnectionProvider.prototype._downloadBinary = function(binary) {
   var that = this;
-  var deferred = q.defer();
   var root = path.resolve(__dirname + '/../../selenium').replace(/\\/g,'/');
 
   if(typeof binary.executable === 'object') {
@@ -286,38 +319,37 @@ DirectConnectionProvider.prototype._downloadBinary = function(binary){
     binary.executable =  root + '/' + binary.executable;
   }
 
-  if(binary.version.indexOf('latest') >= 0){
-    this._getLatestVersion(binary).then(function(){
-      checkIfBinaryExists();
+  if(_.isString(binary.version) && binary.version.indexOf('latest') >= 0){
+    return that._getLatestVersion(binary).then(function(){
+      return that._checkIfBinaryExists(binary);
     });
   } else {
-    checkIfBinaryExists();
-  }
-
-  // check if binary already exist
-  function checkIfBinaryExists() {
-    fs.stat(binary.executable, function (err, stat) {
-      if (err || stat.size == 0) {
-        // create path
-        mkdirp(path.dirname(binary.executable), function (err) {
-          if (err) {
-            deferred.reject(new Error('Error while creating path for binary: ' + binary.executable + ' ,details: ' + err));
-          } else {
-            deferred.resolve(that._downloadDriver(binary));
-          }
-        });
-      } else {
-        that.logger.info('Found correct webdriver locally: ' + binary.executable);
-        // file exist => resolve with known name
-        deferred.resolve(binary.executable);
-      }
-    });
-  }
-
-  // return promise, resolve with file name when ready
-  return deferred.promise;
+    return that._checkIfBinaryExists(binary);
+  }  
 };
 
+DirectConnectionProvider.prototype._checkIfBinaryExists = function(binary) {
+  var that = this;
+  var deferred = q.defer();
+  fs.stat(binary.executable, function (err, stat) {
+    if (err || stat.size == 0) {
+      // create path
+      mkdirp(path.dirname(binary.executable), function (err) {
+        if (err) {
+          deferred.reject(new Error('Error while creating path for binary: ' + binary.executable + ' ,details: ' + err));
+        } else {
+          deferred.resolve(that._downloadDriver(binary));
+        }
+      });
+    } else {
+      that.logger.info('Found correct webdriver locally: ' + binary.executable);
+      // file exist => resolve with known name
+      deferred.resolve(binary.executable);
+    }
+  });
+
+  return deferred.promise;
+};
 // overloaded DriverProvider to be injected
 
 var DirectDriverProvider = function(protConfig,logger,seleniumConfig) {
@@ -407,9 +439,11 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       var browserName = this.protConfig.capabilities.browserName;
       if (browserName == 'chrome') {
         opts.jvmArgs.push('-Dwebdriver.chrome.driver=' + that.seleniumConfig.executables.chromedriver);
+      } else if (browserName == 'firefox') {
+        opts.jvmArgs.push('-Dwebdriver.gecko.driver=' + that.seleniumConfig.executables.geckodriver);
       } else if (browserName == 'internet explorer') {
         opts.jvmArgs.push('-Dwebdriver.ie.driver=' + that.seleniumConfig.executables.iedriver);
-      }
+      } 
 
       var seleniumServer = new that.deps.remote.SeleniumServer(that.seleniumConfig.executables.selenium,opts);
 
@@ -437,8 +471,7 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       if (browserName == 'chrome') {
         that.deps.chrome = protractorModule.require('selenium-webdriver/chrome');
 
-        // by default chromedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
-        // only port could be overridden
+        // chromedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         that.logger.debug('Starting local chromedriver with executable: ' +
           that.seleniumConfig.executables.chromedriver);
 
@@ -452,23 +485,43 @@ DirectDriverProvider.prototype.getNewDriver = function() {
           });
         }
 
-        // set port
-        if (that.seleniumConfig.port){
-          chromeServiceBuilder.usingPort(that.seleniumConfig.port);
-        }
+        // build chromeOptions from capabilities
+        var chromeOptions = that.deps.chrome.Options.fromCapabilities(capabilities);
 
         // start the local chromedriver and connect to it
         var chromeService = chromeServiceBuilder.build();
-        driver =  new that.deps.chrome.Driver(capabilities,chromeService);
+        driver =  that.deps.chrome.Driver.createSession(
+          chromeOptions,chromeService);
       } else if (browserName == 'firefox') {
         that.deps.firefox = protractorModule.require('selenium-webdriver/firefox');
 
-        // firefox is started without specifying host, on findFreePort, returns getLoopbackAddress
-        // nothing could be overridden
-        that.logger.debug('Starting local firefox with webdriver extension');
+        // geckodriver is started without specifying host, on findFreePort, returns getLoopbackAddress
+        that.logger.debug('Starting local geckodriver with executable: ' + 
+          that.seleniumConfig.executables.geckodriver);
 
-        // start firefox with selenium extension and connect to it
-        driver = new that.deps.firefox.Driver(capabilities);
+        var firefoxServiceBuilder = new that.deps.firefox.ServiceBuilder(that.seleniumConfig.executables.geckodriver);
+
+        // set geckodriverOptions
+        var geckodriverOptions = this.protConfig.capabilities.geckodriverOptions;
+        if (geckodriverOptions){
+          _.forIn(geckodriverOptions,function(value,key){
+            firefoxServiceBuilder[key].apply(firefoxServiceBuilder,value);
+          });
+        }
+        
+        // no firefox.Options.fromCapabilities() so need to build firefoxOptions manually 
+        var firefoxOptions = new that.deps.firefox.Options();
+        var capabilitiesFirefoxOptions = this.protConfig.capabilities.firefoxOptions;
+        if (capabilitiesFirefoxOptions){
+          _.forIn(capabilitiesFirefoxOptions,function(value,key){
+            firefoxOptions[key].apply(firefoxOptions,value);
+          });
+        }
+
+        // start the local geckodriver and connect to it
+        var firefoxService = firefoxServiceBuilder.build();
+        driver =  that.deps.firefox.Driver.createSession(
+          firefoxOptions,firefoxService);
       } else if (browserName == 'internet explorer') {
         // by default iedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         // only host could be overridden - only set it to webdriver, could not override of the returned getLoopbackAddress address !!!

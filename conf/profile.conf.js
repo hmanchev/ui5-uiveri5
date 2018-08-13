@@ -26,19 +26,19 @@ exports.config = {
         chromedriver: {
           version: '{latest}',
           unzip: true,
-          filename: 'chromedriver',
+          filename: '${osTypeString == "win32" ? "chromedriver.exe" : "chromedriver"}',
           baseurl: 'https://chromedriver.storage.googleapis.com',
           url: '${connectionConfigs.direct.binaries.chromedriver.baseurl}/${connectionConfigs.direct.binaries.chromedriver.version}/' +
-          '${connectionConfigs.direct.binaries.chromedriver.filename}_${osTypeString}.zip',
+          'chromedriver_${osTypeString}.zip',
           latestVersionUrl: '${connectionConfigs.direct.binaries.chromedriver.baseurl}/LATEST_RELEASE',
           executable: {
-            win32: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}.exe',
-            mac64: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}',
-            linux32: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}',
-            linux64: '${connectionConfigs.direct.binaries.chromedriver.filename}-${connectionConfigs.direct.binaries.chromedriver.version}'
+            win32: 'chromedriver-${connectionConfigs.direct.binaries.chromedriver.version}.exe',
+            mac64: 'chromedriver-${connectionConfigs.direct.binaries.chromedriver.version}',
+            linux32: 'chromedriver-${connectionConfigs.direct.binaries.chromedriver.version}',
+            linux64: 'chromedriver-${connectionConfigs.direct.binaries.chromedriver.version}'
           }
         },
-        // for screenshots to work we need to use 32bit IE even with 64bit system, details:
+        // for screenshots to work we need to use 32bit IE even with 64bit systems
         iedriver: {
           version: '3.12',
           patch: '0',
@@ -52,18 +52,20 @@ exports.config = {
         },
         geckodriver: {
           version: '{latest}',
-          unzip: true,
-          filename: 'geckodriver',
+          unzip: '${osTypeString == "win32" || osTypeString == "win64"}',
+          untar: '${!(osTypeString == "win32" || osTypeString == "win64")}',
+          filename: '${osTypeString == "win32" ? "geckodriver.exe" : "geckodriver"}',
           baseurl: 'http://github.com/mozilla/geckodriver/releases',
-          url: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/download/v${connectionConfigs.direct.binaries.geckodriver.version}' +
-          '/${connectionConfigs.direct.binaries.geckodriver.filename}-v${connectionConfigs.direct.binaries.geckodriver.version}-${osTypeString}.zip',
+          url: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/download/${connectionConfigs.direct.binaries.geckodriver.version}' +
+          '/geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}-${osTypeString == "mac64" ? "macos" : osTypeString}' +
+          '${osTypeString == "win32" || osTypeString == "win64" ? ".zip" : ".tar.gz"}',
           latestVersionUrlRedirect: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/latest',
           executable: {
-            win32: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
-            win64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
-            mac64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}',
-            linux32: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}',
-            linux64: '${connectionConfigs.direct.binaries.geckodriver.filename}-${connectionConfigs.direct.binaries.geckodriver.version}'
+            win32: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            win64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            mac64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux32: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}'
           }
         }
       }
@@ -87,16 +89,22 @@ exports.config = {
         '*': {
           remoteWebDriverOptions: {
             maximized: true
-          }
+          },
           /*
           seleniumOptions: {
-            args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
-          }
+            args: ['-debug', '-log','selenium.log']
+          },
+          firefoxOptions: {
+            addArguments: ['-foreground']
+          },
+          geckodriverOptions: {
+            enableVerboseLogging: []
+          },
           */
         }
       }
     },
-    /* disable informabrs on chrome */
+    /* disable inforbars on chrome */
     'chrome,chromium': {
       '*': {
         '*': {
@@ -108,7 +116,7 @@ exports.config = {
           /*
           chromedriverOptions: {
             'enableVerboseLogging': [],
-            'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
+            'loggingTo': ['chromedriver.log']
           }
           */
         }

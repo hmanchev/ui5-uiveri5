@@ -166,35 +166,6 @@ browsers: [{
 }]
 ```
 
-##### Chromedriver options
-All chromedriver options as could be provided. Please check:  https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/chrome.js
-Option names match the names of ServiceBuilder object methods.
-
-```javascript  chromedriver options in conf.js
-browsers: [{
-  browserName: 'firefox',
-  capabilities: {
-    chromedriverOptions: {
-      'enableVerboseLogging': [],
-      'loggingTo': ['C:\\work\\git\\openui5\\chromedriver.log']
-    }
-  }
-}]
-```
-
-##### Selenium options
-All selenium server command-line argumens could be provided. Please check the available options by running
-selenium-server-standalone.jar with '-h' argument.
-```javascript selenium options in conf.js
-browsers: [{
-  browserName: 'firefox',
-  capabilities: {
-	  seleniumOptions: {
-	    args: ['-debug', '-log','C:/work/git/openui5/selenium.log']
-	  }
-	}
-}]
-```
 
 ### Passing params to test
 Define in conf.js file
@@ -281,7 +252,7 @@ Some application testing usecases require immediate page reload after authentica
 pageload so that some non-ui5 code to settle page state. Enable those features in config file:
 ```javascript
 pageLoading: {
-  wait: '20000',  // provided by default, remove when https://github.wdf.sap.corp/I035254/visualtestjs/issues/27 is done
+  wait: '20000', 
   initialReload: false
 }
 ```

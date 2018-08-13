@@ -47,10 +47,6 @@ function run(config) {
   var configParser = require('./configParser')(logger);
   config = configParser.mergeConfigs(config);
 
-  // resolve runtime and set browsers with capabilities
-  var runtimeResolver = require('./runtimeResolver')(config,logger);
-  config.runtimes = runtimeResolver.resolveRuntimes();
-
   config.osTypeString = (function() {
     var os = require('os');
     var osType = '';
@@ -71,6 +67,10 @@ function run(config) {
 
     return osType;
   })();
+  
+  // resolve runtime and set browsers with capabilities
+  var runtimeResolver = require('./runtimeResolver')(config,logger);
+  config.runtimes = runtimeResolver.resolveRuntimes();
 
   // resolve all placeholders in config
   configParser.resolvePlaceholders(config);

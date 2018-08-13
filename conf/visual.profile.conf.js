@@ -6,9 +6,9 @@ exports.config = {
 
   baseUrlQuery: ['sap-ui-animation=false','sap-ui-theme=sap_${runtimes[0].ui5.theme}','sap-ui-rtl=${runtimes[0].ui5.direction === \'rtl\'}','sap-ui-xx-formfactor=${runtimes[0].ui5.mode}'],
 
-  /* android,ios and mac do not support mouseMove -> click with actions */
+  /* android,ios,mac,firefox do not support mouseMove -> click with actions */
   browserCapabilities: {
-    'chrome,chromium,firefox,ie': {
+    'chrome,chromium,ie': {
       'windows,linux': {
         '*': {
           enableClickWithActions: true

@@ -19,10 +19,12 @@ var defaultPlatformResolutionPerPlatformName = {
   ios: '1536х1854',
   winphone: '1080x1920'
 };
-var defaultPlatformNamePerBrowserName = {
-  ie: 'windows',
-  edge: 'windows',
-  safari: 'mac'
+var platformNamePerOsTypeString = {
+  unknown: 'windows',
+  win32: 'windows',
+  linux32: 'linux',
+  linux64: 'linux',
+  mac64: 'mac'
 };
 var supportedBrowserNames = [
   'chrome','chromium','browser','chromeMobileEmulation','firefox','ie','safari','edge'
@@ -99,7 +101,7 @@ RuntimeResolver.prototype.resolveRuntimes = function(){
 
     // handle platformName
     if(!runtime.platformName){
-      runtime.platformName = defaultPlatformNamePerBrowserName[runtime.browserName] || DEFAULT_PLATFORM_NAME;
+      runtime.platformName = platformNamePerOsTypeString[that.config.osTypeString];
     }
     if(supportedPlatformNames.indexOf(runtime.platformName)==-1){
       throw Error('Platform: ' + runtime.platformName + ' is not supported, use one of: ' +
