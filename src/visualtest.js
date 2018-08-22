@@ -24,7 +24,7 @@ var DEFAULT_CONNECTION_NAME = 'direct';
  *  be browserName, supports column delimited and json formats, defaults to: 'chrome'
  * @property {Object} params - params object to be passed to the tests
  * @property {boolean} ignoreSync - disables waitForUI5 synchronization, defaults to: false
- * @property {boolean} useClassicalWaitForUI5 - use classical version of waitForUI5, defaults to: true
+ * @property {boolean} useClassicalWaitForUI5 - use classical version of waitForUI5, defaults to: false
  */
 
 /**
@@ -281,16 +281,16 @@ function run(config) {
         return origExecuteAsyncScript_.apply(browser, arguments);
       };
 
-      browser.loadWaitForUI5 = function () {
-        return browser.executeScriptWithDescription(clientsidescripts.loadWaiter, 'browser.loadWaitForUI5', {
+      browser.loadUI5Dependencies = function () {
+        return browser.executeAsyncScript(clientsidescripts.loadUI5Dependencies, {
           waitForUI5Timeout: waitForUI5Timeout,
           waitForUI5PollingInterval: config.timeouts.waitForUI5PollingInterval,
           ClassicalWaitForUI5: ClassicalWaitForUI5,
           useClassicalWaitForUI5: config.useClassicalWaitForUI5
         }).then(function (res) {
-          logger.debug('loadWaitForUI5: ' + res.log);
+          logger.debug('loadUI5Dependencies: ' + res.log);
           if (res.error) {
-            throw new Error('loadWaitForUI5: ' + res.error);
+            throw new Error('loadUI5Dependencies: ' + res.error);
           }
         });
       };
@@ -468,7 +468,7 @@ function run(config) {
           }
 
           // load waitForUI5 logic on client
-          browser.loadWaitForUI5();
+          browser.loadUI5Dependencies();
 
           // ensure app is fully loaded before starting the interactions
           return browser.waitForAngular();

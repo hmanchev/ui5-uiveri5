@@ -12,13 +12,13 @@ Control.prototype.getProperty = function (property) {
     return browser.executeScriptWithDescription(clientsidescripts.getControlProperty, 'Control.getProperty', {
       elementId: elementId,
       property: property
-    }).then(function (result) {
-      if (result.error) {
-        throw new Error('Cannot investigate UI5 control properties: ' + result.error);
-      } else {
-        return result.property;
-      }
     });
+  }).then(function (result) {
+    if (result.error) {
+      throw new Error('Cannot investigate UI5 control properties: ' + result.error);
+    } else {
+      return result.property;
+    }
   });
 };
 

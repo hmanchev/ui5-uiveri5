@@ -1,75 +1,124 @@
+/* global Promise */
 var util = require('util');
 
 // functions to be executed in the browser
 var mFunctions = {
-  
-  loadWaiter: function (mScriptParams) {
-    var sDebugLog = 'Loading waitForUI5 implementation, params: ' + 
-      'useClassicalWaitForUI5: '  +  mScriptParams.useClassicalWaitForUI5 + 
-      ' ,waitForUI5Timeout: ' + mScriptParams.waitForUI5Timeout + 'ms' + 
+
+  // load all UI5 dependencies asynchronously at once before test start.
+  // when fnCallback will is called, the script will be considered completed
+  // fnCallback will be called with an object argument
+  // which will always have a 'log' and will have 'error' only when loading of dependensies was unsuccessful
+  loadUI5Dependencies: function (mScriptParams, fnCallback) {
+    var sDebugLog = 'Loading waitForUI5 implementation, params: ' +
+      'useClassicalWaitForUI5: '  +  mScriptParams.useClassicalWaitForUI5 +
+      ' ,waitForUI5Timeout: ' + mScriptParams.waitForUI5Timeout + 'ms' +
       ' ,waitForUI5PollingInterval: ' + mScriptParams.waitForUI5PollingInterval + 'ms';
-   
+
     if (!window.sap || !window.sap.ui) {
-      return {log: sDebugLog, error: 'No UI5 on this page'};
+      fnCallback({log: sDebugLog, error: 'No UI5 on this page'});
     }
 
-    if (mScriptParams.useClassicalWaitForUI5) {
-      sDebugLog += '\nLoading classical waitForUI5 implementation.';
-      loadClassicalWaitForUI5();
-    } else {
-      try {
-        sDebugLog += '\nLoading OPA waitForUI5 implementation.';
-        loadOPAWaitForUI5();
-      } catch (err) {
-        sDebugLog += '\nFailed to load OPA waitForUI5, Fallback to loading classical waitForUI5 implementation. Details: ' + err;
-        loadClassicalWaitForUI5();  
-      }
-    }
+    /* global uiveri5 */
+    window.uiveri5 = {};
 
-    function loadClassicalWaitForUI5() {
-      if (!sap.ui.ClassicalWaitForUI5) {
-        var ClassicalWaitForUI5 = new Function('return (' + mScriptParams.ClassicalWaitForUI5 + ').apply(this, arguments)');
-        sap.ui.getCore().registerPlugin({
-          startPlugin: function (oCore) {
-            jQuery.sap.declare('sap.ui.ClassicalWaitForUI5');
-            sap.ui.ClassicalWaitForUI5 = new ClassicalWaitForUI5(mScriptParams.waitForUI5Timeout, {
-              getUIDirty: oCore.getUIDirty.bind(oCore),
-              attachUIUpdated: oCore.attachUIUpdated.bind(oCore)
-            });
-          }
+    loadOPAControlFinder().then(function () {
+      if (mScriptParams.useClassicalWaitForUI5) {
+        sDebugLog += '\nLoading classical waitForUI5 implementation.';
+        return loadClassicalWaitForUI5();
+      } else {
+        sDebugLog += '\nLoading OPA5 waitForUI5 implementation.';
+        return loadOPAWaitForUI5().catch(function (sError) {
+          sDebugLog += '\nFailed to load OPA5 waitForUI5, Fallback to loading classical waitForUI5 implementation. Details: ' + sError;
+          return loadClassicalWaitForUI5();
         });
       }
+    }).then(function (sLog) {
+      fnCallback({log: sDebugLog + (sLog || '')});
+    }).catch(function (sError, sLog) {
+      fnCallback({error: sError, log: sDebugLog + (sLog || '')});
+    });
+
+    // --- helper function declarations below ---
+
+    function loadClassicalWaitForUI5() {
+      return new Promise(function (resolve) {
+        if (uiveri5.ClassicalWaitForUI5) {
+          resolve();
+        } else {
+          var ClassicalWaitForUI5 = new Function('return (' + mScriptParams.ClassicalWaitForUI5 + ').apply(this, arguments)');
+          sap.ui.getCore().registerPlugin({
+            startPlugin: function (oCore) {
+              window.uiveri5.ClassicalWaitForUI5 = new ClassicalWaitForUI5(mScriptParams.waitForUI5Timeout, {
+                getUIDirty: oCore.getUIDirty.bind(oCore),
+                attachUIUpdated: oCore.attachUIUpdated.bind(oCore)
+              });
+              resolve();
+            }
+          });
+        }
+      });
     }
 
     function loadOPAWaitForUI5() {
-      if (!sap.ui.autoWaiterAsync) {
-        try {
-          sap.ui.define('sap.ui.autoWaiterAsync',[
-            'sap/ui/test/autowaiter/_autoWaiterAsync',
-          ], function (_autoWaiterAsync) {
-            _autoWaiterAsync.extendConfig({
-              timeout: mScriptParams.waitForUI5Timeout,
-              interval: mScriptParams.waitForUI5PollingInterval
-            });
-            return _autoWaiterAsync;
-          }, true);
-        } catch (err) {
-          throw new Error('Cannot define sap.ui.autoWaiterAsync. Details: ' + err);
+      return new Promise(function (resolve, reject) {
+        if (uiveri5.autoWaiterAsync) {
+          resolve();
+        } else {
+          var onError = function (oError) {
+            reject('Cannot define uiveri5.autoWaiterAsync. Details: ' + oError);
+          };
+          try {
+            sap.ui.require([
+              'sap/ui/test/autowaiter/_autoWaiterAsync'
+            ], function(_autoWaiterAsync) {
+              _autoWaiterAsync.extendConfig({
+                timeout: mScriptParams.waitForUI5Timeout,
+                interval: mScriptParams.waitForUI5PollingInterval
+              });
+              window.uiveri5.autoWaiterAsync = _autoWaiterAsync;
+              resolve();
+            }, onError);
+          } catch (oError) {
+            onError(oError);
+          }
         }
-      }
+      });
     }
 
-    return {log: sDebugLog};
+    function loadOPAControlFinder() {
+      return new Promise(function (resolve) {
+        if (uiveri5._ControlFinder) {
+          resolve();
+        } else {
+          sDebugLog += '\nLoading OPA5 control locator utilities.';
+          var onError = function (oError) {
+            // only throw error if dependency is missing when a control locator is actually used
+            resolve('Control locators will not be enabled.' +
+            ' Minimum UI5 versions supporting control locators: 1.52.12; 1.54.4; 1.55 and up. Details: ' + oError);
+          };
+          try {
+            sap.ui.require([
+              'sap/ui/test/_ControlFinder'
+            ], function (_ControlFinder) {
+              window.uiveri5._ControlFinder = _ControlFinder;
+              resolve();
+            }, onError);
+          } catch (oError) {
+            onError(oError);
+          }
+        }
+      });
+    }
   },
 
   waitForAngular: function (mScriptParams, fnCallback) {
     if (!window.sap || !window.sap.ui) {
       fnCallback('waitForUI5: no UI5 on this page.');
     } else {
-      if (sap.ui.autoWaiterAsync) {
-        sap.ui.autoWaiterAsync.waitAsync(fnCallback);
-      } else if (sap.ui.ClassicalWaitForUI5) {
-        sap.ui.ClassicalWaitForUI5.notifyWhenStable(fnCallback);
+      if (uiveri5.autoWaiterAsync) {
+        uiveri5.autoWaiterAsync.waitAsync(fnCallback);
+      } else if (uiveri5.ClassicalWaitForUI5) {
+        uiveri5.ClassicalWaitForUI5.notifyWhenStable(fnCallback);
       } else {
         fnCallback('waitForUI5: no waitForUI5 implementation is currently loaded.');
       }
@@ -84,35 +133,26 @@ var mFunctions = {
   },
 
   getControlProperty: function (mScriptParams) {
-    if (!window.sap || !window.sap.ui) {
-      return {error: 'No UI5 found on the page'};
-    }
-    try {
-      sap.ui.require(['sap/ui/test/_ControlFinder']);
-    } catch (err) {
-      throw new Error('Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: ' + err);
+    if (!uiveri5._ControlFinder) {
+      throw new Error('Your application needs a newer version of UI5 to use control locators!' +
+      ' Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up.');
     }
 
-    var control = sap.ui.test._ControlFinder._getControlForElement(mScriptParams.elementId);
-    var property = control ? sap.ui.test._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
+    var control = uiveri5._ControlFinder._getControlForElement(mScriptParams.elementId);
+    var property = control ? uiveri5._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
     return {property: property};
   },
 
   findByControl: function (sMatchers, oParentElement) {
-    if (!window.sap || !window.sap.ui) {
-      throw new Error('findByControl: no UI5 on this page.');
-    }
-
-    try {
-      sap.ui.require(['sap/ui/test/_ControlFinder']);
-    } catch (err) {
-      throw new Error('Your application needs a newer version of UI5 to use control locators! Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up. Details: ' + err);
+    if (!uiveri5._ControlFinder) {
+      throw new Error('Your application needs a newer version of UI5 to use control locators!' +
+      ' Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up.');
     }
 
     var mMatchers = JSON.parse(sMatchers);
 
     if (oParentElement) {
-      var control = sap.ui.test._ControlFinder._getControlForElement(oParentElement.id);
+      var control = uiveri5._ControlFinder._getControlForElement(oParentElement.id);
       mMatchers.ancestor = control && [[control.getId()]];
     }
 
@@ -128,7 +168,7 @@ var mFunctions = {
       });
     }
 
-    return sap.ui.test._ControlFinder._findElements(mMatchers);
+    return uiveri5._ControlFinder._findElements(mMatchers);
   }
 };
 
