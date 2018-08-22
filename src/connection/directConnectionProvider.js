@@ -71,6 +71,8 @@ DirectConnectionProvider.prototype.resolveCapabilitiesFromRuntime = function(run
   } else {
     if (runtime.browserName === 'ie') {
       capabilities.browserName = 'internet explorer';
+    } else if (runtime.browserName === 'edge') {
+      capabilities.browserName = 'MicrosoftEdge';
     } else {
       capabilities.browserName = runtime.browserName;
     }
@@ -180,6 +182,15 @@ DirectConnectionProvider.prototype.setupEnv = function() {
             that.seleniumConfig.executables.geckodriver = filename;
           })
         );
+      } else if (browserName == 'edge') {
+        promises.push((function() {
+          var deferred = q.defer();
+          var root = path.resolve(__dirname + '/../../selenium').replace(/\\/g,'/');
+          var filename = path.join(root, 'MicrosoftWebDriver.exe');
+          that.seleniumConfig.executables.edgedriver = filename;
+          deferred.resolve(filename);
+          return deferred.promise;
+        })());
       } else {
         that.logger.debug('No need to download webdriver binary for: ' + browserName);
       }
@@ -443,7 +454,9 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         opts.jvmArgs.push('-Dwebdriver.gecko.driver=' + that.seleniumConfig.executables.geckodriver);
       } else if (browserName == 'internet explorer') {
         opts.jvmArgs.push('-Dwebdriver.ie.driver=' + that.seleniumConfig.executables.iedriver);
-      } 
+      } else if (browserName == 'MicrosoftEdge') {
+        opts.jvmArgs.push('-Dwebdriver.edge.driver=' + that.seleniumConfig.executables.edgedriver);
+      }
 
       var seleniumServer = new that.deps.remote.SeleniumServer(that.seleniumConfig.executables.selenium,opts);
 
@@ -549,8 +562,31 @@ DirectDriverProvider.prototype.getNewDriver = function() {
           });
         }
         // merge capabilities
-        var allCapabilities = driverOptions.toCapabilities(browserOptions.toCapabilities());
-        driver = that.deps.ie.Driver.createSession(that.deps.ie.Options.fromCapabilities(allCapabilities));
+        var allIECapabilities = driverOptions.toCapabilities(browserOptions.toCapabilities());
+        // start the local iedriver and connect to it
+        driver = that.deps.ie.Driver.createSession(that.deps.ie.Options.fromCapabilities(allIECapabilities));
+      } else if (browserName == 'MicrosoftEdge') {
+        that.deps.edge = protractorModule.require('selenium-webdriver/edge');
+
+        if (that.seleniumConfig.host) {
+          that.protConfig.capabilities.edgedriverOptions.host = that.seleniumConfig.host;
+        }
+
+        that.logger.debug('Starting local edgedriver with executable: ' +
+          that.seleniumConfig.executables.edgedriver);
+
+        var edgeOptions = [new that.deps.edge.Options(), new that.deps.edge.Options()];
+        _.forEach(['edgedriverOptions', 'edgeOptions'], function (capabilitiesKey, index) {
+          _.forIn(that.protConfig.capabilities[capabilitiesKey], function (value, key) {
+            that.deps.edge.Options.prototype[key].apply(edgeOptions[index], value);
+          });
+        });
+        // merge capabilities
+        var allEdgeCapabilities = edgeOptions[0].toCapabilities(edgeOptions[1].toCapabilities());
+
+        // start the local edgedriver and connect to it
+        var edgeServiceBuilder = new that.deps.edge.ServiceBuilder(that.seleniumConfig.executables.edgedriver);
+        driver =  that.deps.edge.Driver.createSession(allEdgeCapabilities, edgeServiceBuilder.build());
       } else if (browserName == 'safari') {
         that.deps.safari = protractorModule.require('selenium-webdriver/safari');
 

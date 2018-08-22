@@ -160,6 +160,17 @@ exports.config = {
           }
         }
       }
+    },
+    */
+    /*
+    'edge': {
+      '*': {
+        '*': {
+          edgedriverOptions: {
+            'setPageLoadStrategy': ['normal'],
+          }
+        }
+      }
     }
     */
   },
