@@ -523,22 +523,34 @@ DirectDriverProvider.prototype.getNewDriver = function() {
         driver =  that.deps.firefox.Driver.createSession(
           firefoxOptions,firefoxService);
       } else if (browserName == 'internet explorer') {
-        // by default iedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
-        // only host could be overridden - only set it to webdriver, could not override of the returned getLoopbackAddress address !!!
+        that.deps.ie = protractorModule.require('selenium-webdriver/ie');
+
+        // iedriver is started without specifying host, on findFreePort, returns getLoopbackAddress
         that.logger.debug('Starting local iedriver with executable: ' +
           that.seleniumConfig.executables.iedriver);
-
-        // set host
-        if (that.seleniumConfig.host){
-          capabilities.host = that.seleniumConfig.host;
-        }
 
         // set iedriver executable
         process.env.PATH = process.env.PATH + path.delimiter + path.dirname(that.seleniumConfig.executables.iedriver);
 
-        // start the local iedriver and connect to it
-        driver = new that.deps.webdriver.Builder().forBrowser('ie')
-          .withCapabilities(new that.deps.webdriver.Capabilities(capabilities)).build();
+        var driverOptions = new that.deps.ie.Options();
+        if (this.protConfig.capabilities.iedriverOptions) {
+          _.forIn(this.protConfig.capabilities.iedriverOptions, function (value, key) {
+            var funcName = key;
+            if (funcName.startsWith('ie.')) {
+              funcName = funcName.substring(3);
+            }
+            that.deps.ie.Options.prototype[funcName].apply(driverOptions, value);
+          });
+        }
+        var browserOptions = new that.deps.ie.Options();
+        if (this.protConfig.capabilities.ieOptions) {
+          _.forIn(this.protConfig.capabilities.ieOptions, function (value, key) {
+            that.deps.ie.Options.prototype[key].apply(browserOptions, value);
+          });
+        }
+        // merge capabilities
+        var allCapabilities = driverOptions.toCapabilities(browserOptions.toCapabilities());
+        driver = that.deps.ie.Driver.createSession(that.deps.ie.Options.fromCapabilities(allCapabilities));
       } else if (browserName == 'safari') {
         that.deps.safari = protractorModule.require('selenium-webdriver/safari');
 

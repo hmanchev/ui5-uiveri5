@@ -43,12 +43,10 @@ exports.config = {
           version: '3.12',
           patch: '0',
           unzip: true,
-          filename: 'IEDriverServer',
+          filename: 'IEDriverServer.exe',
           url: 'http://selenium-release.storage.googleapis.com/${connectionConfigs.direct.binaries.iedriver.version}/' +
-          '${connectionConfigs.direct.binaries.iedriver.filename}_Win32_${connectionConfigs.direct.binaries.iedriver.version}.' +
-          '${connectionConfigs.direct.binaries.iedriver.patch}.zip',
-          executable: '${connectionConfigs.direct.binaries.iedriver.filename}-${connectionConfigs.direct.binaries.iedriver.version}.' +
-          '${connectionConfigs.direct.binaries.iedriver.patch}.exe'
+          'IEDriverServer_Win32_${connectionConfigs.direct.binaries.iedriver.version}.' + '${connectionConfigs.direct.binaries.iedriver.patch}.zip',
+          executable: 'IEDriverServer.exe'
         },
         geckodriver: {
           version: '{latest}',
@@ -61,11 +59,11 @@ exports.config = {
           '${osTypeString == "win32" || osTypeString == "win64" ? ".zip" : ".tar.gz"}',
           latestVersionUrlRedirect: '${connectionConfigs.direct.binaries.geckodriver.baseurl}/latest',
           executable: {
-            win32: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
-            win64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
-            mac64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}',
-            linux32: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}',
-            linux64: 'geckodrvier-${connectionConfigs.direct.binaries.geckodriver.version}'
+            win32: 'geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            win64: 'geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}.exe',
+            mac64: 'geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux32: 'geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}',
+            linux64: 'geckodriver-${connectionConfigs.direct.binaries.geckodriver.version}'
           }
         }
       }
@@ -145,7 +143,25 @@ exports.config = {
           }
         }
       }
+    },
+    /* WARNING: ignoring protected mode may introduce errors
+     * A better solution would be to configure your IE browser:
+     * https://github.com/seleniumQuery/seleniumQuery/wiki/seleniumQuery-and-IE-Driver#protected-mode-exception-while-launching-ie-driver
+     */
+    /*
+    'ie': {
+      '*': {
+        '*': {
+          iedriverOptions: {
+            introduceFlakinessByIgnoringProtectedModeSettings: ['true']
+          },
+          ieOptions: {
+            addArguments: ['-foreground']
+          }
+        }
+      }
     }
+    */
   },
 
   auth: 'plain',
