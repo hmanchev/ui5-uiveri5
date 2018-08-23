@@ -19,11 +19,13 @@ and brings most (and more) of its benefits to UI5 applications.
 * Covers full ui5 browser matrix - Chrome,Firefox,IE,Edge,Safari,iOS,Android.
 
 #### Upcomming 
-* Fix for latest Firefox and Edge support (Q2 2018)
-* Cucumber syntax for writing Acceptance Tests, similar tyo Gherkin for OPA (Q2 2018)
-* API testing in JS and Cucumber (Q2 2018)
-* Code coverage reporting with istambuljs (Q2 2018)
-* Visual control selectors recording with UI5 Inspector (Q3 2018) 
+* Support latest Firefox,Edge,IE (Q2 2018) - DONE in v1.33.7
+* API testing in JS (Q3 2018) - IN PROCESS
+* Support latest Safari (Q2 2018)
+* Cucumber syntax for writing Acceptance Tests, similar to Gherkin for OPA (Q3/4 2018)
+* API testing with Cucumber (Q4 2018)
+* Code coverage reporting with istambuljs (Q3 2018)
+* Visual control selectors recording with UI5 Inspector or plugin, similar to Support Assitant (Q1 2019)
 
 ### Integration testing
 Integration tests are E2E functional tests for applications with actual backends. 
