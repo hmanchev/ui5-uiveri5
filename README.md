@@ -5,7 +5,7 @@
 ## Introduction
 UIVeri5 is a visual and application testing framework for UI5-based applications. It uses
 [webdriverjs](https://code.google.com/p/selenium/wiki/WebDriverJs) to drive a real browser and interacts with your
-application as a real user would. Visualtestjs is heavily inspired and based on [Protractor](http://www.protractortest.org/)
+application as a real user would. UIVeri5 is heavily inspired and based on [Protractor](http://www.protractortest.org/)
 and brings most (and more) of its benefits to UI5 applications.
 
 ### Benefits
