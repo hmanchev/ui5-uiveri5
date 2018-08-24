@@ -15,12 +15,26 @@ request('myapi.dev.hana.ondemand.com')
 ```javascript
 let res = request('myapi.dev.hana.ondemand.com')
     .get('/contacts/1');
+// error response will cause a test failure
 
-// modeled accordin SuperTest API but 'jasminized' to fix overal uiveri experiance
-expect(res).toHaveHTTPCode(200);
-expect(res).toHaveHTTPBody({name: 'something'}); // TODO json assertion lib ?
-expect(res).toHaveHTTPHeader('Content-Type', 'application/json');
+// supertest-like assertions
+expect(res).toHaveHTTPBody({name: 'something'});        // deep equal, string equal, regexp
+expect(res).toHaveHTTPHeader('Content-Type', 'application/json');   
+
+// should.js for adavnced body assertions
+expect(res).bodyShould().have.property('name', 'tj');   
 ```
+
+## Assert on error response code
+```javascript
+
+let res = request('myapi.dev.hana.ondemand.com')
+    .get('/contacts/1')
+    .catch(response => {
+        expect(response.code).toBe(401);
+        expect(response.body).toMatch(/access denied/);
+    });  
+``` 
 
 ## Save result from call and use it in another call
 ```javascript
@@ -35,3 +49,32 @@ request('myapi.dev.hana.ondemand.com')
 request('myapi.dev.hana.ondemand.com')
     .delete((contacts) => `/contacts/{contacts[0].id}`);
 ```
+
+# Authentication
+TODO
+
+# OData helpers
+Full OData ORM is out of scope but the following samples could simplify basic OData scenarious. For better oData support, please use [TBD]().
+
+## Build odata service url
+```javascript
+```
+
+# Advanced
+
+## Control Flow
+Currently uiveri5 is utilising the webdriverjs concept of control flow. The flow is a sequence of asynchronous function calls, that a dedicated scheduler runs in sequence. 
+
+### Synchrnoze a promise in the control flow
+The flow mananager API is based on promises so it is very easy to synchrnonze a promise in the control flow. With this, subsequence flow operations like element().click() or expect() calls will wait for the promise to be resolved and just then proceed.
+
+````javascript
+browser.driver.control.flow(somePromise);
+````
+
+## Async/Await 
+ In ES2017 environment,the concept of control flow is supported natively with the async/await operators. Async/await operators have a great benefit - make it easy to debug the async executions with browser/node tool. But also have a disadvantage compared to execution flow - the synchrnization is explicit and is responsibility of the test developer. Due to this explicitness, it is not possible to combine flow manager and async/await transparently, the app/test should explicitly synchronize on the interaction points.
+
+### Execute async/await code before flow manager code
+
+### Execute flow manager code before async/await code
