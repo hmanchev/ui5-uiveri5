@@ -141,3 +141,7 @@ All of the defaults could be modified either in conf.js or by providing command-
 ```
 * Enable verbose logging
 `-v`
+
+Disclamer:
+By default, when running locally, uiveri5 downloads selenium.jar and/or the respective webdrivers - chromedriver, geckodriver, InternetExplorerDriver from their official locations. By using this functionality, you accept the licencing agreement and terms of use of those components. You could disable the downloading or change the locations in profile.conf.js. 
+When using --seleniumAddress, nothing is downloaded. 
