@@ -1,13 +1,13 @@
 /*global describe,it,element,by,takeScreenshot,expect*/
 
-var utils = require('../utils');
+var utils = require('./fixture/utils');
 
 describe("asControl", function () {
 	"use strict";
 
 	beforeAll(function () {
-    utils.injectPageContent(browser, "app");
-  });
+		utils.injectPageContent(browser, "app");
+	});
 
 	it("should get control properties", function () {
 		var title = element(by.id("page1-title-inner")).asControl();

@@ -12,12 +12,11 @@ module.exports = function (grunt) {
       server: {
         options: {
           port: 9000,
-          base: 'e2e/UI5'
+          base: 'e2e/UI5/fixture'
         }
       }
     },
     shell: {
-      'e2e-noUI5': buildE2ECmd('e2e/noUI5'),
       'e2e-UI5': buildE2ECmd('e2e/UI5')
     }
   });
@@ -26,5 +25,4 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-shell');
 
   grunt.registerTask('e2e', ['connect', 'shell:e2e-UI5']);
-
 };

@@ -1,6 +1,6 @@
 /*global describe,it,element,by,takeScreenshot,expect*/
 
-var utils = require('../utils');
+var utils = require('./fixture/utils');
 
 describe("byControl", function () {
 	"use strict";

@@ -1,8 +1,14 @@
 /*global beforeAll, describe, it, element, by, takeScreenshot, expect, createPageObjects, Given, When, Then*/
 
+var utils = require('./fixture/utils');
+
 describe("pageObjects", function () {
   "use strict";
 
+  beforeAll(function () {
+		utils.injectPageContent(browser, "app");
+  });
+  
   createPageObjects({
     App: {
       arrangements: {

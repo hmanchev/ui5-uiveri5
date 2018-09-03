@@ -1,7 +1,7 @@
 var pages = {
-  app: require('./pageContent/app'),
-  wait: require('./pageContent/wait'),
-  waitRecursive: require('./pageContent/waitRecursive')
+  app: require('./apps/app'),
+  wait: require('./apps/wait'),
+  waitRecursive: require('./apps/waitRecursive')
 };
 
 module.exports = {

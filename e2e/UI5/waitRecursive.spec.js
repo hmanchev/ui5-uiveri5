@@ -1,4 +1,6 @@
-var utils = require("../utils");
+/*global beforeAll, describe, it, element, by, takeScreenshot, expect, createPageObjects, Given, When, Then*/
+
+var utils = require('./fixture/utils');
 
 describe("waitRecursive", function() {
   "use strict";
