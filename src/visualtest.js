@@ -68,7 +68,7 @@ function run(config) {
 
     return osType;
   })();
-  
+
   // resolve runtime and set browsers with capabilities
   var runtimeResolver = require('./runtimeResolver')(config,logger);
   config.runtimes = runtimeResolver.resolveRuntimes();
@@ -177,7 +177,7 @@ function run(config) {
       return connectionProvider.resolveCapabilitiesFromRuntime(runtime);
     });
     logger.debug('Resolved protractor multiCapabilities from runtime: ' + JSON.stringify(protractorArgv.multiCapabilities));
-  
+
     // execute runtimes consequently
     // TODO consider concurrent execution
     protractorArgv.maxSessions = 1;
@@ -217,6 +217,10 @@ function run(config) {
         if (comparisonProvider) {
           comparisonProvider.register(matchers);
         }
+
+        // load API testing provider
+        var Request = require('./request/request')();
+        request = new Request();
 
         // process remoteWebDriverOptions
         var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, 'maximized');
