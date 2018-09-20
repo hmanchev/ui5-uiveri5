@@ -219,8 +219,8 @@ function run(config) {
         }
 
         // load API testing provider
-        var Request = require('./request/request')();
-        request = new Request();
+        var Request = require('./request/request');
+        request = new Request({}, {}, logger);
 
         // process remoteWebDriverOptions
         var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, 'maximized');
