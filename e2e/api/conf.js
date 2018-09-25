@@ -1,6 +1,7 @@
 exports.config = {
   // do not inherit integration profile as it enables screenshot reporter
   specResolver: './resolver/localSpecResolver',
+  toHaveHttpBody: './api/toHaveHttpBody',
 
   baseUrl: 'https://sapui5.hana.ondemand.com/sdk/',
   specs: './*.spec.js',

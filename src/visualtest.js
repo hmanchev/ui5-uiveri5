@@ -218,8 +218,13 @@ function run(config) {
           comparisonProvider.register(matchers);
         }
 
+        var toHaveHttpBody = moduleLoader.loadModuleIfAvailable('toHaveHttpBody');
+        if (toHaveHttpBody) {
+          toHaveHttpBody.register(matchers);
+        }
+
         // load API testing provider
-        var Request = require('./request/request');
+        var Request = require('./api/request');
         request = new Request({}, {}, logger);
 
         // process remoteWebDriverOptions
