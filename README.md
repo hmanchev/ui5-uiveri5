@@ -44,17 +44,35 @@ describe('masterdetail', function () {
   it('should load the app',function() {
     expect(browser.getTitle()).toBe('Master-Detail');
 
-    expect(element.all(by.css('.sapMSplitContainerMaster .sapMLIB')).count()).toBe(21);
+    expect(element.all(by.control({
+      viewName: 'sap.ui.demo.masterdetail.view.Master',
+      controlType:'sap.m.ObjectListItem'}))
+    .count()).toBe(20);
   });
 
   it('should display the details screen',function() {
-    element(by.jq('.sapMSplitContainerMaster .sapMLIB:eq(2)')).click();
+    element(by.control({
+      viewName: 'sap.ui.demo.masterdetail.view.Master',
+      controlType: 'sap.m.ObjectListItem',
+      properties: {
+        title: 'Object 11'
+      }}))
+    .click();
 
-    expect(element(by.css('.sapMOHTitle')).getText()).toBe('Object 11');
+    expect(element(by.control({
+      viewName: 'sap.ui.demo.masterdetail.view.Detail',
+      id: 'detailPage-pageTitle'
+    })).element(by.control({
+      viewName: 'sap.ui.demo.masterdetail.view.Detail',
+      controlType: 'sap.m.Title'
+    })).asControl().getProperty("text")).toBe('Object 11');
   });
 
   it('should validate line items',function() {
-    expect(element.all(by.css('.sapMSplitContainerDetail tbody tr')).count()).toBe(2);
+    expect(element.all(by.control({
+      viewName: 'sap.ui.demo.masterdetail.view.Detail',
+      controlType:'sap.m.ColumnListItem'}))
+    .count()).toBe(2);
   });
 });
 ```
@@ -74,6 +92,7 @@ describe('sap.m.Wizard', function() {
   });
 });
 ```
+
 #### Disclamer
 Visual testing in default configuration depends on backend infrastructure for saving the screenshots and tooling and processes for updating the reference images. Currently, this setup is only available and supported for openui5 project itself.
 Anyway, if you wish to experiment with visual testing for other projects and you are ready to spend some time to configure it, do not hesitate to reach us for advice.
