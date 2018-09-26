@@ -3,7 +3,7 @@
  * @constructor
  *
  */
-function ToHaveHttpBody(config, instanceConfig, logger){
+function ToHaveHttpBody(){
 
 }
 
@@ -18,13 +18,12 @@ ToHaveHttpBody.prototype.register = function(matchers) {
 
         return result;
       }
-    }
+    };
   };
 
   matchers.toHaveHttpBody = toHaveHttpBody;
-  console.log('1');
 };
 
-module.exports = function(config, instanceConfig, logger){
-  return new ToHaveHttpBody(config, instanceConfig, logger);
+module.exports = function(){
+  return new ToHaveHttpBody();
 };
