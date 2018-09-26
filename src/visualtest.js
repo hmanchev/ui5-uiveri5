@@ -223,6 +223,11 @@ function run(config) {
           toHaveHttpBody.register(matchers);
         }
 
+        var toHaveHttpHeader = moduleLoader.loadModuleIfAvailable('toHaveHttpHeader');
+        if (toHaveHttpHeader) {
+          toHaveHttpHeader.register(matchers);
+        }
+
         // load API testing provider
         var Request = require('./api/request');
         global.request = new Request({}, {}, logger);
