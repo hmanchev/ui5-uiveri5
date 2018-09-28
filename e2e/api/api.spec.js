@@ -19,7 +19,14 @@ describe('api', function() {
   });
 
   it('Should make api call and check response header', function() {
-    var res = request.get('https://reqres.in/api/users/2');
+    var res = request.get('https://reqres.in/api/users/2').query({ action: 'edit', city: 'London' });
+    expect(res).toHaveHTTPHeader(['Content-Type', 'application/json']);
+  });
+
+  it('Should make post api call and check response', function() {
+    var res = request.post('https://reqres.in/api/users1')
+      .send({"name": "morpheus", "job": "leader"})
+      .set('accept', 'json');
     expect(res).toHaveHTTPHeader(['Content-Type', 'application/json']);
   });
 });

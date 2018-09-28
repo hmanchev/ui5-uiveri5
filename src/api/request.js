@@ -11,17 +11,19 @@ function Request(config, instanceConfig, logger){
 
   var controlFlow = browser.controlFlow();
   var originalGet = superagent.get;
+
+  var originalPost = superagent.post;
   var originalEnd = superagent.Request.prototype.end;
 
   var superRequest;
   superagent.get = function get(field) {
+    superRequest = originalGet.call(superagent, field);
+    return superRequest;
+  };
 
-    var controlFlowPromise = controlFlow.execute(function() {
-      superRequest = originalGet.call(superagent, field);
-      return superRequest;
-    });
-
-    return controlFlowPromise;
+  superagent.post = function get(field) {
+    superRequest = originalPost.call(superagent, field);
+    return superRequest;
   };
 
   superagent.Request.prototype.end = function end(fn) {
