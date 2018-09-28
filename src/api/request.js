@@ -1,42 +1,17 @@
 var superagent = require('superagent');
 
-/**
- * @constructor
- *
- */
-function Request(config, instanceConfig, logger){
-  var that = this;
-
-  this.logger = logger;
-
+module.exports = function(config, instanceConfig, logger){
   var controlFlow = browser.controlFlow();
-  var originalGet = superagent.get;
+  var originalEnd = superagent.Request.prototype._end;
 
-  var originalPost = superagent.post;
-  var originalEnd = superagent.Request.prototype.end;
-
-  var superRequest;
-  superagent.get = function get(field) {
-    superRequest = originalGet.call(superagent, field);
-    return superRequest;
-  };
-
-  superagent.post = function get(field) {
-    superRequest = originalPost.call(superagent, field);
-    return superRequest;
-  };
-
-  superagent.Request.prototype.end = function end(fn) {
+  superagent.Request.prototype._end = function end(fn) {
+    var that = this;
     return controlFlow.execute(function () {
-      return originalEnd.call(superRequest, fn);
+      return originalEnd.call(that, fn);
     }).catch(function(error) {
-      that.logger.debug('Error in get request: ' + error);
+      logger.debug('Error in get request: ' + error);
     });
   };
 
   return superagent;
-}
-
-module.exports = function(config, instanceConfig, logger){
-  return Request(config, instanceConfig, logger);
 };

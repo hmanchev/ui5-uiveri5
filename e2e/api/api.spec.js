@@ -29,4 +29,9 @@ describe('api', function() {
       .set('accept', 'json');
     expect(res).toHaveHTTPHeader(['Content-Type', 'application/json']);
   });
+
+  it('Should make api call and check response header', function() {
+    var res = request.delete('https://reqres.in/api/users/2');
+    expect(res).toHaveHTTPBody({});
+  });
 });
