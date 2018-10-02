@@ -55,39 +55,7 @@ $ visualtest --browsers=chromeMobileEmulation
 ```
 
 ### Browser capabilities
-
-Default browser capabilities could be provided in browserCapabilities for a browser and platform pair.
-Those capabilities will be used by default when driving the specific browser. Both browser and platform fields
-accept a comma-separated list of names, wildcard character '*'. Prepend the exclusion charatcter '!' in front
-of the name to exclude this name from the match.
-Those capabilities could be overwritten or extended in the browser runtime configuration.
-
-Add default options to browser capabilities. They can be separated for local execution, or for remote.
-For default capabilities (both for local and remote) can be used '*' as third level. The execution type (local or remote)
-is recognized automatically by the framework.
-```javascript
-browserCapabilities: {
-  'chrome': {
-    'windows': {
-      'local': {
-        viewportSize: {
-          width: 1920,
-          height: 1067
-        }
-      },
-      'remote': {
-        remoteWebDriverOptions: {
-          maximized: true
-        }
-      },
-      '*': {
-        enableClickWithActions: true
-      }
-    }
-  }
-}
-```
-or overwrite or extend in browser runtime:
+Overwrite or extend in browser runtime:
 ```javascript
 browsers: [{
   browserName: 'chrome',
@@ -99,73 +67,18 @@ browsers: [{
   }
 }]
 ```
-There is no need to specify the execution type.
 
 ### Local and remote execution
-If _seleniumAddress_ is provided (either in conf.js or on command line) the tool will connect to this address.
-The remote connection could use pass over http proxy server specified in _seleniumAddressProxy_.
-If not specified, it will try to start local webdriver and download a correct version if not already available.
+If _seleniumAddress_ is provided (either in conf.js or on command line) uiveri5 will connect to this address.
+The remote connection could use http proxy server specified in _seleniumAddressProxy_.
+If seleniumAddress is not specified, it will try to start local webdriver and download a correct version if not already available.
 By default an automatically resolved free port is used for the locally started webdriver, it could be overwritten
-by _seleniumPort_ configuration. By default a
-selenium jar is started that controls the local webdriver. If _useSeleniumJar_ with false value is provided,
-the selenium jar will be skipped and local webdriver will be started directly. This could be useful when more
-fine-grained configurations to the webdriver are necessary.
+by _seleniumPort_ configuration. By default a selenium jar is started that controls the local webdriver. If _useSeleniumJar_ with false value is provided,
+the selenium jar will be skipped and local webdriver will be started directly. 
 
-###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver tries to connect to some of the other adresses and never succeeds. The workaround for this case is to set the _seleniumLoopback_ parameter to _true_. ######
+###### In some specific network cases(e.g. multi homed machines), starting webdriver locally may fail with a timeout. The timeout is caused by the fact that selenium by default binds to first/primary IP. But if the machine has several IPs like in the case of VPN the webdriver could try to connect to some of the other adresses and never succeeds. The workaround for this case is to set the _seleniumLoopback_ parameter to _true_. ######
 
-#### Automatic download of webdrivers and selenium
-When local webdriver execution is required, the tool tries to download the correct version of selenium jar,
-chromedriver or ie driver executables. Correct versions are specified in conf/profile.conf.js
-
-#### Webdriver options
-Additional to browser options, webdriver options could be provided in the browserCapabilities object,
-browsers array or on command line. They are supplied to the respective webdriver when started locally.
-Please note that chromedriver and iedriver options are considered only when local driver is started directly
-and not over selenium jar.
-
-Browser size and location can be specified in browsers.capabilities.remoteWebDriverOptions. The following are listed in descending priority:
-* maximized - maximizes the browser window
-* position - offset of the browser relative to the upper left screen corner
-* viewportSize - inner size of the browser window (actual page display area)
-* browserSize - outer size of the browser window (including window toolbars)
-
-```javascript
-browsers: [{
-  capabilities: {
-    remoteWebDriverOptions: {
-      maximized: true,
-      position: {
-        x: 0,
-        y: 0
-      },
-      viewportSize: {
-        width: 1920,
-        height: 1067
-      },
-      browserSize: {
-        width: 1920,
-        height: 1067
-      }
-    }
-  }
-}]
-```
-
-######  Maximize option may be not supported for all browsers. In such case "browserSize" option can be used for setting browser window size. Example: ######
-```javascript
-browsers: [{
-  capabilities: {
-    remoteWebDriverOptions: {
-      maximized: false,
-      browserSize: {
-        width: 1920,
-        height: 1067
-      }
-    }
-  }
-}]
-```
-
+### [Drivers](./authentication.md)
 
 ### Passing params to test
 Define in conf.js file
@@ -192,44 +105,8 @@ if('should check something',function(){
 });
 ```
 
-### Authentication
-__Syntax for auth config changed in v1.7.__
-To test a protected page you need to specify authentication type and credentials in config. Authentication
-is handled by plugable authenticator [modules](../src/moduleLoader.js). Basic(in URL) and plain form and form with UI5
-authentication modules are available. Form authenticators could be configured with the selectors for the necessary fields.
-Few common auth configurations are available: 'basic','fiori-form','sapcloud-form' and could be used directly as shown below.
-Please check 'authConfigs' section in [profile.conf.js](../conf/profile.conf.js) how to customize proprietary authenticator.
-```javascript
-auth: {
-  // form based
-  'fiori-form': {
-    user: '<user>',
-    pass: '<pass>'
-  }
-  ...or....
-  'sapcloud-form': {
-      user: '<user>',
-      pass: '<pass>'
-  }
-}
-```
-
-Also to avoid leaving credentials in the configs, which may be saved in source control system, the user and pass parameters
-can be described as placeholders and then, the values can be passed from the command line.
-```javascript
-auth: {
-  // form based
-  'fiori-form': {
-    user: '${params.user}',
-    pass: '${params.pass}'
-  }
-}
-```
-
-To replace these placeholders you may pass them in the command line:
-```
-visualtest --params.user=<user> --params.pass=<pass>
-```
+### [Authentication](./authentication.md)
+uiveri5 support authentication for accessing the test pages with declarative configuration. The most common authentication scenarious  like SAP Cloud, SAP IDM and Fiori Launchpad are support out of the box. Custom authentication schemes are also supported. Programatic authentication is also supported.
 
 ### Timeouts
 Override default timeout values in config file:
@@ -288,24 +165,8 @@ You could override arbitrary config value from command like:
 ```console
 --config={"locators":[{"name":"myCustomLocator"}]}
 ```
-
-### Override reference image storage for local image storage case
-When localStorageProvider is used, by default the reference images are stored in the source tree, parallel to the
-the tests in a subfolder 'visual'. This is fine if you plan to submit the images in git as part of the test.
-In central visual test execution usaces, it could be useful to store the reference images in a separate folder,
-outside ot the source tree. Configure the required folder in your conf.js like this:
-```javascript
-storageProvider: {name: './image/localStorageProvider',
-  refImagesRoot: 'c:\imagestore',actImagesRoot:'c:\imagestore'}
-```
-
-### External image references in HTML report
-You could overwrite images (reference and actual) root for consumption from remote host like:
-```javascript
-storageProvider: {name: './image/localStorageProvider',
-  refImagesRoot: 'c:\imagestore',actImagesRoot:'c:\imagestore',
-  refImagesShowRoot: 'file://share',actImagesShowRoot:'file://share'}
-```
+### [Visual Testing](./usage/visualtesting.md)
+uiveri5 can be used to execute visula tests, There are specific requirements to the test for successfull execution.
 
 ### Run against android emulator
 Start appium
@@ -317,23 +178,5 @@ Execute the visual test
 $ grunt visualtest --browsers=browser:*:android --seleniumAddress=http://127.0.0.1:4723/wd/hub --baseUrl=http://10.0.2.2:8080
 ```
 
-### Programatic authentication
-Set 'baseUrl' to 'null' to disable automatic page loading. Then call navigation.to() with required URL.
-You could override the default auth settings by providing an options object with the same syntax as in conf.js
-If the login performs redirects, the authenticated application url should be supplied as first parameter
-of navigate.to() and the login url should be given as authUrl in the options object.
-```javascript
-browser.testrunner.navigation.to(
-  '<url>',{
-    auth:{
-      'sapcloud-form': {
-        user: '<user>',
-        pass: '<pass>'
-      }
-    }
-  }
-);
-```
-
-### Reporters
-Test execution results can be summarized in a report. We support several report formats, e.g. JUnit, JSON, HTML. The config file defines the reporters to use and their options. Read all about the available reporters in [reporters.md](reporters.md)
+### [Reporters](./reporters.md)
+Test execution results can be summarized in a report. We support several report formats, e.g. JUnit, JSON, HTML. The config file defines the reporters to use and their options.

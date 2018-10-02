@@ -9,8 +9,6 @@ var webdriver = require('selenium-webdriver');
  * @param {Logger} logger
  */
 function FormAuthenticator(config,instanceConfig,logger,statisticsCollector){
-  //this.config = config;
-  //this.instanceConfig = instanceConfig;
   this.logger = logger;
 
   this.user = instanceConfig.user;
@@ -19,6 +17,7 @@ function FormAuthenticator(config,instanceConfig,logger,statisticsCollector){
   this.userFieldSelector = instanceConfig.userFieldSelector;
   this.passFieldSelector = instanceConfig.passFieldSelector;
   this.logonButtonSelector = instanceConfig.logonButtonSelector;
+  this.redirectUrl = instanceConfig.redirectUrl;
   this.statisticsCollector = statisticsCollector;
 }
 
@@ -39,9 +38,9 @@ FormAuthenticator.prototype.get = function(url){
   // webdriver statements are synchronized by webdriver flow so no need to join the promises
 
   // open the page
-  browser.driver.get(that.authUrl ? that.authUrl : url);
+  browser.driver.get(url);
 
-  // wait till page is fully rendered
+  // wait till redirection is complete and page is fully rendered
   var switchedToFrame = false;
   browser.driver.wait(function(){
     // if auth is in frame => switch inside
@@ -70,7 +69,7 @@ FormAuthenticator.prototype.get = function(url){
   });
 
   // ensure redirect is completed
-  return browser.testrunner.navigation.waitForRedirect(url);
+  return browser.testrunner.navigation.waitForRedirect(this.redirectUrl || url);
 };
 
 module.exports = function (config,instanceConfig,logger,statisticsCollector) {

@@ -474,18 +474,43 @@ function run(config) {
           return browser.waitForAngular();
         },
 
-        waitForRedirect: function(url){
+        waitForRedirect: function(targetUrl){
           // ensure page is fully loaded - wait for window.url to become the same as requested
-          var plainContentUrl = url.match(/([^\?\#]+)/)[1];
           return browser.driver.wait(function () {
             return browser.driver.executeScript(function () {
               return window.location.href;
-            }).then(function (url) {
+            }).then(function (currentUrl) {
+              logger.debug("Waiting for redirect to complete, current url: " + currentUrl);
+
               // match only host/port/path as app could manipulate request args and fragment
-              var urlMathes = url.match(/([^\?\#]+)/);
-              return urlMathes !== null && urlMathes[1] === plainContentUrl;
+              var currentUrlMathes = currentUrl.match(/([^\?\#]+)/);
+              if (currentUrlMathes == null || !currentUrlMathes[1] || currentUrlMathes[1] == "") {
+                throw new Error('Could not parse current url: ' + currentUrl);
+              }
+              var currentUrlHost = currentUrlMathes[1];
+              // strip trailing slashe
+              if(currentUrlHost.charAt(currentUrlHost.length - 1) == "/") {
+                currentUrlHost = currentUrlHost.slice(0, -1)
+              }
+              // handle string and regexps
+              if (_.isString(targetUrl)) {
+                var targetUrlMatches = targetUrl.match(/([^\?\#]+)/);
+                if (targetUrlMatches == null || !targetUrlMatches[1] || targetUrlMatches[1] == "") {
+                  throw new Error('Could not parse target url: ' + targetUrl);
+                }
+                var targetUrlHost = targetUrlMatches[1];
+                // strip trailing slash
+                if(targetUrlHost.charAt(targetUrlHost.length - 1) == "/") {
+                  targetUrlHost = targetUrlHost.slice(0, -1)
+                }
+                return  currentUrlHost === targetUrlHost;
+              } else if (_.isRegExp(targetUrl)) {
+                return targetUrl.test(currentUrlHost);
+              } else {
+                throw new Error('Could not match target url that is neither string nor regexp');
+              }
             });
-          }, browser.getPageTimeout, 'Waiting for redirection to complete');
+          }, browser.getPageTimeout, 'Waiting for redirection to complete, target url: ' + targetUrl);
         }
       };
 
