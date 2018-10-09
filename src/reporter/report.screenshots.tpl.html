@@ -110,16 +110,16 @@
     }
 
     code {
-      width: 50%;
-      height: 200px;
-      display: inline-block;
+      width: 90%;
+      height: 300px;
       padding: 10px;
       background-color: #ffffff;
       overflow: auto;
+      white-space: pre-wrap;
     }
 
     img {
-      width: 400px;
+      width: 300px;
       margin: 20px 0;
     }
 
@@ -187,8 +187,8 @@
             <img data-source="<%- step.screenshot %>"/>
           </a>
           <% } %>
+          <% if (step.status === "failed") { %><code><%- step.stack %></code><% } %>
         </div>
-        <% if (step.status === "failed") { %><code><%- step.stack %></code><% } %>
       </div>
       <% } %>
       <% }); %>
