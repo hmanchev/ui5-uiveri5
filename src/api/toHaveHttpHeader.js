@@ -13,9 +13,11 @@ ToHaveHttpHeader.prototype.register = function(matchers) {
       compare: function(actualResponse, expectedResponse) {
         var result = {};
         var pass = false;
+        var expectedHeaderName = expectedResponse[0].toLowerCase();
+        var expectedHeaderValue = expectedResponse[1].toLowerCase();
 
-        if(actualResponse.header && actualResponse.header[expectedResponse[0].toLowerCase()]) {
-          if(actualResponse.header[expectedResponse[0].toLowerCase()].indexOf(expectedResponse[1].toLowerCase()) >= 0) {
+        if(actualResponse.header && actualResponse.header[expectedHeaderName]) {
+          if(actualResponse.header[expectedHeaderName].indexOf(expectedHeaderValue) >= 0) {
             pass = true;
           }
         }

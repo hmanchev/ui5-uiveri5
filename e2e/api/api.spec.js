@@ -1,9 +1,10 @@
+process.env.NO_PROXY = process.env.NO_PROXY || 'localhost';
+
 describe('api', function() {
   var restServiceMock = require('./mock/restServiceMock')();
   var restServiceMockUrl = 'http://localhost';
 
   beforeAll(function(done) {
-    process.env.NO_PROXY = process.env.NO_PROXY || 'localhost';
     restServiceMock.start().then(function(port) {
       restServiceMockUrl += ':' + port;
       done();
@@ -39,15 +40,15 @@ describe('api', function() {
     var res = request.post(restServiceMockUrl +'/users')
       .send({"name": "morpheus", "job": "leader"})
       .set('accept', 'json');
-    expect(res).toHaveHTTPHeader(['Content-Type', 'text/plain']);
+    expect(res).toHaveHTTPHeader(['Content-Type', 'application/json']);
   });
 
-  it('Should make api call and check response header', function() {
+  it('Should make delete api call and check response header', function() {
     var res = request.delete(restServiceMockUrl +'/users/user1');
     expect(res).toHaveHTTPBody({deleted: 'user1'});
   });
 
-  fit('should schedule requests in proper order', function() {
+  it('should schedule requests in proper order', function() {
     var first = request.get(restServiceMockUrl +'/user');
     var second = request.get(restServiceMockUrl +'/user');
 
@@ -56,10 +57,10 @@ describe('api', function() {
   });
 
   it('should schedule requests in proper order with timeouts', function() {
-    var first = request.get(restServiceMockUrl +'/userTimeout');
-    var second = request.get(restServiceMockUrl +'/userTimeout');
+    var first = request.get(restServiceMockUrl +'/users').query({delay: 5000});
+    var second = request.get(restServiceMockUrl +'/users').query({delay: 3000});
 
-    expect(first).toHaveHTTPBody({result: 5000});
-    expect(second).toHaveHTTPBody({result: 3000});
+    expect(first).toHaveHTTPBody({result: '5000'});
+    expect(second).toHaveHTTPBody({result: '3000'});
   });
 });

@@ -1,18 +1,10 @@
 var express = require('express');
-var multer = require('multer');
 var Q = require('q');
 var portfinder = require('portfinder');
 
 //Constructor
 function RestServiceMock() {
-  this.upload = multer({});
   this.app = express();
-  this.imagesMap = {};
-  this.config = {
-    isServiceAvailable: true
-  };
-
-  var that = this;
 
   var response = 1;
   this.app.get('/user/', function(req, res) {
@@ -20,30 +12,28 @@ function RestServiceMock() {
     res.send({result: response});
   });
 
-  var timeout = 5000;
-  this.app.get('/userTimeout/', function(req, res) {
-    setTimeout(function(){
-      res.send({result: timeout});
-      timeout -= 2000;
-      }, timeout);
-  });
-
   this.app.get('/users/', function(req, res) {
     var response = [{user1: 'testUser1'},{user2: 'testUser2'}];
-    if(req.query && req.query.user && (req.query.user == 'user1')) {
-      response = [{user1: 'testUser1'}];
-    }
+    res.set('Content-Type', 'application/json');
+    if(req.query) {
+      if(req.query.user && (req.query.user == 'user1')) {
+        response = [{user1: 'testUser1'}];
 
-    res.send(response);
+        res.send(response);
+      } else if(req.query.delay) {
+        var delay = req.query.delay;
+
+        setTimeout(function() {
+          res.send({result: delay});
+        }, delay)
+      } else {
+        res.send(response);
+      }
+    }
   });
 
   this.app.get('/notFound/', function(req, res) {
     res.status(404).send('Not Found');
-  });
-
-  this.app.post('/users/', function(req, res) {
-    res.set('Content-Type', 'text/plain');
-    res.send('done');
   });
 
   this.app.delete('/users/:user', function(req, res) {

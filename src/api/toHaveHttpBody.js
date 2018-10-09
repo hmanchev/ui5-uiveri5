@@ -12,9 +12,12 @@ ToHaveHttpBody.prototype.register = function(matchers) {
     return {
       compare: function(actualResponse, expectedResponse) {
         var result = {};
-        result.pass = JSON.stringify(actualResponse.body) == JSON.stringify(expectedResponse);
-        result.message = 'Expected request response to have body: ' + JSON.stringify(expectedResponse)
-          + ', but have: ' + JSON.stringify(actualResponse.body);
+        var actualBodyString = JSON.stringify(actualResponse.body);
+        var expectedBodyString = JSON.stringify(expectedResponse);
+
+        result.pass = actualBodyString == expectedBodyString;
+        result.message = 'Expected request response to have body: ' + expectedBodyString
+          + ', but have: ' + actualBodyString;
 
         return result;
       }
