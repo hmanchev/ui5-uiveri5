@@ -218,19 +218,14 @@ function run(config) {
           comparisonProvider.register(matchers);
         }
 
-        var toHaveHttpBody = moduleLoader.loadModuleIfAvailable('toHaveHttpBody');
-        if (toHaveHttpBody) {
-          toHaveHttpBody.register(matchers);
-        }
+        moduleLoader.loadModule('matchers', []).forEach(function(matcher){
+          matcher.register(matchers);
+        });
 
-        var toHaveHttpHeader = moduleLoader.loadModuleIfAvailable('toHaveHttpHeader');
-        if (toHaveHttpHeader) {
-          toHaveHttpHeader.register(matchers);
+        var request = moduleLoader.loadModuleIfAvailable('api');
+        if(request) {
+          global.request = request[0];
         }
-
-        // load API testing provider
-        var Request = require('./api/request');
-        global.request = Request({}, {}, logger);
 
         // process remoteWebDriverOptions
         var isMaximized = _.get(runtime.capabilities.remoteWebDriverOptions, 'maximized');

@@ -1,5 +1,3 @@
-process.env.NO_PROXY = process.env.NO_PROXY || 'localhost';
-
 describe('api', function() {
   var restServiceMock = require('./mock/restServiceMock')();
   var restServiceMockUrl = 'http://localhost';
