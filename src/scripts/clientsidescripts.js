@@ -169,6 +169,14 @@ var mFunctions = {
     }
 
     return uiveri5._ControlFinder._findElements(mMatchers);
+  },
+
+  getLatestLog: function () {
+    var sLog = '';
+    if (uiveri5._ControlFinder && uiveri5._ControlFinder._getLatestLog) {
+      sLog = uiveri5._ControlFinder._getLatestLog();
+    }
+    return  sLog;
   }
 };
 

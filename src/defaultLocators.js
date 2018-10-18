@@ -19,6 +19,8 @@ function DefaultLocators(config,instanceConfig,logger){
  * @param {By} by - jasmine By object on which to add the new locator
  */
 DefaultLocators.prototype.register = function(by) {
+  var that = this;
+
   this.logger.debug('Registering default locators');
   // http://angular.github.io/protractor/#/api?view=ProtractorBy.prototype.addLocator
 
@@ -30,6 +32,7 @@ DefaultLocators.prototype.register = function(by) {
   by.control = function (mMatchers) {
     return {
       findElementsOverride: function (driver, using, rootSelector) {
+
         if (mMatchers.id instanceof RegExp) {
           mMatchers.id = {regex: {source: mMatchers.id.source, flags: mMatchers.id.flags}};
         }
@@ -42,7 +45,18 @@ DefaultLocators.prototype.register = function(by) {
           });
         }
         var sMatchers = JSON.stringify(mMatchers);
-        return driver.findElements(webdriver.By.js(clientsidescripts.findByControl, sMatchers, using, rootSelector));
+        return driver.findElements(webdriver.By.js(clientsidescripts.findByControl, sMatchers, using, rootSelector))
+          .then(function (vResult) {
+            if (vResult.length) {
+              return vResult;
+            } else {
+              return driver.executeScript(clientsidescripts.getLatestLog)
+                .then(function (sLatestLog) {
+                  that.logger.debug('No elements found using by.control locator. This is what control locator last logged: ' + sLatestLog);
+                  return vResult;
+                });
+            }
+          });
       },
       toString: function toString() {
         var sMatchers = JSON.stringify(mMatchers);
