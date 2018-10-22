@@ -61,4 +61,13 @@ describe('api', function() {
     expect(first).toHaveHTTPBody({result: '5000'});
     expect(second).toHaveHTTPBody({result: '3000'});
   });
+
+  it('should check property of response body', function() {
+    var res = request.get(restServiceMockUrl +'/user');
+    var expectedFn = function(body) {
+      should(body).have.property('result').which.is.a.Number();
+    };
+
+    expect(res).body(expectedFn);
+  });
 });

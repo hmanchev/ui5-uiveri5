@@ -9,6 +9,7 @@ exports.config = {
   ],
   matchers: [
     {name: './api/toHaveHttpBody'},
-    {name: './api/toHaveHttpHeader'}
+    {name: './api/toHaveHttpHeader'},
+    {name: './api/body'}
   ]
 };
