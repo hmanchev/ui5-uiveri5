@@ -65,7 +65,7 @@ describe('api', function() {
   it('should check property of response body', function() {
     var res = request.get(restServiceMockUrl +'/user');
     var expectedFn = function(body) {
-      should(body).have.property('result').which.is.a.Number();
+      body.should.have.property('result').which.is.a.Number();
     };
 
     expect(res).body(expectedFn);

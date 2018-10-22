@@ -13,7 +13,8 @@ Body.prototype.register = function(matchers) {
       compare: function(actualResponse, expectedFn) {
         var result = {};
         var actualBody = actualResponse.body;
-        actualBody.should = should;
+        actualBody.should = should(actualBody);
+
         try{
           expectedFn(actualBody);
           result.pass = true;
