@@ -7,47 +7,45 @@ Rest calls are fully synchronized in the execution flow of the UI interactions. 
 
 ## Execute a rest call
 ```javascript
-request('myapi.dev.hana.ondemand.com')
-    .get('/contacts/1');
+request.get('http://myapi.dev.hana.ondemand.com/contacts/1');
 ```
 
 ## Assert a result of the call
 ```javascript
-let res = request('myapi.dev.hana.ondemand.com')
-    .get('/contacts/1');
+let res = request.get('http://myapi.dev.hana.ondemand.com/contacts/1');
 // error response will cause a test failure
 
 // supertest-like assertions
 expect(res).toHaveHTTPBody({name: 'something'});        // deep equal, string equal, regexp
-expect(res).toHaveHTTPHeader('Content-Type', 'application/json');   
+expect(res).toHaveHTTPHeader('Content-Type', 'application/json');
 
 // should.js for adavnced body assertions
-expect(res).bodyShould().have.property('name', 'tj');   
+var expectedFn = function(body) {
+      body.should.have.property('name', 'tj');
+    };
+expect(res).body(expectedFn);
 ```
 
 ## Assert on error response code
 ```javascript
 
-let res = request('myapi.dev.hana.ondemand.com')
-    .get('/contacts/1')
+let res = request.get('http://myapi.dev.hana.ondemand.com/contacts/1')
     .catch(response => {
-        expect(response.code).toBe(401);
+        expect(response.status).toBe(401);
         expect(response.body).toMatch(/access denied/);
-    });  
-``` 
+    });
+```
 
 ## Save result from call and use it in another call
 ```javascript
 let contacts;
-request('myapi.dev.hana.ondemand.com')
-    .get('/contacts')
+request.get('http://myapi.dev.hana.ondemand.com/contacts/1')
     .then((res) => {
         contacts = res.body;
     });
 
 // the arrow function is necesary to postpone the URL building till the actual execution time
-request('myapi.dev.hana.ondemand.com')
-    .delete((contacts) => `/contacts/{contacts[0].id}`);
+request.delete('http://myapi.dev.hana.ondemand.com/contacts/1') => `/contacts/{contacts[0].id}`);
 ```
 
 # Authentication
@@ -63,7 +61,7 @@ Full OData ORM is out of scope but the following samples could simplify basic OD
 # Advanced
 
 ## Control Flow
-Currently uiveri5 is utilising the webdriverjs concept of control flow. The flow is a sequence of asynchronous function calls, that a dedicated scheduler runs in sequence. 
+Currently uiveri5 is utilising the webdriverjs concept of control flow. The flow is a sequence of asynchronous function calls, that a dedicated scheduler runs in sequence.
 
 ### Synchrnoze a promise in the control flow
 The flow mananager API is based on promises so it is very easy to synchrnonze a promise in the control flow. With this, subsequence flow operations like element().click() or expect() calls will wait for the promise to be resolved and just then proceed.
@@ -72,7 +70,7 @@ The flow mananager API is based on promises so it is very easy to synchrnonze a 
 browser.driver.control.flow(somePromise);
 ````
 
-## Async/Await 
+## Async/Await
  In ES2017 environment,the concept of control flow is supported natively with the async/await operators. Async/await operators have a great benefit - make it easy to debug the async executions with browser/node tool. But also have a disadvantage compared to execution flow - the synchrnization is explicit and is responsibility of the test developer. Due to this explicitness, it is not possible to combine flow manager and async/await transparently, the app/test should explicitly synchronize on the interaction points.
 
 ### Execute async/await code before flow manager code
