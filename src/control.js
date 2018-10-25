@@ -13,11 +13,11 @@ Control.prototype.getProperty = function (property) {
       elementId: elementId,
       property: property
     });
-  }).then(function (result) {
-    if (result.error) {
-      throw new Error('Cannot investigate UI5 control properties: ' + result.error);
+  }).then(function (mResult) {
+    if (mResult.error) {
+      throw new Error('Error while investigating UI5 control properties. Details: ' + mResult.error);
     } else {
-      return result.property;
+      return mResult.property;
     }
   });
 };

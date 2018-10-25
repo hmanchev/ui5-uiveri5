@@ -2,13 +2,14 @@
 var util = require('util');
 
 // functions to be executed in the browser
+// name each function to get meaningful stack traces in case of error!
 var mFunctions = {
 
   // load all UI5 dependencies asynchronously at once before test start.
   // when fnCallback will is called, the script will be considered completed
   // fnCallback will be called with an object argument
   // which will always have a 'log' and will have 'error' only when loading of dependensies was unsuccessful
-  loadUI5Dependencies: function (mScriptParams, fnCallback) {
+  loadUI5Dependencies: function loadUI5Dependencies (mScriptParams, fnCallback) {
     var sDebugLog = 'Loading waitForUI5 implementation, params: ' +
       'useClassicalWaitForUI5: '  +  mScriptParams.useClassicalWaitForUI5 +
       ' ,waitForUI5Timeout: ' + mScriptParams.waitForUI5Timeout + 'ms' +
@@ -111,7 +112,7 @@ var mFunctions = {
     }
   },
 
-  waitForAngular: function (mScriptParams, fnCallback) {
+  waitForAngular: function waitForAngular (mScriptParams, fnCallback) {
     if (!window.sap || !window.sap.ui) {
       fnCallback('waitForUI5: no UI5 on this page.');
     } else {
@@ -125,32 +126,37 @@ var mFunctions = {
     }
   },
 
-  getWindowToolbarSize: function () {
+  getWindowToolbarSize: function getWindowToolbarSize () {
     return {
       width: window.outerWidth - window.innerWidth,
       height: window.outerHeight - window.innerHeight
     };
   },
 
-  getControlProperty: function (mScriptParams) {
+  getControlProperty: function getControlProperty (mScriptParams) {
     if (!uiveri5._ControlFinder) {
       throw new Error('Your application needs a newer version of UI5 to use control locators!' +
       ' Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up.');
     }
 
-    var control = uiveri5._ControlFinder._getControlForElement(mScriptParams.elementId);
-    var property = control ? uiveri5._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
-    return {property: property};
+    try {
+      var control = uiveri5._ControlFinder._getControlForElement(mScriptParams.elementId);
+      var property = control ? uiveri5._ControlFinder._getControlProperty(control, mScriptParams.property) : null;
+      return {property: property};
+    } catch (oError) {
+      return {
+        error: 'Failed to get control property. Details: ' + oError
+      };
+    }
   },
 
-  findByControl: function (sMatchers, oParentElement) {
+  findByControl: function findByControl (sMatchers, oParentElement) {
     if (!uiveri5._ControlFinder) {
       throw new Error('Your application needs a newer version of UI5 to use control locators!' +
       ' Minimum versions supported: 1.52.12; 1.54.4; 1.55 and up.');
     }
 
     var mMatchers = JSON.parse(sMatchers);
-
     if (oParentElement) {
       var control = uiveri5._ControlFinder._getControlForElement(oParentElement.id);
       mMatchers.ancestor = control && [[control.getId()]];
@@ -171,30 +177,28 @@ var mFunctions = {
     return uiveri5._ControlFinder._findElements(mMatchers);
   },
 
-  getLatestLog: function () {
+  getLatestLog: function getLatestLog () {
     var sLog = '';
     if (uiveri5._ControlFinder && uiveri5._ControlFinder._getLatestLog) {
       sLog = uiveri5._ControlFinder._getLatestLog();
     }
     return  sLog;
   }
+
 };
 
-/* Publish the functions as strings to pass to WebDriver's
- * exec[Async]Script.  In addition, also include a script that will
- * install all the functions on window (for debugging.)
+/* Publish the functions as strings to pass to WebDriver's exec[Async]Script.
+ * Include a script that will install all the functions on window (for debugging)
  *
- * We also wrap any exceptions thrown by a clientSideScripts function
- * that is not an instance of the Error type into an Error type.  If we
- * don't do so, then the resulting stack trace is completely unhelpful
- * and the exception message is just 'unknown error.'  These types of
- * exceptins are the common case for dart2js code.  This wrapping gives
- * us the Dart stack trace and exception message.
+ * We wrap any exception thrown by a clientSideScripts function, that is not an instance of the Error type,
+ * into an Error type in order to get a useful stack trace.
+ * In chromium, the stack trace sometimes gets discarded (see: chromedriver/js/call_function.js:364)
+ * As a workaround, wrap all errors and add their stack traces to the new Error's message
  */
 var scriptsList = [];
 var scriptFmt = (
   'try { return (%s).apply(this, arguments); }\n' +
-  'catch(e) { throw (e instanceof Error) ? e : new Error(e); }'
+  'catch(e) { throw new Error(e instanceof Error ? e.message + e.stack : e); }'
 );
 for (var fnName in mFunctions) {
   if (mFunctions.hasOwnProperty(fnName)) {
