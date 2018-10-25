@@ -36,6 +36,8 @@ var argv = require('yargs').
   count('verbose').
   alias('v', 'verbose').
   describe('verbose', 'Print debug logs').
+  alias('inspect', 'debug').
+  describe('debug', 'Enable debug mode').
   string('specs').
   describe('specs', 'Specs to execute, blob pattern used by localSpecResolver only').
   //string('take').
