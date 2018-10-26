@@ -27,7 +27,7 @@ var platformNamePerOsTypeString = {
   mac64: 'mac'
 };
 var supportedBrowserNames = [
-  'chrome','chromium','browser','chromeMobileEmulation','firefox','ie','safari','edge'
+  'chrome','chromium','browser','chromeMobileEmulation','firefox','ie','safari','edge','chromeHeadless'
 ];
 var supportedPlatformNames = [
   'windows','mac','linux','android','ios','winphone'
