@@ -1,7 +1,7 @@
 var pages = {
-  app: require('./apps/app'),
-  wait: require('./apps/wait'),
-  waitRecursive: require('./apps/waitRecursive')
+  app: require('../fixture/apps/browser/app'),
+  wait: require('../fixture/apps/browser/wait'),
+  wait_recursive: require('../fixture/apps/browser/wait_recursive')
 };
 
 module.exports = {

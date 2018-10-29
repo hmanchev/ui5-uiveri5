@@ -38,9 +38,10 @@
   },
   "scripts": {
     "visualtest": "node bin/visualtest",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "jasmine",
-    "test:e2e": "grunt e2e",
+    "test": "npm run test:unit && npm run test:scenario && npm run test:browser",
+    "test:unit": "jasmine JASMINE_CONFIG_PATH=spec/jasmine.json",
+    "test:scenario": "jasmine JASMINE_CONFIG_PATH=e2e/scenario/jasmine.json",
+    "test:browser": "jasmine JASMINE_CONFIG_PATH=e2e/browser/jasmine.json",
     "lint": "eslint ."
   },
   "main": "src/visualtest.js"

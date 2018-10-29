@@ -1,8 +1,8 @@
 /*global describe,it,element,by,takeScreenshot,expect*/
 
-var utils = require('./fixture/utils');
+var utils = require('./utils');
 
-describe("clientLogs", function () {
+describe("client_logs", function () {
 	"use strict";
 
     var LogInterceptor = function () {

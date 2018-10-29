@@ -61,4 +61,10 @@ var cliParser = require('./cliParser')();
 var config = cliParser.parse(argv);
 
 // run the visualtest
-require('./visualtest').run(config);
+require('./visualtest')
+  .run(config)
+  .catch(function(error){
+    // eslint-disable-next-line no-console
+    console.log(error);
+    process.exit(1);
+  });

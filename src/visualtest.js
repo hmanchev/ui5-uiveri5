@@ -30,6 +30,7 @@ var DEFAULT_CONNECTION_NAME = 'direct';
 /**
  * Runs visual tests
  * @param {Config} config - configs
+ * @return {Promise} resolved on success or rejected with error 
  */
 function run(config) {
 
@@ -92,8 +93,7 @@ function run(config) {
 
   // resolve specs
   logger.info('Resolving specs');
-  specResolver.resolve().then(function(specs){
-
+  return specResolver.resolve().then(function(specs){
     if (!specs || specs.length==0){
       throw Error('No specs found');
     }
@@ -480,28 +480,28 @@ function run(config) {
             return browser.driver.executeScript(function () {
               return window.location.href;
             }).then(function (currentUrl) {
-              logger.debug("Waiting for redirect to complete, current url: " + currentUrl);
+              logger.debug('Waiting for redirect to complete, current url: ' + currentUrl);
 
               // match only host/port/path as app could manipulate request args and fragment
               var currentUrlMathes = currentUrl.match(/([^\?\#]+)/);
-              if (currentUrlMathes == null || !currentUrlMathes[1] || currentUrlMathes[1] == "") {
+              if (currentUrlMathes == null || !currentUrlMathes[1] || currentUrlMathes[1] == '') {
                 throw new Error('Could not parse current url: ' + currentUrl);
               }
               var currentUrlHost = currentUrlMathes[1];
               // strip trailing slashe
-              if(currentUrlHost.charAt(currentUrlHost.length - 1) == "/") {
-                currentUrlHost = currentUrlHost.slice(0, -1)
+              if(currentUrlHost.charAt(currentUrlHost.length - 1) == '/') {
+                currentUrlHost = currentUrlHost.slice(0, -1);
               }
               // handle string and regexps
               if (_.isString(targetUrl)) {
                 var targetUrlMatches = targetUrl.match(/([^\?\#]+)/);
-                if (targetUrlMatches == null || !targetUrlMatches[1] || targetUrlMatches[1] == "") {
+                if (targetUrlMatches == null || !targetUrlMatches[1] || targetUrlMatches[1] == '') {
                   throw new Error('Could not parse target url: ' + targetUrl);
                 }
                 var targetUrlHost = targetUrlMatches[1];
                 // strip trailing slash
-                if(targetUrlHost.charAt(targetUrlHost.length - 1) == "/") {
-                  targetUrlHost = targetUrlHost.slice(0, -1)
+                if(targetUrlHost.charAt(targetUrlHost.length - 1) == '/') {
+                  targetUrlHost = targetUrlHost.slice(0, -1);
                 }
                 return  currentUrlHost === targetUrlHost;
               } else if (_.isRegExp(targetUrl)) {
@@ -510,7 +510,8 @@ function run(config) {
                 throw new Error('Could not match target url that is neither string nor regexp');
               }
             });
-          }, browser.getPageTimeout, 'Waiting for redirection to complete, target url: ' + targetUrl);
+          }, browser.getPageTimeout - 100,'Waiting for redirection to complete, target url: ' + targetUrl); 
+          // 10ms delta is necessary or webdriver crashes and the process stops without exit status
         }
       };
 
@@ -574,6 +575,9 @@ function run(config) {
       return driverActions.mouseMove(bodyElement, {x:-1, y:-1}).perform();
     }
 
+    logger.debug('Loading BDD-style page object factory');
+    pageObjectFactory.register(global);
+
     // setup connection provider env
     logger.debug('Setting up connection provider environment');
     return connectionProvider.setupEnv().then(function(){
@@ -582,13 +586,7 @@ function run(config) {
       var protractorLauncher = require('protractor/built/launcher');
       protractorLauncher.init(null,protractorArgv);
     });
-  }).catch(function(error){
-    logger.error(error);
-    process.exit(1);
   });
-
-  logger.debug('Loading BDD-style page object factory');
-  pageObjectFactory.register(global);
 }
 
 exports.run = run;

@@ -1,12 +1,12 @@
 /*global beforeAll, describe, it, element, by, takeScreenshot, expect, createPageObjects, Given, When, Then*/
 
-var utils = require('./fixture/utils');
+var utils = require('./utils');
 
-describe("waitRecursive", function() {
+describe("wait_recursive", function() {
   "use strict";
 
   beforeAll(function () {
-    utils.injectPageContent(browser, "waitRecursive");
+    utils.injectPageContent(browser, "wait_recursive");
   });
 
   // verify wait after button click

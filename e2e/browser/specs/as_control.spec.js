@@ -1,8 +1,8 @@
 /*global describe,it,element,by,takeScreenshot,expect*/
 
-var utils = require('./fixture/utils');
+var utils = require('./utils');
 
-describe("asControl", function () {
+describe("as_control", function () {
 	"use strict";
 
 	beforeAll(function () {

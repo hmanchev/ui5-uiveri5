@@ -1,8 +1,8 @@
 /*global beforeAll, describe, it, element, by, takeScreenshot, expect, createPageObjects, Given, When, Then*/
 
-var utils = require('./fixture/utils');
+var utils = require('./utils');
 
-describe("pageObjects", function () {
+describe("page_objects", function () {
   "use strict";
 
   beforeAll(function () {
