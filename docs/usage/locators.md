@@ -16,17 +16,17 @@ The classical web page is composed manually and so the important elements are ma
 and meaningful IDs. So it is easy to identify those elements in automatic tests.
 But in highly-dynamic JS frameworks like SAPUI5 the DOM is generated out of the views. The views could
 also be generated from the content meta-information. Very often, IDs are not assigned by a developer during application
-creation. In such cases, the ID ir generated in runtime from the control name and a suffix that is the sequential number
+creation. In such cases, the ID is generated in runtime from the control name and a suffix that is the sequential number
 of this control in this app. The generated ID could also could contain prefix of the enclosing view, like "__xmlview1".
 In this scheme, the leading "__" mean "internal and generated, not to be relied on"
 There are several problems with using such generated IDs in application tests.
 1. IDs are stable between application runs but are generated and will definitely change when the application is modified.
 Even minor unrelated change like adding one more button in some common area like header could cause a change of
 all IDs. This will require changes in all selectors used in all tests for this application.
-2. This is even more probable with metadata-driven UIs like Fiori Elements. The firori elements template could change with a UI5 minor version upgrade and could introduce  new visual elements that will also change the generated IDs of the rest.
+2. This is even more probable with metadata-driven UIs like Fiori Elements. The fiori elements template could change with a UI5 minor version upgrade and could introduce  new visual elements that will also change the generated IDs of the rest.
 3. IDs are execution-unique and are generated on the runtime. So repetitive ID's require repetitive navigation path
-in the application. This makes it especially hard for a human to develop and support the test as would require to alwasy start from the begioing and pass over the whole test. It is also impossible to execute only part of the whole scenario by using disabled or focused specs and suites.
-4. There are cases when the generated IDs will be different depending on the environment the application is running.
+in the application. This makes it especially hard for a human to develop and support the test as manual reproduction would require to always start from the begining and pass over the whole test. It is also impossible to execute only part of the whole scenario by using disabled or focused specs and suites.
+4. The generated IDs could be different depending on the environment the application is running.
 5. Generated IDs are totally not self-documenting and this makes the test harder to understand and maintain.
 
 ### Avoid non-visible attributes
@@ -35,7 +35,7 @@ So write selectors that include only "visible" attributes.
 This also makes the test much self-documenting and simplifies maintenance.
 
 ### Minimize use of attribute locators
-These locators work slow and are usually not closely related to the visual representation. Besides, attribute values may often change and may not be specific enough if used on their own.
+These locators are slow and are usually not closely related to the visual representation. Besides, attribute values may often change and may not be specific enough if used on their own.
 
 ## DOM locators
 All standart locators from webdriverjs are supported, please check webdirvejs docs for references.
@@ -73,7 +73,7 @@ In the application testing approach we use hierarchical class locators composed 
 (marker) class names (the class names of the control root DOM element). This hierarchical composition is important to guarantee the stability of locators. But the usage of classes is somehow problematic as DOM is not UI5 API and DOM could change between UI5 minor releases. Only UI5 JS API is guaranteed to be backward-compatible. One approach to mitigate this issue is to use control locators. Control locators are closely tied to the control level of abstraction and therefore should be much more intuitive for application developers. Control locators can be written easily by inspecting the application using [UI5 Inspector](https://chrome.google.com/webstore/detail/ui5-inspector/bebecogbafbighhaildooiibipcnbngo)
 Using control locators will give you an ElementFinder of the element best representing the searched control. This element can change according to the applied interaction adapter, which is further described below.
 
-#### Declarative matchers
+#### Syntax
 Under the hood, control locators rely on [OPA5](https://openui5.hana.ondemand.com/#/api/sap.ui.test.Opa5/overview) utilities. If you are familiar with OPA5's `waitFor` structure, then you will be able to immediately transition to control locators. `by.control` accepts a plain object specifying the viewName, controlType, id suffix, and other properties of the control to look for, as well as a plain object of control matchers which perform in the same way as [OPA5 matchers](https://openui5.hana.ondemand.com/#/api/sap.ui.test.matchers/overview) with the corresponding names. The only difference from a typical `waitFor` is that some properties are not accepted, for example matcher and action object constructions and functions such as check, success and actions. Currently the supported matchers are: aggregationContainsPropertyEqual, aggregationEmpty, aggregationFilled, aggregationLengthEquals, bindingPath, I18NText, labelFor, properties, propertyStrictEquals.
 Matchers syntax:
 ```javascript
@@ -90,6 +90,7 @@ element(by.control({
   aggregationFilled: {name: "myAggregation"}
 }))
 ```
+
 Using one type of matcher more than once:
 ```javascript
 element(by.control({
