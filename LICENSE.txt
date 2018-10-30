@@ -215,11 +215,12 @@ OpenUI5 includes the following subcomponents that are subject to separate licens
 Your use of these subcomponents is subject to the separate license terms applicable to
 each subcomponent.
 
-Component: node-resemble.js
-Licensor: Contributors
+Component: node-resemble-js
+Licensor: Lukas Svoboda and contributors
 Website: https://github.com/lksv/node-resemble.js
 License: MIT License
-
+<year> = 2016
+<copyright holders> = Lukas Svoboda, James Cryer and the Huddle development team
 --------------------------------------------------------------------------------------------------------------------------
 
 The MIT License (MIT)
