@@ -7,7 +7,6 @@ var path = require('path');
 
 module.exports = class Runner {
     static findFreePort() {
-      console.log('Request port');
         return new Promise(function (resolveFn, rejectFn) {
             portfinder.getPort(function (err, port) {
               if (err) {
@@ -32,7 +31,8 @@ module.exports = class Runner {
     }
 
     static execTest(opts) {
-      console.log('path ' + path.join(__dirname));
+      let cwd = path.join(__dirname);
+      console.log('cwd: ' + cwd);
       return new Promise((resolve,reject) => {
         var cmdString = [
           'node',
@@ -46,10 +46,7 @@ module.exports = class Runner {
         ].join(" ");
         console.log('Starting cmd: ' + cmdString);
         var proc = child_process.exec(cmdString,{
-            cwd: path.join(__dirname)
-          },
-          (error,stdout,stderr) => {
-            console.log('uiveri5 exited with status: ' + error);
+            cwd: cwd
           }
         );
 
