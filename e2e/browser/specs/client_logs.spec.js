@@ -1,27 +1,10 @@
 /*global describe,it,element,by,takeScreenshot,expect*/
 
 var utils = require('./utils');
+var LogInterceptor = require('../../LogInterceptor');
 
 describe("client_logs", function () {
 	"use strict";
-
-    var LogInterceptor = function () {
-        this.aLogs = [];
-        this.fnOriginalLog = console.log;
-
-        this.start = function (sLogMatch) {
-            var that = this;
-            console.log = function (sLog) {
-                if (sLog.match(sLogMatch)) {
-                    that.aLogs.push(sLog);
-                }
-                return that.fnOriginalLog.apply(this, arguments);
-            }
-        };
-        this.stop = function () {
-            console.log = this.fnOriginalLog;
-        };
-    };
 
 	beforeAll(function () {
 		utils.injectPageContent(browser, "app");

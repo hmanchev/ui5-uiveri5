@@ -46,7 +46,8 @@ module.exports = class Runner {
         ].join(" ");
         console.log('Starting cmd: ' + cmdString);
         var proc = child_process.exec(cmdString,{
-            cwd: cwd
+            cwd: cwd,
+            maxBuffer: 1024 * 500
           }
         );
 
