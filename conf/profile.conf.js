@@ -120,6 +120,16 @@ exports.config = {
         }
       }
     },
+    /* use safaridriver legact options for capabilities */
+    'safari': {
+      'mac': {
+        '*': {
+          safaridriverOptions: {
+            addArguments: ['--legacy']
+          },
+        }
+      }
+    },
     /* configure default Galaxy S7 emulation */
     'chromeMobileEmulation': {
       '*': {

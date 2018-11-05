@@ -134,9 +134,21 @@ browsers: [{
 ```
 
 ## Edge
-Microsoft Edge requires a webdriver that is distributed as a native installation. Please make sure you have the correct version installed as explained in: [Microsoft Edge WebDriver](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/). The release version should match the first part of your OS build eg: for OS build number 15063.0000 choose driver Release 15063. The downloaded driver should be moved to <visualtestjs-installation-folder>/selenium/ without renaming.
+Microsoft Edge requires a webdriver that is distributed as a native installation. Please make sure you have the correct version installed as explained in: [Microsoft Edge WebDriver](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/). The release version should match the first part of your OS build eg: for OS build number 15063.0000 choose driver Release 15063. The downloaded driver should be moved to <uiveri5-installation-folder>/selenium/ without renaming.
 
 ## Safari
 Safari10 includes native webdriver that is bundled with the Safari browser. Please make sure you have enabled it as explained in [Testing with WebDriver in Safari](https://developer.apple.com/documentation/webkit/testing_with_webdriver_in_safari)
+At this time, there are no meaningfull safaridriverOptions that could be provided under the 'safaridriverOptions' key. If you anyway wish to override the 'addArguments', please make sure not to remove the '-legacy' argument as the webdriverjs version we use require it.
+All Safari options from: [Options](https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/safari.js) could be specified under the 'safariOptions' key.
+```javascript
+browsers: [{
+  browserName: 'safari',
+  capabilities: {
+    safariOptions: {
+      setTechnologyPreview: true
+    }
+  }
+}]
+```
 
 

@@ -568,10 +568,6 @@ DirectDriverProvider.prototype.getNewDriver = function() {
       } else if (browserName == 'MicrosoftEdge') {
         that.deps.edge = protractorModule.require('selenium-webdriver/edge');
 
-        if (that.seleniumConfig.host) {
-          that.protConfig.capabilities.edgedriverOptions.host = that.seleniumConfig.host;
-        }
-
         that.logger.debug('Starting local edgedriver with executable: ' +
           that.seleniumConfig.executables.edgedriver);
 
@@ -592,10 +588,26 @@ DirectDriverProvider.prototype.getNewDriver = function() {
 
         // by default safari server always started at 'localhost' and findFreePort, returns 'localhost'
         // nothing could be overridden
-        that.logger.debug('Starting local safari with webdriver extension');
+        that.logger.debug('Starting local safaridriver from system path');
 
-        // start safari with selenium extension and connect to it
-        driver = new that.deps.safari.Driver(capabilities);
+        var safariServiceBuilder = new that.deps.safari.ServiceBuilder();
+
+        // set safaridriverOptions
+        var saferidriverOptions = this.protConfig.capabilities.safaridriverOptions;
+        if (saferidriverOptions){
+          _.forIn(saferidriverOptions,function(value,key){
+            safariServiceBuilder[key].apply(safariServiceBuilder,value);
+          });
+        }
+
+        // build safariOptions from capabilities
+        var safariOptions = that.deps.safari.Options.fromCapabilities(capabilities);
+
+        // start the local safaridriver and connect to it
+        driver = new that.deps.webdriver.Builder()
+          .withCapabilities(safariOptions.toCapabilities())
+          .usingServer(safariServiceBuilder.build().start())
+          .build();
       } else {
         throw new Error('Browser with name: ' + browserName + ' is not supported');
       }
