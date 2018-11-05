@@ -3,6 +3,7 @@
 /*eslint-disable no-console */
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
+var path = require('path');
 var child_process = require('child_process');
 
 var aChildNodeArgs = process.execArgv.slice(0);
@@ -21,7 +22,7 @@ if (aChildNodeArgs.length) {
   console.log('Starting visualtest with node arguments ' + aChildNodeArgs);
 }
 
-var oChild = child_process.fork(__dirname + '/../src/cli', aChildArgs, {
+var oChild = child_process.fork(path.join(__dirname, '../src/cli'), aChildArgs, {
   execArgv: aChildNodeArgs
 });
 
