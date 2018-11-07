@@ -471,7 +471,13 @@ function run(config) {
           browser.loadUI5Dependencies();
 
           // ensure app is fully loaded before starting the interactions
-          return browser.waitForAngular();
+          browser.waitForAngular();
+          
+          // log UI5 version
+          return browser.executeScriptWithDescription(clientsidescripts.getUI5Version, 'browser.getUI5Version').then(function (versionInfo) {
+            logger.info("UI5 Version: " + versionInfo.version);
++           logger.info("UI5 Timestamp: " + versionInfo.buildTimestamp);
+          });
         },
 
         waitForRedirect: function(targetUrl){

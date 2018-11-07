@@ -183,8 +183,11 @@ var mFunctions = {
       sLog = uiveri5._ControlFinder._getLatestLog();
     }
     return  sLog;
-  }
+  },
 
+  getUI5Version: function() {
+    return sap.ui.getVersionInfo();
+  }
 };
 
 /* Publish the functions as strings to pass to WebDriver's exec[Async]Script.
