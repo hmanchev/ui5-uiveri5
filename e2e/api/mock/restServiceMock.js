@@ -1,6 +1,7 @@
 var express = require('express');
 var Q = require('q');
 var portfinder = require('portfinder');
+var bodyParser = require('body-parser')
 
 //Constructor
 function RestServiceMock() {
@@ -10,6 +11,15 @@ function RestServiceMock() {
   this.app.get('/user/', function(req, res) {
     response++;
     res.send({result: response});
+  });
+
+  this.app.use(bodyParser.json());
+  this.app.post('/users/', function(req, res) {
+    if(req.body && (req.body.job == 'leader' && req.body.name == 'morpheus')) {
+      res.send({status: 'done'});
+    } else {
+      res.send({status: 'not found'});
+    }
   });
 
   this.app.get('/users/', function(req, res) {

@@ -15,12 +15,13 @@ describe('api', function() {
   });
 
   it('Should Assert on error response code', function() {
-    var res = request
-      .get(restServiceMockUrl +'/notFound')
-        .catch(function(response){
-          expect(response.status).toBe(404);
-          expect(response.message).toBe('Not Found');
-        });
+    try{
+      request
+        .get(restServiceMockUrl +'/notFound')
+    } catch(responseError) {
+      expect(responseError.status).toBe(404);
+      expect(responseError.message).toBe('Not Found');
+    }
   });
 
   it('Should make api call and check response body', function() {
@@ -39,6 +40,7 @@ describe('api', function() {
       .send({"name": "morpheus", "job": "leader"})
       .set('accept', 'json');
     expect(res).toHaveHTTPHeader(['Content-Type', 'application/json']);
+    expect(res).toHaveHTTPBody({status: 'done'});
   });
 
   it('Should make delete api call and check response header', function() {

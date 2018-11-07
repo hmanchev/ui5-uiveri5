@@ -8,9 +8,7 @@ module.exports = function(config, instanceConfig, logger){
     var that = this;
     return controlFlow.execute(function () {
       return originalEnd.call(that, fn);
-    }).catch(function(error) {
-      logger.debug('Error in get request: ' + error);
-    });
+    })
   };
 
   return superagent;
