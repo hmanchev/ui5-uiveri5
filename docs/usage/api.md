@@ -20,10 +20,10 @@ expect(res).toHaveHTTPBody({name: 'something'});        // deep equal, string eq
 expect(res).toHaveHTTPHeader('Content-Type', 'application/json');
 
 // should.js for adavnced body assertions
-var expectedFn = function(body) {
-      body.should.have.property('name', 'tj');
-    };
-expect(res).body(expectedFn);
+expect(res).
+  body((body) => {
+    body.should.have.property('name', 'tj');
+  });
 ```
 
 ## Assert on error response code
