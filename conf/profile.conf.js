@@ -224,5 +224,7 @@ exports.config = {
   ],
   locators: [
     {name: './defaultLocators'}
-  ]
+  ],
+
+  matchers: []
 };

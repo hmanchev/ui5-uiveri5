@@ -2,14 +2,15 @@ var superagent = require('superagent');
 
 module.exports = function(config, instanceConfig, logger){
   var controlFlow = browser.controlFlow();
-  var originalEnd = superagent.Request.prototype._end;
-
-  superagent.Request.prototype._end = function end(fn) {
-    var that = this;
-    return controlFlow.execute(function () {
-      return originalEnd.call(that, fn);
-    })
+ 
+  var flow = function(superagent) { 
+    superagent.do = function() {
+      var self = this;
+      return controlFlow.execute(function () {
+        return self.then();
+      });
+    }
   };
 
-  return superagent;
+  return superagent.agent().use(flow);
 };

@@ -19,9 +19,16 @@ module.exports = class Runner {
     }
 
     static startApp(root) {
-      return this.findFreePort().then((port) => {
+      return this.startMock(() => {
         let app = express();
         app.use(express.static(path.join(__dirname + root)));
+        return app;
+      });
+    }
+
+    static startMock(factory) {
+      return this.findFreePort().then((port) => {
+        let app = factory();
         let appServer = http.createServer(app);
         appServer.listen(port);
         let appHost = 'http://localhost:' + port;
@@ -40,10 +47,11 @@ module.exports = class Runner {
           '-v',
           '--browsers=chromeHeadless',
           '--config.specResolver="./resolver/localSpecResolver"',
-          '--config.specs=' + opts.specs,
-          '--config.baseUrl=' + opts.baseUrl,
-          opts.confjs ? opts.confjs : ''
-        ].join(" ");
+          opts.specs ? '--config.specs=' + opts.specs : '',
+          opts.baseUrl ? '--config.baseUrl=' + opts.baseUrl : '',
+          opts.confjs ? opts.confjs : '',
+          opts.params ? buildConfigArgs('--params',opts.params) : ''
+        ].join(' ');
         console.log('Starting cmd: ' + cmdString);
         var proc = child_process.exec(cmdString,{
             cwd: cwd,
@@ -73,6 +81,12 @@ module.exports = class Runner {
           reject(error);
         });
       });
+
+      function buildConfigArgs(prefix,opts) {
+        return Object.entries(opts).map((opt) => {
+          return prefix + '.' + opt[0] + '=' + opt[1];
+        }).join(' ');
+      }
     }
   };
   

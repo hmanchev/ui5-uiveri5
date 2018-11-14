@@ -345,6 +345,8 @@ function run(config) {
               return;
             }
 
+            console.debug("Spec object: " + JSON.stringify(spec));
+            
             // disable waitForUI5() if explicitly requested
             if (config.ignoreSync) {
               logger.debug('Disabling client synchronization');
